@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel='stylesheet' href = 'css/chat/main.css'>
+    <title>Unveyl</title>
+</head>
+<body>
+    <main class="flex flex-col h-screen">
+        <div class = "content  w-full h-full items-center self-center"> 
+        <div class="side h-full  text-center w-1/4 bg-black">
+            <button class="bg-blue-400 rounded-3xl p-4 font-bold">New Chat</button>
+        <div class ="recent  overflow-x-hidden h-56 ps-4  m-3 text-3xl text-nowrap">
+            <div class="title-cont m-3">
+                <p>Recent</p>
+            </div>
+            <div class="recent_chats overflow-x-hidden overflow-scroll">
+                <div class="rchat h-16">
+                    <a href = "#">What is Physics?</a>
+                   </div>
+                   <div class="rchat h-16">
+                    <a href = "#">Argument About the Meaning of Life</a>
+                   </div>
+                   <div class="rchat h-16">
+                    <a href = "#">Argument About the Meaning of Life</a>
+                   </div>
+                   <div class="rchat h-16">
+                    <a href = "#">Argument About the Meaning of Life</a>
+                   </div>
+                   <div class="rchat h-16">
+                    <a href = "#">Argument About the Meaning of Life</a>
+                   </div>
+                   <div class="rchat h-16">
+                    <a href = "#">Argument About the Meaning of Life</a>
+                   </div>
+                   <div class="rchat h-16">
+                    <a href = "#">Argument About the Meaning of Life</a>
+                   </div>
+            </div>
+        </div>
+    </div>
+  <div class="chatarea h-screen top-0 right-0 absolute overflow-y-scroll">
+    <div class="chat_window flex flex-1 flex-col">
+      <div class="chat_history flex flex-col flex-1 w-full h-full ">
+        <!--all history will be appeneded to this div-->
+      </div>
+      <div class="query w-full flex p-3 ps-0 m-3 flex-1 ">
+        <div class="user_query">
+        <div class="image-container">
+          <img src="images/caleb.jpg" class="w-10 rounded-full">
+        </div>
+        <div class="info text-ellipsis">
+          <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Eius alias vitae pariatur qui magni minima ad nihil modi, earum, architecto eum et cum repellendus tempore amet doloribus suscipit blanditiis provident.</p>
+        </div>
+        </div>
+        <div class="model_response flex flex-1 overflow-x-hidden">
+            <div class="inner_container pt-0 flex mr-1 relative">
+<!--model's response here-->
+            </div>
+        </div>
+        <div class="bottom bottom-0 absolute max-w-96 w-full z-10 self-center min-h-14 -mt-12 flex-col pl-5 pr-5">
+          <div class="input-cont-area w-full flex flex-col self-center text-center ">
+            <div class="input-area p-0 inline-flex items-end relative">
+            <div class="prompt min-w-0 flex justify-end flex-grow flex-wrap p-2 overflow-hidden rounded-3xl ">
+              <div class="text-area-wrapper ms-3 justify-between flex items-center flex-grow max-w-full self-stretch">
+                 <div class="w-full">
+                  <div class="relative">
+                    <div class="editor ps-0 overflow-auto break-normal leading-3 h-full p-3 whitespace-pre-wrap text-left" contenteditable="true" role="textbox" aria-multiline="true" aria-label="input for prmpt" data-placeholder="Enter Prompt here">
+                    </div>
+                  </div>
+                 </div>
+              </div>
+            </div>
+          </div>
+          </div>
+         <div class="icons-wrapper items-center self-end flex min-h-11 mb-1 ">
+            <div class="flex md:ms-2 ms-1">
+               <div class="image-uploader">
+                <button>Upload IMage</button>
+               </div>
+               <div class="send">
+                <button class="send"></button>
+               </div>
+            </div>
+         </div>
+         <div class="capabilities">
+          <p>HELLO, I MIGHT REPRESENT IN ACCURATE INFO. DOUBLE CHECK ITS RESPONSESES</p>
+         </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+  </main>
+  </body>
+  </html>

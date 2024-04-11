@@ -1,0 +1,21 @@
+{
+    "type":"Map",
+    "coordinates":[
+        {
+            "text":"UG",
+            "size":1.0,
+            "country":"Uganda",
+            "city":"Kampala",
+            "lat":"13.089869",
+            "lng":"80.245901"
+        },
+        {
+            "text":"UAE",
+            "size":1.0,
+            "country":"United Arab Emirates",
+            "city":"Dubai",
+            "lat":"23.214066",
+            "lng":"53.195262"
+        }
+    ]
+}

@@ -1,0 +1,15 @@
+{
+  "name": "minigl",
+  "version": "1.0.0",
+  "description": "A lightweight JavaScript library for loading and animating textured 3D models in WebGL.",
+  "main": "build.demo.min.js",
+  "scripts": {
+    "webpack": "webpack"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://minigl.pro"
+  },
+  "author": "",
+  "license": "MIT"
+}

@@ -1,0 +1,26 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html,body{
+    overflow: hidden;
+    height:100%;
+}
+.chatarea{
+   width:calc(100% - 25%);
+   background: red;
+}
+.side ~ .chatarea{
+    left:25%;
+    width:calc(100% - 25%);
+}
+.editor::after{
+    display: block;
+    content:attr(data-placeholder);
+    visibility: hidden;
+    margin-top:-24px;
+}
+.editor::before{
+    left:0;
+    right:16px;
+}
