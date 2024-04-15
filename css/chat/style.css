@@ -8,7 +8,6 @@ html,body{
 }
 .chatarea{
    width:calc(100% - 25%);
-   background: red;
 }
 .side ~ .chatarea{
     left:25%;
@@ -24,3 +23,11 @@ html,body{
     left:0;
     right:16px;
 }
+.side ~.welcome_screen{
+    left:25%;
+    width:calc(100% - 25%);
+}
+ @font-face {
+    font-family: 'Poppins';
+    src: url('Poppins-Regular.ttf');
+ }

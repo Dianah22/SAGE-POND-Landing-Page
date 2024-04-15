@@ -4,94 +4,133 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel='stylesheet' href = 'css/chat/main.css'>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
     <title>Unveyl</title>
 </head>
-<body>
+<body class="bg-black overflow-hidden">
     <main class="flex flex-col h-screen">
         <div class = "content  w-full h-full items-center self-center"> 
-        <div class="side h-full  text-center w-1/4 bg-black">
-            <button class="bg-blue-400 rounded-3xl p-4 font-bold">New Chat</button>
-        <div class ="recent  overflow-x-hidden h-56 ps-4  m-3 text-3xl text-nowrap">
-            <div class="title-cont m-3">
+        <div class="side h-screen  text-center w-1/4 bg-black">
+          <div class="side-menu-button fixed top-0 z-[2] min-h-[40px] justify-center items-center flex mt-3 mr-0 mb-0 ml-4">
+           <button class="p-2 flex-shrink">
+  
+           </button>
+          </div>
+          <div class="side-button flex flex-col gap-y-4 pb-4 ps-2 mt-[104px]">
+            <div class="new_conv-container flex">
+              <button class="relative grid-cols-1 h-[40px] min-w-[unset] max-w-fit me-4 ms-3  bg-blue-900 flex rounded-[40px]"id='new_chat'>
+                <span class="relative material-symbols-outlined text-2xl m-0 ">add</span>
+                <span class="whitespace-nowrap overflow-hidden h-[40px] top-0 left-0 relative">
+                  <span class="mt-2 mr-2 mb-2 ml-4 block text-left text-ellipsis pr-2 pl-2 z-[1] ">New Chat</span>
+                </span>
+                <span class='absolute top-1/2 left-0 right-0 h-[48px] -translate-y-1/2'></span>
+              </button>
+            </div>
+          </div>
+        <div class ="recent  overflow-x-hidden h-56 ps-4  m-3 text-2xl text-nowrap text-white">
+            <div class="title-cont m-3" id="recent_title">
                 <p>Recent</p>
             </div>
-            <div class="recent_chats overflow-x-hidden overflow-scroll">
-                <div class="rchat h-16">
-                    <a href = "#">What is Physics?</a>
-                   </div>
-                   <div class="rchat h-16">
-                    <a href = "#">Argument About the Meaning of Life</a>
-                   </div>
-                   <div class="rchat h-16">
-                    <a href = "#">Argument About the Meaning of Life</a>
-                   </div>
-                   <div class="rchat h-16">
-                    <a href = "#">Argument About the Meaning of Life</a>
-                   </div>
-                   <div class="rchat h-16">
-                    <a href = "#">Argument About the Meaning of Life</a>
-                   </div>
-                   <div class="rchat h-16">
-                    <a href = "#">Argument About the Meaning of Life</a>
-                   </div>
-                   <div class="rchat h-16">
-                    <a href = "#">Argument About the Meaning of Life</a>
-                   </div>
+            <div class="recent_chats overflow-x-hidden overflow-scroll" id="recent">
             </div>
         </div>
     </div>
-  <div class="chatarea h-screen top-0 right-0 absolute overflow-y-scroll">
-    <div class="chat_window flex flex-1 flex-col">
+  <div class="chatarea h-screen top-0 right-0 absolute overflow-y-scroll  bg-zinc-950 text-white">
+    <nav class="w-full z-20">
+      <h4 class="text-left">UNVEYL</h4>
+      <h4 class="text-right"> caleb</h4>
+    </nav>
+    <div class="welcome_screen  h-screen rounded-[30px] w-full">
+    <div class="chat_window flex flex-1 flex-col"id='chat_window'>
       <div class="chat_history flex flex-col flex-1 w-full h-full ">
-        <!--all history will be appeneded to this div-->
+        <div class="welcome_screen max-w-[800px] w-full m-0 flex flex-shrink-0 ">
+          <div class="discover md:mt-16 flex gap-5 snap-mandatory overflow-x-auto -ms-5 -me-5 scroll-p-5">
+               <div class="cards-container flex">
+                <div class="card1 ms-5 snap-start cursor-pointer">
+                    <div class="flex flex-col justify-between h-40 items-center overflow-hidden rounded-xl ">
+                      <p class="text-lg m-4 mb-0">Explain how to Make a Car as if i am 2</p>
+                    </div>
+                </div>
+                <div class="card1 ms-5 snap-start cursor-pointer">
+                  <div class="flex flex-col justify-between h-40 items-center overflow-hidden rounded-xl">
+                    <p class="text-lg m-4 mb-0">Explain how to Make a Car as if i am 2</p>
+                  </div>
+              </div>
+              <div class="card1 ms-5 snap-start cursor-pointer">
+                <div class="flex flex-col justify-between h-40 items-center overflow-hidden rounded-xl">
+                  <p class="text-lg m-4 mb-0">Explain how to Make a Car as if i am 2</p>
+                </div>
+            </div>
+            <div class="card1 ms-5 snap-start cursor-pointer">
+              <div class="flex flex-col justify-between h-40 items-center overflow-hidden rounded-xl">
+                <p class="text-lg m-4 mb-0">Explain how to Make a Car as if i am 2</p>
+              </div>
+          </div>
+               </div>
+          </div>
+
+        </div>
       </div>
-      <div class="query w-full flex p-3 ps-0 m-3 flex-1 ">
-        <div class="user_query">
+      <div class="query w-full flex p-3 ps-0 m-3 flex-1" style='display:none'>
+        <div class="user_query h-[100px]">
         <div class="image-container">
           <img src="images/caleb.jpg" class="w-10 rounded-full">
         </div>
-        <div class="info text-ellipsis">
+        <div class="info text-ellipsis text-xl">
           <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Eius alias vitae pariatur qui magni minima ad nihil modi, earum, architecto eum et cum repellendus tempore amet doloribus suscipit blanditiis provident.</p>
         </div>
         </div>
+        <div class="response_container ps-6 pt-1 flex-1 min-w-0 mt-[130px] absolute">
+          <div class="response-content overflow-hidden">
         <div class="model_response flex flex-1 overflow-x-hidden">
             <div class="inner_container pt-0 flex mr-1 relative">
-<!--model's response here-->
             </div>
         </div>
-        <div class="bottom bottom-0 absolute max-w-96 w-full z-10 self-center min-h-14 -mt-12 flex-col pl-5 pr-5">
-          <div class="input-cont-area w-full flex flex-col self-center text-center ">
-            <div class="input-area p-0 inline-flex items-end relative">
-            <div class="prompt min-w-0 flex justify-end flex-grow flex-wrap p-2 overflow-hidden rounded-3xl ">
-              <div class="text-area-wrapper ms-3 justify-between flex items-center flex-grow max-w-full self-stretch">
-                 <div class="w-full">
-                  <div class="relative">
-                    <div class="editor ps-0 overflow-auto break-normal leading-3 h-full p-3 whitespace-pre-wrap text-left" contenteditable="true" role="textbox" aria-multiline="true" aria-label="input for prmpt" data-placeholder="Enter Prompt here">
+      </div>
+      </div>
+      </div>
+        <div class="bottom absolute bottom-0  max-w-[900px] w-full z-10 self-center min-h-14 -mt-12 flex-col pl-5 pr-5">
+          <div class="input-cont-area w-full flex flex-col self-center text-center bg-white max-w-[830px] rounded-3xl max-h-[200px] text-black">
+            <div class="input-area relative p-0 inline-flex items-end ">
+            <div class="prompt min-w-0 flex items-center justify-end flex-grow flex-wrap p-2 overflow-hidden rounded-3xl  z-10">
+              <div class="text-area-wrapper ms-3 justify-between flex  flex-grow max-w-full self-stretch items-start">
+                 <div class="items-center self-end flex-initial mb-1 min-h-9">
+                 </div>
+                <div class="w-full h-full">
+                  <div class="relative h-full">
+                    <div class="editor ps-0 overflow-auto break-normal leading-3 h-full p-3 whitespace-pre-wrap text-left max-h-[100px]" contenteditable="true" role="textbox" aria-multiline="true" aria-label="input for prmpt" data-placeholder="Enter Prompt here" id="editor">
                     </div>
                   </div>
+                 </div>
+              </div>
+              <div class="ms-2 flex">
+                <div class="imageuploader">
+                  <button>
+                    <span class="material-symbols-outlined">
+                      image
+                      </span>
+                  </button>
+                </div>
+                <div class="send">
+                  <button id="send" disabled>
+                    <span class="material-symbols-outlined">
+                      send
+                      </span>
+                  </button>
+                  
                  </div>
               </div>
             </div>
           </div>
           </div>
-         <div class="icons-wrapper items-center self-end flex min-h-11 mb-1 ">
-            <div class="flex md:ms-2 ms-1">
-               <div class="image-uploader">
-                <button>Upload IMage</button>
-               </div>
-               <div class="send">
-                <button class="send"></button>
-               </div>
-            </div>
-         </div>
-         <div class="capabilities">
-          <p>HELLO, I MIGHT REPRESENT IN ACCURATE INFO. DOUBLE CHECK ITS RESPONSESES</p>
+         <div class="capabilities text-center text-lg">
+            <p>Unveyl May Generate Inaccurate Response's. You Have to Double Check the information</p>
          </div>
         </div>
       </div>
-    </div>
   </div>
   </div>
   </main>
+  <script src="chat.js"></script>
   </body>
   </html>

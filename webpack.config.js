@@ -2,13 +2,13 @@ const path = require('path');
 const terserPlugin = require('terser-webpack-plugin')
 module.exports = {
   mode: 'development',
-  entry: './app.js',
+  entry: './login.js',
   optimization:{
     minimizer:[new terserPlugin()],
     minimize:true,
   },
   output: {
-    path: path.resolve(__dirname, 'dist'),
+    path: path.resolve(__dirname, 'dist/auth'),
     filename: 'bundle.min.js',
     clean:true,
   },

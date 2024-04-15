@@ -126,3 +126,25 @@ function setup(){
       })
    })
 }
+const createChatBtn = document.getElementById('create-chat-btn');
+const chatLinkDiv = document.getElementById('chat-link');
+
+createChatBtn.addEventListener('click', async () => {
+  try {
+    const response = await fetch('/new-chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    const data = await response.json();
+
+    if (data.chatId && data.chatLink) {
+      chatLinkDiv.innerText = `Your chat link: ${data.chatLink}`;
+    } else {
+      chatLinkDiv.innerText = 'Error creating chat';
+    }
+  } catch (error) {
+    console.error(error);
+    chatLinkDiv.innerText = 'Error creating chat';
+  }
+});
