@@ -18,12 +18,10 @@ editor.addEventListener('click',e=>{
         console.log(send.disabled)
     } 
 })
-const createChatButton = document.getElementById('create-chat-button');
 const chatLinkContainer = document.getElementById('chat-link-container');
 const loadingIndicator = document.getElementById('loading-indicator');
-createChatButton.addEventListener('click', async () => {
+chatbtn.addEventListener('click', async () => {
   try {
-    loadingIndicator.style.display = 'block'; // Show loading indicator
     const response = await fetch('/create-chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

@@ -1,7 +1,6 @@
 
 const {initializeApp} = require('firebase/app')
-const store = require('firebase/firestore')
-const {getAnalytics} = require('firebase/analytics')
+const {doc, setDoc, Timestamp,getFirestore, addDoc} = require('firebase/firestore')
 const firebaseConfig = {
   apiKey: "AIzaSyDyXWSxpBqk7lgomflc_Sl3BCXp8Dvffbg",
   authDomain: "sage-pond-gen-ai.firebaseapp.com",
@@ -12,12 +11,11 @@ const firebaseConfig = {
   measurementId: "G-XY1Y3VW550"
 };
 const fb = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
-const uid = require('uid')
 const {getAuth,createUserWithEmailAndPassword,updateProfile,signInWithEmailAndPassword} = require('firebase/auth')
 const auth = getAuth(fb)
 const express = require('express')
 const path = require('path')
+const {uid} = require('uid')
 const crypto = require('crypto');
 const bodyParser = require('body-parser');
 const app = express()
@@ -61,7 +59,6 @@ app.get('/', (req, res) => {
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const uid = userCredential.user.uid;
-      console.log(userCredential.user)
       res.json({ success: true, uid }); // Send user ID back to front-end
     } catch (error) {
       console.error(error);
@@ -72,14 +69,15 @@ app.get('/', (req, res) => {
     try {
       // Generate a unique chat ID
       const chatId = uid(16); // 16-character alphanumeric ID
-  
-      // Create a new chat document in Firestore
-      const chatRef = db.collection('chats').doc(chatId);
-      await chatRef.set({
-        // Add any additional data you want to store for the chat
-        createdAt: admin.firestore.Timestamp.now(),
-      });
-      const chatLink = `http://localhost:${port}/app/${chatId}`; // Replace with your frontend URL if different
+      const db = getFirestore(fb)
+          // Create a new chat document in Firestore
+          const docData = {
+            chatid: chatId,
+            dateCreated: Timestamp.now(),
+        };
+      const docRef = doc(db, 'chats', chatId);
+      await setDoc(docRef, docData);
+      const chatLink = `http://localhost:${port}/app/${chatId}`;
       res.json({ chatLink });
     } catch (error) {
       console.error(error);
