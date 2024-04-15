@@ -11,8 +11,6 @@ async function handleLogin(email, password) {
       if (data.success) {
         // Handle successful login (store user data, redirect)
         console.log('Login successful!');
-        // Use data.uid or other relevant data from the response
-        // ...
       } else {
         console.error('Login failed:', data.error);
         alert('Login failed! Please try again.');

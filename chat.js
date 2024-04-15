@@ -16,7 +16,7 @@ editor.addEventListener('click',e=>{
     if(editor.childElementCount>0){
         send.disabled=false
         console.log(send.disabled)
-    } 
+    }   
 })
 const chatLinkContainer = document.getElementById('chat-link-container');
 const loadingIndicator = document.getElementById('loading-indicator');

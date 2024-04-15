@@ -74,7 +74,7 @@ app.get('/', (req, res) => {
           const docData = {
             chatid: chatId,
             dateCreated: Timestamp.now(),
-        };
+        }; 
       const docRef = doc(db, 'chats', chatId);
       await setDoc(docRef, docData);
       const chatLink = `http://localhost:${port}/app/${chatId}`;

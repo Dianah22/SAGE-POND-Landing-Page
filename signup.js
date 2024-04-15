@@ -9,12 +9,11 @@ async function handleSignUp(email, password,name) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password,name}),
-      });
+      });    
       const data = await response.json();
       if (data.success) {
         // Handle successful signup (redirect, store user data)
         console.log('Signup successful!');
-        // ...
       } else {
         console.error('Signup failed:', data.error);
         alert('Signup failed! Please try again.');
