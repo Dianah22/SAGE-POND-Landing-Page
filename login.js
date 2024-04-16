@@ -10,6 +10,7 @@ async function handleLogin(email, password) {
       const data = await response.json();
       if (data.success) {
         // Handle successful login (store user data, redirect)
+        window.location.href = data.redirectTo
         console.log('Login successful!');
       } else {
         console.error('Login failed:', data.error);

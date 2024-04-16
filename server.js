@@ -32,10 +32,26 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(initial_path,'login.html'))
   })
   app.get('/about',(req,res)=>{
-    console.log(req)
   res.sendFile(path.join(initial_path,"about.html"))
   })
-  app.get('/app',(req,res)=>{
+  const isAuthenticated = async (req, res, next) => {
+    try {
+      // Check if user is logged in using Firebase Authentication
+      const user = await auth.currentUser;
+  
+      if (user) {
+        // User is authenticated, proceed to the route handler
+        next();
+      } else {
+        // User is not authenticated, redirect to login page
+        res.status(401).redirect('/login'); // Adjust redirect path as needed
+      }
+    } catch (error) {
+      console.error('Error checking authentication:', error);
+      res.status(500).send('Internal Server Error'); // Handle errors appropriately
+    }
+  };
+  app.get('/app',isAuthenticated,(req,res)=>{
     res.sendFile(path.join(initial_path,"chat.html"))
   })
   app.get('/signup',(req,res)=>{
@@ -59,7 +75,7 @@ app.get('/', (req, res) => {
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const uid = userCredential.user.uid;
-      res.json({ success: true, uid }); // Send user ID back to front-end
+      res.json({ success: true, uid,redirectTo: '/app' }); // Send user ID back to front-end
     } catch (error) {
       console.error(error);
       res.status(400).json({ success: false, message: error.message }); // Handle specific errors
