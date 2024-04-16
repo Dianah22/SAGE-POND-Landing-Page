@@ -1,0 +1,256 @@
+[debug] [2024-04-16T17:57:39.519Z] ----------------------------------------------------------------------
+[debug] [2024-04-16T17:57:39.529Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\Admin\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js deploy --only functions
+[debug] [2024-04-16T17:57:39.531Z] CLI Version:   13.7.2
+[debug] [2024-04-16T17:57:39.532Z] Platform:      win32
+[debug] [2024-04-16T17:57:39.533Z] Node Version:  v20.11.1
+[debug] [2024-04-16T17:57:39.533Z] Time:          Tue Apr 16 2024 20:57:39 GMT+0300 (East Africa Time)
+[debug] [2024-04-16T17:57:39.534Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2024-04-16T17:57:39.904Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2024-04-16T17:57:39.906Z] > authorizing via signed-in user (matovucaleb2@sagepond.com)
+[debug] [2024-04-16T17:57:39.906Z] [iam] checking project sage-pond-gen-ai for permissions ["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get"]
+[debug] [2024-04-16T17:57:39.915Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/sage-pond-gen-ai:testIamPermissions [none]
+[debug] [2024-04-16T17:57:39.915Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/sage-pond-gen-ai:testIamPermissions x-goog-quota-user=projects/sage-pond-gen-ai
+[debug] [2024-04-16T17:57:39.916Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/sage-pond-gen-ai:testIamPermissions {"permissions":["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get"]}
+[debug] [2024-04-16T17:57:42.467Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/sage-pond-gen-ai:testIamPermissions 200
+[debug] [2024-04-16T17:57:42.468Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/sage-pond-gen-ai:testIamPermissions {"permissions":["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get"]}
+[debug] [2024-04-16T17:57:42.470Z] >>> [apiv2][query] POST https://iam.googleapis.com/v1/projects/sage-pond-gen-ai/serviceAccounts/sage-pond-gen-ai@appspot.gserviceaccount.com:testIamPermissions [none]
+[debug] [2024-04-16T17:57:42.471Z] >>> [apiv2][body] POST https://iam.googleapis.com/v1/projects/sage-pond-gen-ai/serviceAccounts/sage-pond-gen-ai@appspot.gserviceaccount.com:testIamPermissions {"permissions":["iam.serviceAccounts.actAs"]}
+[debug] [2024-04-16T17:57:44.641Z] <<< [apiv2][status] POST https://iam.googleapis.com/v1/projects/sage-pond-gen-ai/serviceAccounts/sage-pond-gen-ai@appspot.gserviceaccount.com:testIamPermissions 200
+[debug] [2024-04-16T17:57:44.642Z] <<< [apiv2][body] POST https://iam.googleapis.com/v1/projects/sage-pond-gen-ai/serviceAccounts/sage-pond-gen-ai@appspot.gserviceaccount.com:testIamPermissions {"permissions":["iam.serviceAccounts.actAs"]}
+[info] 
+[info] === Deploying to 'sage-pond-gen-ai'...
+[info] 
+[info] i  deploying functions 
+[debug] [2024-04-16T17:57:44.677Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/sage-pond-gen-ai [none]
+[debug] [2024-04-16T17:57:45.657Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/sage-pond-gen-ai 200
+[debug] [2024-04-16T17:57:45.659Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/sage-pond-gen-ai {"projectId":"sage-pond-gen-ai","projectNumber":"369426724601","displayName":"SAGE POND GEN AI","name":"projects/sage-pond-gen-ai","resources":{"hostingSite":"sage-pond-gen-ai","realtimeDatabaseInstance":"sage-pond-gen-ai-default-rtdb","locationId":"us-east4"},"state":"ACTIVE","etag":"1_caa95ad5-428e-4a12-bf57-e32e3ff9b157"}
+[info] i  functions: preparing codebase default for deployment 
+[info] i  functions: ensuring required API cloudfunctions.googleapis.com is enabled... 
+[info] i  functions: ensuring required API cloudbuild.googleapis.com is enabled... 
+[info] i  artifactregistry: ensuring required API artifactregistry.googleapis.com is enabled... 
+[debug] [2024-04-16T17:57:45.685Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/sage-pond-gen-ai/services/cloudfunctions.googleapis.com [none]
+[debug] [2024-04-16T17:57:45.687Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/sage-pond-gen-ai/services/cloudfunctions.googleapis.com x-goog-quota-user=projects/sage-pond-gen-ai
+[debug] [2024-04-16T17:57:45.694Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/sage-pond-gen-ai/services/runtimeconfig.googleapis.com [none]
+[debug] [2024-04-16T17:57:45.695Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/sage-pond-gen-ai/services/runtimeconfig.googleapis.com x-goog-quota-user=projects/sage-pond-gen-ai
+[debug] [2024-04-16T17:57:45.703Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/sage-pond-gen-ai/services/cloudbuild.googleapis.com [none]
+[debug] [2024-04-16T17:57:45.704Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/sage-pond-gen-ai/services/cloudbuild.googleapis.com x-goog-quota-user=projects/sage-pond-gen-ai
+[debug] [2024-04-16T17:57:45.710Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/sage-pond-gen-ai/services/artifactregistry.googleapis.com [none]
+[debug] [2024-04-16T17:57:45.711Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/sage-pond-gen-ai/services/artifactregistry.googleapis.com x-goog-quota-user=projects/sage-pond-gen-ai
+[debug] [2024-04-16T17:57:48.074Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/sage-pond-gen-ai/services/runtimeconfig.googleapis.com 200
+[debug] [2024-04-16T17:57:48.075Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/sage-pond-gen-ai/services/runtimeconfig.googleapis.com [omitted]
+[debug] [2024-04-16T17:57:48.078Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/sage-pond-gen-ai/services/cloudbuild.googleapis.com 200
+[debug] [2024-04-16T17:57:48.079Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/sage-pond-gen-ai/services/cloudbuild.googleapis.com [omitted]
+[info] +  functions: required API cloudbuild.googleapis.com is enabled 
+[debug] [2024-04-16T17:57:48.090Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/sage-pond-gen-ai/services/cloudfunctions.googleapis.com 200
+[debug] [2024-04-16T17:57:48.090Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/sage-pond-gen-ai/services/cloudfunctions.googleapis.com [omitted]
+[info] +  functions: required API cloudfunctions.googleapis.com is enabled 
+[debug] [2024-04-16T17:57:48.369Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/sage-pond-gen-ai/services/artifactregistry.googleapis.com 200
+[debug] [2024-04-16T17:57:48.370Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/sage-pond-gen-ai/services/artifactregistry.googleapis.com [omitted]
+[info] +  artifactregistry: required API artifactregistry.googleapis.com is enabled 
+[debug] [2024-04-16T17:57:48.375Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/sage-pond-gen-ai/adminSdkConfig [none]
+[debug] [2024-04-16T17:57:48.810Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/sage-pond-gen-ai/adminSdkConfig 200
+[debug] [2024-04-16T17:57:48.812Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/sage-pond-gen-ai/adminSdkConfig {"projectId":"sage-pond-gen-ai","databaseURL":"https://sage-pond-gen-ai-default-rtdb.firebaseio.com","storageBucket":"sage-pond-gen-ai.appspot.com","locationId":"us-east4"}
+[debug] [2024-04-16T17:57:48.815Z] >>> [apiv2][query] GET https://runtimeconfig.googleapis.com/v1beta1/projects/sage-pond-gen-ai/configs [none]
+[debug] [2024-04-16T17:57:49.830Z] <<< [apiv2][status] GET https://runtimeconfig.googleapis.com/v1beta1/projects/sage-pond-gen-ai/configs 200
+[debug] [2024-04-16T17:57:49.832Z] <<< [apiv2][body] GET https://runtimeconfig.googleapis.com/v1beta1/projects/sage-pond-gen-ai/configs {}
+[debug] [2024-04-16T17:57:49.845Z] Validating nodejs source
+[debug] [2024-04-16T17:57:57.322Z] > [functions] package.json contents: {
+  "name": "functions",
+  "description": "Cloud Functions for Firebase",
+  "scripts": {
+    "serve": "firebase emulators:start --only functions",
+    "shell": "firebase functions:shell",
+    "start": "npm run shell",
+    "deploy": "firebase deploy --only functions",
+    "logs": "firebase functions:log"
+  },
+  "engines": {
+    "node": "18"
+  },
+  "main": "index.js",
+  "dependencies": {
+    "express": "^4.19.2",
+    "firebase-admin": "^11.8.0",
+    "firebase-functions": "^4.3.1",
+    "uid": "^2.0.2"
+  },
+  "devDependencies": {
+    "firebase-functions-test": "^3.1.0"
+  },
+  "private": true
+}
+[debug] [2024-04-16T17:57:57.323Z] Building nodejs source
+[info] i  functions: Loading and analyzing source code for codebase default to determine what to deploy 
+[debug] [2024-04-16T17:57:57.332Z] Could not find functions.yaml. Must use http discovery
+[debug] [2024-04-16T17:57:57.370Z] Found firebase-functions binary at 'C:\Users\Admin\Documents\SAGE POND WEB\functions\node_modules\.bin\firebase-functions'
+[info] Serving at port 8514
+
+[error] node:events:496
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use :::8514
+    at Server.setupListenHandle [as _listen2] (node:net:1872:16)
+    at listenInCluster (node:net:1920:12)
+    at Server.listen (node:net:2008:7)
+    at Function.listen (C:\Users\Admin\Documents\SAGE POND WEB\functions\node_modules\express\lib\application.js:635:24)
+    at Object.<anonymous> (C:\Users\Admin\Documents\SAGE POND WEB\functions\index.js:115:7)
+    at Module._compile (node:internal/modules/cjs/loader:1376:14)
+    at Module._extensions..js (node:internal/modules/cjs/loader:1435:10)
+    at Module.load (node:internal/modules/cjs/loader:1207:32)
+    at Module._load (node:internal/modules/cjs/loader:1023:12)
+    at Module.require (node:internal/modules/cjs/loader:1235:19)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:1899:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:82:21) {
+  code: 'EADDRINUSE',
+  errno: -4091,
+  syscall: 'listen',
+  address: '::',
+  port: 8514
+}
+
+Node.js v20.11.1
+
+[debug] [2024-04-16T17:58:01.167Z] Failed to call quitquitquit. This often means the server failed to start request to http://localhost:8514/__/quitquitquit failed, reason:  {"message":"request to http://localhost:8514/__/quitquitquit failed, reason: ","type":"system","errno":"ECONNREFUSED","code":"ECONNREFUSED"}
+[debug] [2024-04-16T17:58:01.184Z] FetchError: request to http://127.0.0.1:8514/__/functions.yaml failed, reason: read ECONNRESET
+    at ClientRequest.<anonymous> (C:\Users\Admin\AppData\Roaming\npm\node_modules\firebase-tools\node_modules\node-fetch\lib\index.js:1501:11)
+    at ClientRequest.emit (node:events:518:28)
+    at ClientRequest.emit (node:domain:488:12)
+    at Socket.socketErrorListener (node:_http_client:495:9)
+    at Socket.emit (node:events:518:28)
+    at Socket.emit (node:domain:488:12)
+    at emitErrorNT (node:internal/streams/destroy:169:8)
+    at emitErrorCloseNT (node:internal/streams/destroy:128:3)
+    at process.processTicksAndRejections (node:internal/process/task_queues:82:21)
+[error] 
+[error] Error: An unexpected error has occurred.
+[debug] [2024-04-16T18:01:48.733Z] ----------------------------------------------------------------------
+[debug] [2024-04-16T18:01:48.742Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\Admin\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js deploy --only functions
+[debug] [2024-04-16T18:01:48.744Z] CLI Version:   13.7.2
+[debug] [2024-04-16T18:01:48.745Z] Platform:      win32
+[debug] [2024-04-16T18:01:48.746Z] Node Version:  v20.11.1
+[debug] [2024-04-16T18:01:48.747Z] Time:          Tue Apr 16 2024 21:01:48 GMT+0300 (East Africa Time)
+[debug] [2024-04-16T18:01:48.747Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2024-04-16T18:01:49.094Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2024-04-16T18:01:49.096Z] > authorizing via signed-in user (matovucaleb2@sagepond.com)
+[debug] [2024-04-16T18:01:49.097Z] [iam] checking project sage-pond-gen-ai for permissions ["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get"]
+[debug] [2024-04-16T18:01:49.105Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/sage-pond-gen-ai:testIamPermissions [none]
+[debug] [2024-04-16T18:01:49.106Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/sage-pond-gen-ai:testIamPermissions x-goog-quota-user=projects/sage-pond-gen-ai
+[debug] [2024-04-16T18:01:49.107Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/sage-pond-gen-ai:testIamPermissions {"permissions":["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get"]}
+[debug] [2024-04-16T18:01:51.470Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/sage-pond-gen-ai:testIamPermissions 200
+[debug] [2024-04-16T18:01:51.471Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/sage-pond-gen-ai:testIamPermissions {"permissions":["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get"]}
+[debug] [2024-04-16T18:01:51.473Z] >>> [apiv2][query] POST https://iam.googleapis.com/v1/projects/sage-pond-gen-ai/serviceAccounts/sage-pond-gen-ai@appspot.gserviceaccount.com:testIamPermissions [none]
+[debug] [2024-04-16T18:01:51.473Z] >>> [apiv2][body] POST https://iam.googleapis.com/v1/projects/sage-pond-gen-ai/serviceAccounts/sage-pond-gen-ai@appspot.gserviceaccount.com:testIamPermissions {"permissions":["iam.serviceAccounts.actAs"]}
+[debug] [2024-04-16T18:01:53.639Z] <<< [apiv2][status] POST https://iam.googleapis.com/v1/projects/sage-pond-gen-ai/serviceAccounts/sage-pond-gen-ai@appspot.gserviceaccount.com:testIamPermissions 200
+[debug] [2024-04-16T18:01:53.641Z] <<< [apiv2][body] POST https://iam.googleapis.com/v1/projects/sage-pond-gen-ai/serviceAccounts/sage-pond-gen-ai@appspot.gserviceaccount.com:testIamPermissions {"permissions":["iam.serviceAccounts.actAs"]}
+[info] 
+[info] === Deploying to 'sage-pond-gen-ai'...
+[info] 
+[info] i  deploying functions 
+[debug] [2024-04-16T18:01:53.662Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/sage-pond-gen-ai [none]
+[debug] [2024-04-16T18:01:54.513Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/sage-pond-gen-ai 200
+[debug] [2024-04-16T18:01:54.514Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/sage-pond-gen-ai {"projectId":"sage-pond-gen-ai","projectNumber":"369426724601","displayName":"SAGE POND GEN AI","name":"projects/sage-pond-gen-ai","resources":{"hostingSite":"sage-pond-gen-ai","realtimeDatabaseInstance":"sage-pond-gen-ai-default-rtdb","locationId":"us-east4"},"state":"ACTIVE","etag":"1_caa95ad5-428e-4a12-bf57-e32e3ff9b157"}
+[info] i  functions: preparing codebase default for deployment 
+[info] i  functions: ensuring required API cloudfunctions.googleapis.com is enabled... 
+[info] i  functions: ensuring required API cloudbuild.googleapis.com is enabled... 
+[info] i  artifactregistry: ensuring required API artifactregistry.googleapis.com is enabled... 
+[debug] [2024-04-16T18:01:54.538Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/sage-pond-gen-ai/services/cloudfunctions.googleapis.com [none]
+[debug] [2024-04-16T18:01:54.539Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/sage-pond-gen-ai/services/cloudfunctions.googleapis.com x-goog-quota-user=projects/sage-pond-gen-ai
+[debug] [2024-04-16T18:01:54.551Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/sage-pond-gen-ai/services/runtimeconfig.googleapis.com [none]
+[debug] [2024-04-16T18:01:54.553Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/sage-pond-gen-ai/services/runtimeconfig.googleapis.com x-goog-quota-user=projects/sage-pond-gen-ai
+[debug] [2024-04-16T18:01:54.561Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/sage-pond-gen-ai/services/cloudbuild.googleapis.com [none]
+[debug] [2024-04-16T18:01:54.562Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/sage-pond-gen-ai/services/cloudbuild.googleapis.com x-goog-quota-user=projects/sage-pond-gen-ai
+[debug] [2024-04-16T18:01:54.568Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/sage-pond-gen-ai/services/artifactregistry.googleapis.com [none]
+[debug] [2024-04-16T18:01:54.569Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/sage-pond-gen-ai/services/artifactregistry.googleapis.com x-goog-quota-user=projects/sage-pond-gen-ai
+[debug] [2024-04-16T18:01:56.674Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/sage-pond-gen-ai/services/artifactregistry.googleapis.com 200
+[debug] [2024-04-16T18:01:56.675Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/sage-pond-gen-ai/services/artifactregistry.googleapis.com [omitted]
+[info] +  artifactregistry: required API artifactregistry.googleapis.com is enabled 
+[debug] [2024-04-16T18:01:56.683Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/sage-pond-gen-ai/services/cloudfunctions.googleapis.com 200
+[debug] [2024-04-16T18:01:56.684Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/sage-pond-gen-ai/services/cloudfunctions.googleapis.com [omitted]
+[info] +  functions: required API cloudfunctions.googleapis.com is enabled 
+[debug] [2024-04-16T18:01:56.831Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/sage-pond-gen-ai/services/runtimeconfig.googleapis.com 200
+[debug] [2024-04-16T18:01:56.832Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/sage-pond-gen-ai/services/runtimeconfig.googleapis.com [omitted]
+[debug] [2024-04-16T18:01:56.873Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/sage-pond-gen-ai/services/cloudbuild.googleapis.com 200
+[debug] [2024-04-16T18:01:56.874Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/sage-pond-gen-ai/services/cloudbuild.googleapis.com [omitted]
+[info] +  functions: required API cloudbuild.googleapis.com is enabled 
+[debug] [2024-04-16T18:01:56.879Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/sage-pond-gen-ai/adminSdkConfig [none]
+[debug] [2024-04-16T18:01:57.415Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/sage-pond-gen-ai/adminSdkConfig 200
+[debug] [2024-04-16T18:01:57.416Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/sage-pond-gen-ai/adminSdkConfig {"projectId":"sage-pond-gen-ai","databaseURL":"https://sage-pond-gen-ai-default-rtdb.firebaseio.com","storageBucket":"sage-pond-gen-ai.appspot.com","locationId":"us-east4"}
+[debug] [2024-04-16T18:01:57.420Z] >>> [apiv2][query] GET https://runtimeconfig.googleapis.com/v1beta1/projects/sage-pond-gen-ai/configs [none]
+[debug] [2024-04-16T18:01:58.430Z] <<< [apiv2][status] GET https://runtimeconfig.googleapis.com/v1beta1/projects/sage-pond-gen-ai/configs 200
+[debug] [2024-04-16T18:01:58.431Z] <<< [apiv2][body] GET https://runtimeconfig.googleapis.com/v1beta1/projects/sage-pond-gen-ai/configs {}
+[debug] [2024-04-16T18:01:58.446Z] Validating nodejs source
+[debug] [2024-04-16T18:02:03.815Z] > [functions] package.json contents: {
+  "name": "functions",
+  "description": "Cloud Functions for Firebase",
+  "scripts": {
+    "serve": "firebase emulators:start --only functions",
+    "shell": "firebase functions:shell",
+    "start": "npm run shell",
+    "deploy": "firebase deploy --only functions",
+    "logs": "firebase functions:log"
+  },
+  "engines": {
+    "node": "18"
+  },
+  "main": "index.js",
+  "dependencies": {
+    "express": "^4.19.2",
+    "firebase-admin": "^11.8.0",
+    "firebase-functions": "^4.3.1",
+    "uid": "^2.0.2"
+  },
+  "devDependencies": {
+    "firebase-functions-test": "^3.1.0"
+  },
+  "private": true
+}
+[debug] [2024-04-16T18:02:03.816Z] Building nodejs source
+[info] i  functions: Loading and analyzing source code for codebase default to determine what to deploy 
+[debug] [2024-04-16T18:02:03.825Z] Could not find functions.yaml. Must use http discovery
+[debug] [2024-04-16T18:02:03.861Z] Found firebase-functions binary at 'C:\Users\Admin\Documents\SAGE POND WEB\functions\node_modules\.bin\firebase-functions'
+[info] Serving at port 8762
+
+[error] node:events:496
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use :::8762
+    at Server.setupListenHandle [as _listen2] (node:net:1872:16)
+    at listenInCluster (node:net:1920:12)
+    at Server.listen (node:net:2008:7)
+    at Function.listen (C:\Users\Admin\Documents\SAGE POND WEB\functions\node_modules\express\lib\application.js:635:24)
+    at Object.<anonymous> (C:\Users\Admin\Documents\SAGE POND WEB\functions\index.js:115:7)
+    at Module._compile (node:internal/modules/cjs/loader:1376:14)
+    at Module._extensions..js (node:internal/modules/cjs/loader:1435:10)
+    at Module.load (node:internal/modules/cjs/loader:1207:32)
+    at Module._load (node:internal/modules/cjs/loader:1023:12)
+    at Module.require (node:internal/modules/cjs/loader:1235:19)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:1899:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:82:21) {
+  code: 'EADDRINUSE',
+  errno: -4091,
+  syscall: 'listen',
+  address: '::',
+  port: 8762
+}
+
+Node.js v20.11.1
+
+[debug] [2024-04-16T18:02:06.700Z] Failed to call quitquitquit. This often means the server failed to start request to http://localhost:8762/__/quitquitquit failed, reason:  {"message":"request to http://localhost:8762/__/quitquitquit failed, reason: ","type":"system","errno":"ECONNREFUSED","code":"ECONNREFUSED"}
+[debug] [2024-04-16T18:02:06.721Z] FetchError: request to http://127.0.0.1:8762/__/functions.yaml failed, reason: read ECONNRESET
+    at ClientRequest.<anonymous> (C:\Users\Admin\AppData\Roaming\npm\node_modules\firebase-tools\node_modules\node-fetch\lib\index.js:1501:11)
+    at ClientRequest.emit (node:events:518:28)
+    at ClientRequest.emit (node:domain:488:12)
+    at Socket.socketErrorListener (node:_http_client:495:9)
+    at Socket.emit (node:events:518:28)
+    at Socket.emit (node:domain:488:12)
+    at emitErrorNT (node:internal/streams/destroy:169:8)
+    at emitErrorCloseNT (node:internal/streams/destroy:128:3)
+    at process.processTicksAndRejections (node:internal/process/task_queues:82:21)
+[error] 
+[error] Error: An unexpected error has occurred.
