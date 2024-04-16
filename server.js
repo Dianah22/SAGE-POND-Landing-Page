@@ -38,12 +38,11 @@ app.get('/', (req, res) => {
     try {
       // Check if user is logged in using Firebase Authentication
       const user = await auth.currentUser;
-  
       if (user) {
         // User is authenticated, proceed to the route handler
         next();
       } else {
-        // User is not authenticated, redirect to login page
+
         res.status(401).redirect('/login'); // Adjust redirect path as needed
       }
     } catch (error) {
@@ -83,16 +82,16 @@ app.get('/', (req, res) => {
   });
   app.post('/create-chat', async (req, res) => {
     try {
-      // Generate a unique chat ID
-      const chatId = uid(16); // 16-character alphanumeric ID
+      const chatId = uid(16);
+      const userId = auth.currentUser.uid
       const db = getFirestore(fb)
-          // Create a new chat document in Firestore
-          const docData = {
-            chatid: chatId,
-            dateCreated: Timestamp.now(),
-        }; 
+      const docData = {
+        chatid: chatId, // Use 'chatid' to match your security rule field name
+        createdBy: userId, // Use the currently authenticated user's ID
+        dateCreated: Timestamp.now(),
+      };
       const docRef = doc(db, 'chats', chatId);
-      await setDoc(docRef, docData);
+          await setDoc(docRef, docData);
       const chatLink = `http://localhost:${port}/app/${chatId}`;
       res.json({ chatLink });
     } catch (error) {

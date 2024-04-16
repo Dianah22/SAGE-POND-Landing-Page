@@ -21,58 +21,6 @@ function  delay(n){
    })
 }
 const gsaptl = gsap.timeline({paused:true})
-let path = document.querySelector('path')
-let spanBefore = CSSRulePlugin.getRule('#hamburger span:before')
-gsap.set(spanBefore,{background:'#000'})
-gsap.set(".menu",{visibility:'hidden'})
-function revealMenu(){
-   revealMenuItems()
-   const hamburger = document.getElementById('hamburger')
-   const toggleBtn = document.getElementById('toggle-btn')
-   toggleBtn.onclick = function(){
-      hamburger.classList.toggle('active')
-      gsaptl.reversed(!gsaptl.reversed())
-      if(hamburger.className=='active'){
-         document.body.style.overflowY='hidden'
-      }else{
-         document.body.style.overflowY='scroll'
-      }
-  
-   }
-   
-  
-}
-revealMenu()
-function revealMenuItems(){
-   const start ='M0 502S175 272 500 272s500 230 500 230V0H0Z'
-   const end ='M0,1005S175,995,500,995s500,5,500,5V0H0Z'
-   gsaptl.to(spanBefore,1,{
-    background:'#e2e2dc',
-    ease:'power2.inOut'
-   },'<')
-   gsaptl.to(path,0.4,{
-    attr:{
-       d: end,
-    },
-    ease:Power2.easeIn,
-   },"<").to(path,0.4,{
-    attr:{
-       d:start
-    },
-    ease:Power2.easeIn
-   },'-0.5')
-   gsaptl.to('.menu',1,{
-      visibility:'visible',
-   },'-=0.5')
-   gsaptl.to('.menu-item > a',1,{
-    top:0,
-    ease:'power3.out',
-    stagger:{
-       amount:0.5
-    }
-   },'-=1').reverse()
-}
-
 document.addEventListener('DOMContentLoaded',e=>{
    gsap.set('.img',{y:1000})
    gsap.set('.loader-imgs',{x:500})
@@ -126,25 +74,30 @@ function setup(){
       })
    })
 }
-const createChatBtn = document.getElementById('create-chat-btn');
-const chatLinkDiv = document.getElementById('chat-link');
-
-createChatBtn.addEventListener('click', async () => {
-  try {
-    const response = await fetch('/new-chat', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-    });
-
-    const data = await response.json();
-
-    if (data.chatId && data.chatLink) {
-      chatLinkDiv.innerText = `Your chat link: ${data.chatLink}`;
-    } else {
-      chatLinkDiv.innerText = 'Error creating chat';
-    }
-  } catch (error) {
-    console.error(error);
-    chatLinkDiv.innerText = 'Error creating chat';
-  }
-});
+const handleOnMouseMOve =e=>{
+   const {currentTarget:target} = e;
+   const rect = target.getBoundingClientRect();
+   x=e.clientX-rect.left
+   y=e.clientY-rect.top
+   target.style.setProperty('--mouse-x',`${x}px`)
+   target.style.setProperty('--mouse-y',`${y}px`)
+}
+for(const card of document.querySelectorAll('.card')){
+   card.onmousemove = e => handleOnMouseMOve(e)
+}
+const letters='ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+document.querySelector('.team').onmouseover = e=>{
+   let iterations =0
+const interval=setInterval(()=>{
+   e.target.innerText = e.target.innerText.split('')
+   .map((letter,index)=>{
+      if(index<iterations){
+         return e.target.dataset.value[index]
+      }
+      return letters[Math.floor(Math.random()*26)]
+})
+   .join('')
+ if(iterations>=e.target.dataset.value.length) clearInterval(interval)
+iterations+=1/2
+},30)
+}
