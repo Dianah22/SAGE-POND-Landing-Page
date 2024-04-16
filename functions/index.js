@@ -29,7 +29,7 @@ const crypto = require('crypto');
 const bodyParser = require('body-parser');
 const app = express()
 let initial_path = __dirname
-const port = process.env.PORT || 4000
+const port =  process.env.PORT
 app.use(express.static(initial_path))
 app.use(bodyParser.json())
 app.get('/', (req, res) => {
