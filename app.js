@@ -1,6 +1,4 @@
 
-const hamburger = document.querySelector('.hamburger')
-const list = document.querySelector(".mobo-links ul li")
 const navbar = document.querySelector('#nav')
 const mobo_cont = document.querySelector(".mobo-container")
 window.addEventListener('scroll',e=>{
