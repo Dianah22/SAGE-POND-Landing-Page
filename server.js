@@ -1,6 +1,6 @@
 
 const {initializeApp} = require('firebase/app')
-const {doc, setDoc, Timestamp,getFirestore, addDoc} = require('firebase/firestore')
+const {doc, setDoc, Timestamp,getFirestore, collection,getDocs} = require('firebase/firestore')
 const firebaseConfig = {
   apiKey: "AIzaSyDyXWSxpBqk7lgomflc_Sl3BCXp8Dvffbg",
   authDomain: "sage-pond-gen-ai.firebaseapp.com",
@@ -11,6 +11,7 @@ const firebaseConfig = {
   measurementId: "G-XY1Y3VW550"
 };
 const fb = initializeApp(firebaseConfig);
+const {uid} = require('uid')
 const {getAuth,createUserWithEmailAndPassword,updateProfile,signInWithEmailAndPassword} = require('firebase/auth')
 const auth = getAuth(fb)
 const express = require('express')
@@ -73,7 +74,7 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(initial_path,"chat.html"))
   })
   app.get('/signup',(req,res)=>{
-    res.sendFile(path.join(initial_path,"signup.html"),{csrfToken: req.csrfToken()})
+    res.sendFile(path.join(initial_path,"signup.html"))
   }) 
   app.post('/api/signup', async (req, res) => {
     const { email, password ,name} = req.body;
@@ -122,6 +123,28 @@ app.get('/', (req, res) => {
     } catch (error) {
       console.error(error);
       res.status(500).send('Error creating chat');
+    }
+  });
+  app.post('/chatIds', async (req, res) => {
+    try {
+      const db = getFirestore(fb)
+      const userId = auth.currentUser.uid
+      const chatIds = [];
+      const chatIdsCol = collection(db, 'chats'); // Get the chatIds collection reference
+      const snapshot = await getDocs(chatIdsCol); // Get all documents in the collection
+      snapshot.forEach(doc => {
+
+        if (doc.data().createdBy === userId) {
+        chatIds.push(doc.id);
+        console.log(doc.id)
+      }
+      });
+      console.log(chatIds)
+      res.status(200).send({ chatIds }); // Send chat IDs as a response
+  
+    } catch (error) {
+      console.error('Error fetching chat IDs:', error);
+      res.status(500).send({ message: 'Error fetching chat IDs' });
     }
   });
 app.use((req,res)=>{

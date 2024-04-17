@@ -36,5 +36,20 @@ chatbtn.addEventListener('click', async () => {
           alert('Error creating chat. Please try again.');
         }
       });
-
-
+window.addEventListener('DOMContentLoaded',e=>{
+  async function fetchChatIds() {
+    const response = await fetch('/chatIds', {
+      method: 'POST'
+    });
+    if (response.ok) {
+      const data = await response.json();
+      console.log('Chat IDs:', data.chatIds);
+      // Use the retrieved chat IDs to display them on the front-end (e.g., populate a list)
+    } else {
+      console.error('Error fetching chat IDs:', response.statusText);
+      // Handle errors
+    }
+  }
+  fetchChatIds()
+})
+     
