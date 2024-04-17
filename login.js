@@ -1,11 +1,11 @@
 const sub = document.getElementById('login')
-async function handleLogin(email, password) {
-  const csrfToken = document.querySelector('input[name="_csrf"]').value;
+const crsf = document.getElementById('crsf')
+async function handleLogin(email, password,crsf) {
     try {
       const response = await fetch('/api/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json'},
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, password,crsf }),
       });
       const data = await response.json();
       if (data.success) {
@@ -25,5 +25,5 @@ const email = document.getElementById('email')
 const password = document.getElementById('password')
 sub.addEventListener('click',e=>{
     e.preventDefault()
-    handleLogin(email.value,password.value)
+    handleLogin(email.value,password.value,crsf.value)
 })
