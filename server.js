@@ -12,7 +12,6 @@ const firebaseConfig = {
 };
 const csrf = require('csurf');
 const csrfProtection = csrf({ cookie: true }); // Store token in a cookie
-
 const fb = initializeApp(firebaseConfig);
 const {getAuth,createUserWithEmailAndPassword,updateProfile,signInWithEmailAndPassword} = require('firebase/auth')
 const auth = getAuth(fb)
@@ -27,7 +26,9 @@ const rateLimit = require('express-rate-limit'); // Added rate limiter
 const validator = require('validator');
 let initial_path = __dirname
 const port = process.env.PORT || 4000
+const cookieParser = require('cookie-parser');
 app.use(express.static(initial_path))
+app.use(cookieParser())
 app.use(csrfProtection)
 app.use(helmet());
 app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 100 }))
@@ -39,6 +40,7 @@ app.use(helmet.hsts({ // Enable HSTS with a max age of 31536000 seconds (1 year)
   includeSubDomains: true, // Include subdomains
   preload: true, // Send the preload flag
 }));
+
 app.use(helmet.crossOriginEmbedderPolicy({ policy: 'require-corp' })); // Restricts embedding to the same corporation
 app.use(helmet.xssFilter())
 app.use(helmet.ieNoOpen());
@@ -47,17 +49,16 @@ app.use(helmet.contentSecurityPolicy({
   directives: {
     defaultSrc: ['\'self\''], // Restrict most resources to self
     scriptSrc: ['\'self\'', 'https://www.google.com/recaptcha/api.js'], // Allow specific script (e.g., Google reCAPTCHA)
-    styleSrc: ['\'self\'', 'https://fonts.googleapis.com/'], // Allow specific styles (e.g., Google Fonts)
+    styleSrc: ['\'self\'', 'https://fonts.googleapis.com/','https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css'], // Allow specific styles (e.g., Google Fonts)
     imgSrc: ['\'self\'', 'data:'], // Restrict image sources
   },
 }));
 
 app.get('/', (req, res) => {
-    const chatId = uuid.v4();
-    console.log(chatId)
     res.sendFile(path.join(initial_path, "index.html"));
   });
-  app.get('/login',(req,res)=>{
+  app.get('/login',csrfProtection,(req,res)=>{
+    //const token = req.csrfToken();
     res.sendFile(path.join(initial_path,'login.html'))
   })
   app.get('/about',(req,res)=>{
@@ -83,9 +84,10 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(initial_path,"chat.html"))
   })
   app.get('/signup',(req,res)=>{
-    res.sendFile(path.join(initial_path,"signup.html"))
+    res.sendFile(path.join(initial_path,"signup.html"),{csrfToken: req.csrfToken()})
   }) 
   app.post('/api/signup', async (req, res) => {
+    
     const { email, password ,name} = req.body;
     const receivedToken = req.body._csrf
     try {
@@ -102,14 +104,14 @@ app.get('/', (req, res) => {
       res.json({ success: true, uid }); // Send user ID back to front-end
     } catch (error) {
       console.error(error);
-      res.status(400).json({ success: false, message: error.message }); // Handle specific errors
+      res.status(400).json({ success: false, message: error.message });
     }
-  });  
-  app.post('/api/login', async (req, res) => {
+  });   
+  app.post('/api/login',csrfProtection, async (req, res) => {
     const { email, password } = req.body;
-    const receivedToken = req.body._csrf
+   
     try {
-      await req.csrf.verify(receivedToken);
+      //await req.csrf.verify(csrfToken);
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const uid = userCredential.user.uid;
       res.json({ success: true, uid,redirectTo: '/app' });

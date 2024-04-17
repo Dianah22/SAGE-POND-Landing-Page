@@ -1,12 +1,12 @@
 const sub = document.getElementById('login')
 async function handleLogin(email, password) {
+  const csrfToken = document.querySelector('input[name="_csrf"]').value;
     try {
       const response = await fetch('/api/login', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json'},
         body: JSON.stringify({ email, password }),
       });
-  
       const data = await response.json();
       if (data.success) {
         // Handle successful login (store user data, redirect)
@@ -24,8 +24,6 @@ async function handleLogin(email, password) {
 const email = document.getElementById('email')
 const password = document.getElementById('password')
 sub.addEventListener('click',e=>{
-    console.log(email.value)
-    console.log(password)
     e.preventDefault()
     handleLogin(email.value,password.value)
 })
