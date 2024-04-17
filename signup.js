@@ -27,5 +27,3 @@ submit.addEventListener('click',e=>{
   e.preventDefault()
   handleSignUp(email.value,password.value,name1.value)
 })
-
-  

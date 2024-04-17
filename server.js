@@ -10,19 +10,48 @@ const firebaseConfig = {
   appId: "1:369426724601:web:698e582d4e10ff710c5428",
   measurementId: "G-XY1Y3VW550"
 };
+const csrf = require('csurf');
+const csrfProtection = csrf({ cookie: true }); // Store token in a cookie
+
 const fb = initializeApp(firebaseConfig);
 const {getAuth,createUserWithEmailAndPassword,updateProfile,signInWithEmailAndPassword} = require('firebase/auth')
 const auth = getAuth(fb)
 const express = require('express')
 const path = require('path')
-const {uid} = require('uid')
+const { v4: uuid } = require('uuid')
 const crypto = require('crypto');
 const bodyParser = require('body-parser');
 const app = express()
+const helmet = require('helmet'); // Added Helmet
+const rateLimit = require('express-rate-limit'); // Added rate limiter
+const validator = require('validator');
 let initial_path = __dirname
 const port = process.env.PORT || 4000
 app.use(express.static(initial_path))
+app.use(csrfProtection)
+app.use(helmet());
+app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 100 }))
 app.use(bodyParser.json())
+app.use(helmet.frameguard({ action: 'deny' }))
+app.use(helmet.referrerPolicy({ policy: 'no-referrer' }))
+app.use(helmet.hsts({ // Enable HSTS with a max age of 31536000 seconds (1 year)
+  maxAge: 31536000,
+  includeSubDomains: true, // Include subdomains
+  preload: true, // Send the preload flag
+}));
+app.use(helmet.crossOriginEmbedderPolicy({ policy: 'require-corp' })); // Restricts embedding to the same corporation
+app.use(helmet.xssFilter())
+app.use(helmet.ieNoOpen());
+app.use(helmet.noSniff())
+app.use(helmet.contentSecurityPolicy({
+  directives: {
+    defaultSrc: ['\'self\''], // Restrict most resources to self
+    scriptSrc: ['\'self\'', 'https://www.google.com/recaptcha/api.js'], // Allow specific script (e.g., Google reCAPTCHA)
+    styleSrc: ['\'self\'', 'https://fonts.googleapis.com/'], // Allow specific styles (e.g., Google Fonts)
+    imgSrc: ['\'self\'', 'data:'], // Restrict image sources
+  },
+}));
+
 app.get('/', (req, res) => {
     const chatId = uuid.v4();
     console.log(chatId)
@@ -58,7 +87,15 @@ app.get('/', (req, res) => {
   }) 
   app.post('/api/signup', async (req, res) => {
     const { email, password ,name} = req.body;
+    const receivedToken = req.body._csrf
     try {
+      await req.csrf.verify(receivedToken);
+      if (!validator.isEmail(email)) {
+        return res.status(400).json({ success: false, message: 'Invalid email format' });
+      }
+      if (!validator.isStrongPassword(password)) {
+        return res.status(400).json({ success: false, message: 'Password is too weak' });
+      }
       const userCredential = await createUserWithEmailAndPassword(auth, email, password)
       const username = await updateProfile(auth.currentUser,{displayName:name})
       const uid = userCredential.user.uid;
@@ -70,11 +107,12 @@ app.get('/', (req, res) => {
   });  
   app.post('/api/login', async (req, res) => {
     const { email, password } = req.body;
-
+    const receivedToken = req.body._csrf
     try {
+      await req.csrf.verify(receivedToken);
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const uid = userCredential.user.uid;
-      res.json({ success: true, uid,redirectTo: '/app' }); // Send user ID back to front-end
+      res.json({ success: true, uid,redirectTo: '/app' });
     } catch (error) {
       console.error(error);
       res.status(400).json({ success: false, message: error.message }); // Handle specific errors
@@ -99,7 +137,22 @@ app.get('/', (req, res) => {
       res.status(500).send('Error creating chat');
     }
   });
+  app.post('/signup', async (req, res) => {
+    const { idToken } = req.body;
   
+    try {
+      const decodedToken = await admin.auth().verifyIdToken(idToken);
+      const uid = decodedToken.uid;
+      // Additional user data from Google Sign-in (optional)
+      const name = decodedToken.name;
+      const email = decodedToken.email;
+      // Check if user exists in your database (replace with your logic)
+      res.send({ message: 'User signed up successfully!' });
+    } catch (error) {
+      console.error(error);
+      res.status(500).send({ message: 'An error occurred during signup.' });
+    }
+  });
 app.use((req,res)=>{
     res.send('404')
   })

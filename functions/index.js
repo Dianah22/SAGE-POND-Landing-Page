@@ -29,12 +29,10 @@ const crypto = require('crypto');
 const bodyParser = require('body-parser');
 const app = express()
 let initial_path = __dirname
-const port =  process.env.PORT
+const port =  process.env.PORT || 8080
 app.use(express.static(initial_path))
 app.use(bodyParser.json())
 app.get('/', (req, res) => {
-    const chatId = uuid.v4();
-    console.log(chatId)
     res.sendFile(path.join(initial_path, "index.html"));
   });
   app.get('/login',(req,res)=>{
