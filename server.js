@@ -40,13 +40,17 @@ app.use(helmet.ieNoOpen());
 app.use(helmet.noSniff())
 app.use(helmet.contentSecurityPolicy({
 directives: {
-defaultSrc: ['\'self\''], // Restrict most resources to self
-scriptSrc: ['\'self\'', 'https://www.google.com/recaptcha/api.js'], // Allow specific script (e.g., Google reCAPTCHA)
-styleSrc: ['\'self\'', 'https://fonts.googleapis.com/','https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css'], // Allow specific styles (e.g., Google Fonts)
-imgSrc: ['\'self\'', 'data:'], // Restrict image sources
+defaultSrc: ["'self'"], // Restrict most resources to self
+scriptSrc: ["'self'", 'https://www.google.com/recaptcha/api.js'], // Allow specific script (e.g., Google reCAPTCHA)
+styleSrc: ["'self'", 'https://fonts.googleapis.com/','https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css'], // Allow specific styles (e.g., Google Fonts)
+imgSrc: ["'self'", 'data:'], // Restrict image sources
 },
 }));
-
+app.use((req, res, next) => {
+  // Set cache control headers to prevent caching
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+  next();
+});
 app.get('/', (req, res) => {
     res.sendFile(path.join(initial_path, "index.html"));
   });
@@ -133,15 +137,11 @@ app.get('/', (req, res) => {
       const chatIdsCol = collection(db, 'chats'); // Get the chatIds collection reference
       const snapshot = await getDocs(chatIdsCol); // Get all documents in the collection
       snapshot.forEach(doc => {
-
         if (doc.data().createdBy === userId) {
         chatIds.push(doc.id);
-        console.log(doc.id)
       }
       });
-      console.log(chatIds)
       res.status(200).send({ chatIds }); // Send chat IDs as a response
-  
     } catch (error) {
       console.error('Error fetching chat IDs:', error);
       res.status(500).send({ message: 'Error fetching chat IDs' });

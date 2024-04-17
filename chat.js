@@ -12,7 +12,7 @@ editor.addEventListener('click',e=>{
 })
 const chatLinkContainer = document.getElementById('chat-link-container');
 const loadingIndicator = document.getElementById('loading-indicator');
-chatbtn.addEventListener('click', async () => {
+chatbtn.addEventListener('click', async ()=> {
   try {
     const response = await fetch('/create-chat', {
       method: 'POST',
@@ -35,21 +35,53 @@ chatbtn.addEventListener('click', async () => {
           console.error(error);
           alert('Error creating chat. Please try again.');
         }
+
       });
-window.addEventListener('DOMContentLoaded',e=>{
-  async function fetchChatIds() {
-    const response = await fetch('/chatIds', {
-      method: 'POST'
-    });
-    if (response.ok) {
-      const data = await response.json();
-      console.log('Chat IDs:', data.chatIds);
-      // Use the retrieved chat IDs to display them on the front-end (e.g., populate a list)
-    } else {
-      console.error('Error fetching chat IDs:', response.statusText);
-      // Handle errors
-    }
-  }
-  fetchChatIds()
-})
-     
+      const fetchCreateChat = async () => {
+        try {
+            const response = await fetch('/create-chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({}) // You can add data to the chat object if needed
+            });
+            const data = await response.json();
+            if (data.chatLink) {
+                const text = 'new chat';
+                const new_div = document.createElement('div');
+                new_div.innerHTML = `<div class="rchat h-10 rounded-3xl hover:bg-gray-700 transition p-2 m-2">
+                    <a href ='${data.chatLink}'>${text}</a>
+                </div>`;
+                recent.appendChild(new_div);
+            } else {
+                alert('Error creating chat. Please try again.');
+            }
+        } catch (error) {
+            console.error(error);
+            alert('Error creating chat. Please try again.');
+        }
+    };
+
+      const fetchChatIds = async () => {
+        const response = await fetch('/chatIds', {
+            method: 'POST'
+        });
+        if (response.ok) {
+            const data = await response.json();
+            const text = 'new chat';
+            console.log('Chat IDs:', data.chatIds);
+            data.chatIds.forEach(item => {
+                const di = document.createElement("div");
+                di.innerHTML = `<div class="rchat h-10 rounded-3xl hover:bg-gray-700 transition p-2 m-2">
+                    <a href ='${item}'>${text}</a>
+                </div>`;
+                recent.append(di);
+            });
+        } else {
+            console.error('Error fetching chat IDs:', response.statusText);
+            // Handle errors
+        }
+    };
+(async () => {
+  // Wait for both fetch requests to complete before proceeding
+  await Promise.all([fetchCreateChat(), fetchChatIds()]);
+})();
