@@ -4,7 +4,7 @@
 
 .sticky{
    position: fixed;
-   top:0;
+   top:15px;
 }
 
 #navbar-placeholder{
@@ -240,6 +240,21 @@ section img{
    z-index: -1;
    transition:top 600ms ease, opacity 600ms ease
 }
+.nav_content::after{
+   content:'';
+   height:2px;
+   width:70px;
+   position: absolute;
+   border-radius: 40%;
+   background: linear-gradient(
+      to left,
+      mediumslateblue,
+      transparent,
+      transparent
+   );
+   transition:top 600ms ease, opacity 600ms ease
+   
+  }
 .card:hover:before{
    top:25%;
    opacity:1;

@@ -3,11 +3,8 @@ const navbar = document.querySelector('#nav')
 const mobo_cont = document.querySelector(".mobo-container")
 window.addEventListener('scroll',e=>{
    var nav = navbar.offsetTop
-   if(nav<=window.pageYOffset){
+   if(nav<window.pageYOffset){
       navbar.classList.add("sticky")
-   }
-   else{
-      navbar.classList.remove('sticky')
    }
 })
 function  delay(n){
