@@ -21,7 +21,7 @@ const app = express()
 const helmet = require('helmet'); // Added Helmet
 const rateLimit = require('express-rate-limit'); // Added rate limiter
 const validator = require('validator');
-let initial_path = __dirname
+let initial_path = __dirname 
 const port = process.env.PORT || 4000
 app.use(express.static(initial_path))
 app.use(helmet());

@@ -70,6 +70,7 @@ chatbtn.addEventListener('click', async ()=> {
             const text = 'new chat';
             console.log('Chat IDs:', data.chatIds);
             data.chatIds.forEach(item => {
+              
                 const di = document.createElement("div");
                 di.innerHTML = `<div class="rchat h-10 rounded-3xl hover:bg-gray-700 transition p-2 m-2">
                     <a href ='${item}'>${text}</a>
@@ -81,7 +82,4 @@ chatbtn.addEventListener('click', async ()=> {
             // Handle errors
         }
     };
-(async () => {
-  // Wait for both fetch requests to complete before proceeding
-  await Promise.all([fetchCreateChat(), fetchChatIds()]);
-})();
+window.addEventListener('load',fetchChatIds)
