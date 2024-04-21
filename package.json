@@ -6,8 +6,8 @@
   "scripts": {
     "dev": "webpack",
     "start": "nodemon server.js",
-    "build": "tailwindcss -i ./style.css -o ./css/main.css",
-    "watch": "tailwindcss -i ./style.css -o ./css/main.css --watch"
+    "build": "tailwindcss -i ./css/chat/style.css -o ./css/chat/main.css",
+    "watch": "tailwindcss -i ./css/chat/style.css -o ./css/chat/main.css --watch"
   },
   "author": "",
   "license": "ISC",
