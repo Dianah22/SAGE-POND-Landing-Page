@@ -42,15 +42,19 @@ editor.addEventListener('keydown', function(event) {
     menuBtn.addEventListener('click', toggleMenu);
     function toggleMenu() {
       if (!isMenuOpen) {
-        gsap.to(nav, { duration: 0.3, ease: "power3.inOut", x: 0 });
-        gsap.to(content, { duration: 0.3, ease: "power3.inOut", x: 250 });
+        gsap.to(nav, { duration: 0.3, ease: "power3.inOut", x:"0%" });
+        gsap.to(content, { duration: 0.3, ease: "power3.inOut", x: '75%' });
       } else {
-        gsap.to(nav, { duration: 0.3, ease: "power3.inOut", x: -100 });
-        gsap.to(content, { duration: 0.3, ease: "power3.inOut", x: 0 });
+        gsap.to(nav, { duration: 0.3, ease: "power3.inOut", x: "-75%" });
+        gsap.to(content, { duration: 0.3, ease: "power3.inOut", x: "-25%" });
       }
       isMenuOpen = !isMenuOpen;
     }
-    
+    window.addEventListener('load', function() {
+      if (window.innerWidth > 768) {
+        isMenuOpen = true; // Set menu as open for larger screens
+      }
+    });
     // Responsive behavior on screen resize
     window.addEventListener('resize', function() {
       if (window.innerWidth > 768) {
@@ -86,7 +90,6 @@ chatbtn.addEventListener('click', async ()=> {
           console.error(error);
           alert('Error creating chat. Please try again.');
         }
-
       });
       const fetchCreateChat = async () => {
         try {
@@ -111,7 +114,6 @@ chatbtn.addEventListener('click', async ()=> {
             alert('Error creating chat. Please try again.');
         }
     };
-
       const fetchChatIds = async () => {
         const response = await fetch('/chatIds', {
             method: 'POST'
@@ -121,7 +123,6 @@ chatbtn.addEventListener('click', async ()=> {
             const text = 'new chat';
             console.log('Chat IDs:', data.chatIds);
             data.chatIds.forEach(item => {
-              
                 const di = document.createElement("div");
                 di.innerHTML = `<div class="rchat h-10 rounded-3xl hover:bg-gray-700 transition p-2 m-2">
                     <a href ='${item}'>${text}</a>
