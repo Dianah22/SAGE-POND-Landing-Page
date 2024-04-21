@@ -10,9 +10,7 @@ editor.addEventListener('input',e=>{
     const content = editor.textContent.trim(); // Get the text content and trim any whitespace
     e.preventDefault()
         if (content.length > 0) {
-            send; // Enable the button if there's content
-        } else {
-            sendButton.setAttribute('disabled', 'disabled'); // Disable the button if there's no content
+            send.disabled=false;
         }
 })
 editor.addEventListener('keydown', function(event) {
@@ -31,14 +29,14 @@ editor.addEventListener('keydown', function(event) {
         }
     });
 
-    textInput.addEventListener('blur', function() {
+    editor.addEventListener('blur', function() {
         if (editor.textContent === '') {
             editor.textContent = placeholder;
         }
     });
     // Toggle menu visibility when menu button is clicked
-document.getElementById('menuButton').addEventListener('click', function() {
-    const menu = document.getElementById('menu');
+document.querySelector('.menuButton').addEventListener('click', function() {
+    const menu = document.querySelector('.side');
     menu.classList.toggle('hidden');
     if (!menu.classList.contains('hidden')) {
       menu.style.animationName = 'slideIn';
@@ -49,7 +47,7 @@ document.getElementById('menuButton').addEventListener('click', function() {
   
   // Function to close the menu if window width is smaller than laptop width
   function closeMenuIfSmallScreen() {
-    const menu = document.getElementById('menu');
+    const menu = document.querySelector('.side');
     const laptopWidth = 1024; // Adjust the laptop width as needed
     if (window.innerWidth < laptopWidth && !menu.classList.contains('hidden')) {
       menu.classList.add('hidden');
