@@ -5,6 +5,9 @@ const chat_window = document.getElementById('chat_window')
 const editor = document.getElementById('editor')
 const send = document.getElementById('send')
 const query_div = document.querySelector('.query')
+const menuBtn = document.querySelector('.menuButton')
+const content = document.querySelector('.chatarea')
+const nav = document.querySelector('.nav')
 send.disabled = true
 editor.addEventListener('input',e=>{
     const content = editor.textContent.trim(); // Get the text content and trim any whitespace
@@ -35,30 +38,27 @@ editor.addEventListener('keydown', function(event) {
         }
     });
     // Toggle menu visibility when menu button is clicked
-document.querySelector('.menuButton').addEventListener('click', function() {
-    const menu = document.querySelector('.side');
-    menu.classList.toggle('hidden');
-    if (!menu.classList.contains('hidden')) {
-      menu.style.animationName = 'slideIn';
-    } else {
-      menu.style.animationName = 'slideOut';
+    let isMenuOpen = false;
+
+    menuBtn.addEventListener('click', toggleMenu);
+    
+    function toggleMenu() {
+      if (!isMenuOpen) {
+        gsap.to(nav, { duration: 0.3, ease: "power3.inOut", x: 0 });
+        gsap.to(content, { duration: 0.3, ease: "power3.inOut", x: 250 });
+      } else {
+        gsap.to(nav, { duration: 0.3, ease: "power3.inOut", x: -100 });
+        gsap.to(content, { duration: 0.3, ease: "power3.inOut", x: 0 });
+      }
+      isMenuOpen = !isMenuOpen;
     }
-  });
-  
-  // Function to close the menu if window width is smaller than laptop width
-  function closeMenuIfSmallScreen() {
-    const menu = document.querySelector('.side');
-    const laptopWidth = 1024; // Adjust the laptop width as needed
-    if (window.innerWidth < laptopWidth && !menu.classList.contains('hidden')) {
-      menu.classList.add('hidden');
-      menu.style.animationName = 'slideOut';
-    }
-  }
-  
-  // Call the function initially and on window resize
-  closeMenuIfSmallScreen();
-  window.addEventListener('resize', closeMenuIfSmallScreen);
-  
+    
+    // Responsive behavior on screen resize
+    window.addEventListener('resize', function() {
+      if (window.innerWidth > 768) {
+        nav.style.transform = '';
+      }
+    })
 const chatLinkContainer = document.getElementById('chat-link-container');
 const loadingIndicator = document.getElementById('loading-indicator');
 chatbtn.addEventListener('click', async ()=> {
