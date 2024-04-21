@@ -4,12 +4,63 @@ const recent_title = document.getElementById('recent_title')
 const chat_window = document.getElementById('chat_window')
 const editor = document.getElementById('editor')
 const send = document.getElementById('send')
-
-editor.addEventListener('click',e=>{
-    if(editor.childElementCount>0){
-        send.disabled=false
-    }   
+const query_div = document.querySelector('.query')
+send.disabled = true
+editor.addEventListener('input',e=>{
+    const content = editor.textContent.trim(); // Get the text content and trim any whitespace
+    e.preventDefault()
+        if (content.length > 0) {
+            send; // Enable the button if there's content
+        } else {
+            sendButton.setAttribute('disabled', 'disabled'); // Disable the button if there's no content
+        }
 })
+editor.addEventListener('keydown', function(event) {
+    if (event.key === 'Enter') {
+        event.preventDefault(); // Prevent default behavior (line break)
+        document.execCommand('insertHTML', false, '<p><br></p>'); // Insert a paragraph
+    }
+});
+    const placeholder = editor.dataset.placeholder;
+    // Set the initial content to the placeholder value
+    editor.textContent = placeholder;
+    // Add a class when the div is focused to mimic the placeholder behavior
+    editor.addEventListener('focus', function() {
+        if (editor.textContent === placeholder) {
+            editor.textContent = '';
+        }
+    });
+
+    textInput.addEventListener('blur', function() {
+        if (editor.textContent === '') {
+            editor.textContent = placeholder;
+        }
+    });
+    // Toggle menu visibility when menu button is clicked
+document.getElementById('menuButton').addEventListener('click', function() {
+    const menu = document.getElementById('menu');
+    menu.classList.toggle('hidden');
+    if (!menu.classList.contains('hidden')) {
+      menu.style.animationName = 'slideIn';
+    } else {
+      menu.style.animationName = 'slideOut';
+    }
+  });
+  
+  // Function to close the menu if window width is smaller than laptop width
+  function closeMenuIfSmallScreen() {
+    const menu = document.getElementById('menu');
+    const laptopWidth = 1024; // Adjust the laptop width as needed
+    if (window.innerWidth < laptopWidth && !menu.classList.contains('hidden')) {
+      menu.classList.add('hidden');
+      menu.style.animationName = 'slideOut';
+    }
+  }
+  
+  // Call the function initially and on window resize
+  closeMenuIfSmallScreen();
+  window.addEventListener('resize', closeMenuIfSmallScreen);
+  
 const chatLinkContainer = document.getElementById('chat-link-container');
 const loadingIndicator = document.getElementById('loading-indicator');
 chatbtn.addEventListener('click', async ()=> {

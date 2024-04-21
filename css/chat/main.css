@@ -686,6 +686,10 @@ video {
   margin: 0.25rem;
 }
 
+.m-12 {
+  margin: 3rem;
+}
+
 .m-2 {
   margin: 0.5rem;
 }
@@ -1648,8 +1652,8 @@ html,body{
     margin-bottom: 0px;
   }
 
-  .md\:mt-16 {
-    margin-top: 4rem;
+  .md\:mt-\[10rem\] {
+    margin-top: 10rem;
   }
 
   .md\:flex {
