@@ -39,9 +39,7 @@ editor.addEventListener('keydown', function(event) {
     });
     // Toggle menu visibility when menu button is clicked
     let isMenuOpen = false;
-
     menuBtn.addEventListener('click', toggleMenu);
-    
     function toggleMenu() {
       if (!isMenuOpen) {
         gsap.to(nav, { duration: 0.3, ease: "power3.inOut", x: 0 });
@@ -57,8 +55,12 @@ editor.addEventListener('keydown', function(event) {
     window.addEventListener('resize', function() {
       if (window.innerWidth > 768) {
         nav.style.transform = '';
+        content.style.transform = ''; // Reset content transform on larger screens
+        isMenuOpen = false; // Close menu on resize to larger screen
+      } else {
+        nav.style.transform = 'translateX(-100%)'; // Hide menu on smaller screens
       }
-    })
+    });
 const chatLinkContainer = document.getElementById('chat-link-container');
 const loadingIndicator = document.getElementById('loading-indicator');
 chatbtn.addEventListener('click', async ()=> {

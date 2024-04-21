@@ -801,10 +801,6 @@ video {
   margin-top: 1rem;
 }
 
-.mt-\[104px\] {
-  margin-top: 104px;
-}
-
 .mt-\[130px\] {
   margin-top: 130px;
 }
@@ -903,10 +899,6 @@ video {
 
 .min-h-\[40px\] {
   min-height: 40px;
-}
-
-.w-1\/4 {
-  width: 25%;
 }
 
 .w-10 {
@@ -1249,6 +1241,11 @@ video {
   background-color: rgb(255 255 255 / var(--tw-bg-opacity));
 }
 
+.bg-yellow-400 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(250 204 21 / var(--tw-bg-opacity));
+}
+
 .bg-yellow-500 {
   --tw-bg-opacity: 1;
   background-color: rgb(234 179 8 / var(--tw-bg-opacity));
@@ -1534,12 +1531,12 @@ html,body{
 }
 
 .chatarea{
-  width:calc(100% - 25%);
+  width:calc(100% - 250px);
 }
 
 .side ~ .chatarea{
   left:25%;
-  width:calc(100% - 25%);
+  width:calc(100% - 250px);
 }
 
 .editor::after{
@@ -1556,7 +1553,11 @@ html,body{
 
 .side ~.welcome_screen{
   left:25%;
-  width:calc(100% - 25%);
+  width:calc(100% - 250px);
+}
+
+.side{
+  width:250px;
 }
 
 @font-face {
@@ -1565,43 +1566,9 @@ html,body{
   src: url('Poppins-Regular.ttf');
 }
 
-.menu{
+.nav{
   transition: transform 0.3s ease-in-out;
   transform: translateX(-100%);
-}
-
-@media screen and (max-width: 768px) {
-  .menu {
-    transform: translateX(0);
-  }
-
-  .chatarea {
-    transform: translateX(250px);
-  }
-
-  .menuButton {
-    display: block;
-  }
-}
-
-@keyframes slideIn {
-  from {
-    transform: translateX(-100%);
-  }
-
-  to {
-    transform: translateX(0);
-  }
-}
-
-@keyframes slideOut {
-  from {
-    transform: translateX(0);
-  }
-
-  to {
-    transform: translateX(-100%);
-  }
 }
 
 .hover\:bg-gray-700:hover {
@@ -1728,3 +1695,4 @@ html,body{
     font-size: 150px;
   }
 }
+

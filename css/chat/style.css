@@ -7,11 +7,11 @@ html,body{
     height:100%;
 }
 .chatarea{
-   width:calc(100% - 25%);
+   width:calc(100% - 250px);
 }
 .side ~ .chatarea{
     left:25%;
-    width:calc(100% - 25%);
+    width:calc(100% - 250px);
 }
 .editor::after{
     display: block;
@@ -25,7 +25,10 @@ html,body{
 }
 .side ~.welcome_screen{
     left:25%;
-    width:calc(100% - 25%);
+    width:calc(100% - 250px);
+}
+.side{
+  width:250px;
 }
  @font-face {
     font-family: 'Poppins';
@@ -35,33 +38,4 @@ html,body{
   transition: transform 0.3s ease-in-out;
   transform: translateX(-100%);
  }
- @media screen and (max-width: 768px) {
-  .menu {
-    transform: translateX(0);
-  }
 
-  .chatarea {
-    transform: translateX(250px);
-  }
-
-  .menuButton {
-    display: block;
-  }
-}
- @keyframes slideIn {
-    from {
-      transform: translateX(-100%);
-    }
-    to {
-      transform: translateX(0);
-    }
-  }
-  
-  @keyframes slideOut {
-    from {
-      transform: translateX(0);
-    }
-    to {
-      transform: translateX(-100%);
-    }
-  }
