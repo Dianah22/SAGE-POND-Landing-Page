@@ -132,10 +132,10 @@ app.get('/', (req, res) => {
       res.status(500).send('Error creating chat');
     }
   });
-  /*app.get('/app/:chatId', (req, res) => {
+  app.get('/app/:chatId', (req, res) => {
     console.log(req.params.chatId)
     res.sendFile(path.join(initial_path, "chat.html"));
-  })*/
+  })
   app.post('/chatIds', async (req, res) => {
     try {
       const db = getFirestore(fb)
