@@ -40,7 +40,7 @@
     </nav>
     <div class="h-screen rounded-[30px] w-full flex flex-wrap justify-center overflow-y-scroll">
     <div class="chat_window flex flex-1 flex-col "id='chat_window'>
-      <div class="chat_history flex flex-col flex-1 w-full h-full flex-wrap  p-3 ps-0 m-5   ">
+      <div class="chat_history flex flex-col flex-1 w-full h-full flex-wrap content-center">
         <div class="welcome_screen max-w-[800px] w-full  flex flex-shrink-0 ">
           <div class="discover md:mt-[10rem] flex gap-5 snap-mandatory overflow-x-auto -ms-5 -me-5 scroll-p-5 m-12">
                <div class="cards-container flex">
@@ -69,9 +69,9 @@
 
         </div>
       </div>
-      <div class="query w-full flex p-3 ps-0 m-3 flex-1 hidden">
+      <div class="query w-full flex p-3 ps-0 m-3 flex-1 hidden flex-col absolute left-[15%]">
         </div>
-        <div class="response_container ps-6 pt-1 flex-1 min-w-0 mt-[130px] absolute">
+        <div class="response_container ps-6 pt-1 flex-1 min-w-0 mt-[130px] absolute left-[15%]">
           <div class="response-content overflow-x-hidden">
         <div class="model_response flex flex-1 overflow-x-hidden">
             <div class="inner_container pt-0 flex mr-1 relative">
@@ -80,7 +80,7 @@
       </div>
       </div>
       </div>
-        <div class="bottom absolute bottom-0  max-w-[900px] w-full z-10 self-center min-h-14 -mt-12 flex-col pl-5 pr-5">
+        <div class="bottom absolute bottom-0  max-w-[900px] w-full z-10 self-center min-h-14 -mt-12 flex-col pl-5 pr-5 content-center">
           <div class="input-cont-area w-full flex flex-col self-center text-center bg-white max-w-[830px] rounded-3xl max-h-[200px] text-black">
             <div class="input-area relative p-0 inline-flex items-end ">
             <div class="prompt min-w-0 flex items-center justify-end flex-grow flex-wrap p-2 overflow-hidden rounded-3xl  z-10">

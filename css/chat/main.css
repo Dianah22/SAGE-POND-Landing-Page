@@ -634,6 +634,10 @@ video {
   left: 10px;
 }
 
+.left-\[15\%\] {
+  left: 15%;
+}
+
 .right-0 {
   right: 0px;
 }
@@ -700,10 +704,6 @@ video {
 
 .m-4 {
   margin: 1rem;
-}
-
-.m-5 {
-  margin: 1.25rem;
 }
 
 .mx-auto {

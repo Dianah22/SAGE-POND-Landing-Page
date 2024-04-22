@@ -30,12 +30,12 @@ send.addEventListener('click',e=>{
       <img src="images/caleb.jpg" class="w-10 rounded-full">
     </div>
     <div class="info text-ellipsis text-xl">
-      <p>${editor.textContent.trim()}</p>
+      ${editor.innerHTML}
     </div>`
     query_div.classList.remove('hidden')
     query_div.classList.add('flex')
-    welcome_screen.classList.add('hidden')
-    history.appendChild(pdiv)
+    history.classList.add('hidden')
+    query_div.appendChild(pdiv)
 })
 editor.addEventListener('keydown', function(event) {
     if (event.key === 'Enter') {
@@ -69,7 +69,7 @@ editor.addEventListener('keydown', function(event) {
         gsap.to(recents,{duration:0.3,ease:'power2.inOut',width:'50%'})
       } else {
         gsap.to(nav, { duration: 0.3, ease: "power3.inOut", width: "50%" })
-        gsap.to(content,{duration:0.3,ease:'power3.inOut',left:"5%",width:'100%'})
+        gsap.to(content,{duration:0.3,ease:'power3.inOut',left:"5%",width:'95%'})
         gsap.to(side_btn,{duration:0.3,ease:'power2.inOut',width:'25%'})
         gsap.to(recents,{duration:0.3,ease:'power2.inOut',width:'25%'})
       }
