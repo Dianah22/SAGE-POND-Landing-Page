@@ -113,7 +113,6 @@ app.get('/', (req, res) => {
   app.post('/create-chat', async (req, res) => {
     try {
       const { message } = req.body;
-      console.log(req.body)
       const chatId = uid(16);
       const userId = auth.currentUser.uid
       const db = getFirestore(fb)
@@ -125,8 +124,7 @@ app.get('/', (req, res) => {
       };
       const docRef = doc(db, 'chats', chatId);
           await setDoc(docRef, docData);
-      const chatLink = `http://localhost:${port}/app/${chatId}`;
-      res.json({ chatLink });
+      res.json({chatId });
     } catch (error) {
       console.error(error);
       res.status(500).send('Error creating chat');

@@ -98,16 +98,19 @@ editor.addEventListener('keydown', function(event) {
                 body: JSON.stringify({message}) // You can add data to the chat object if needed
             });
             const data = await response.json();
-            if (data.chatLink) {
+            if (data.chatId) {
                 const text = 'new chat';
                 const new_div = document.createElement('div');
                 new_div.innerHTML = `<div class="rchat h-10 rounded-3xl hover:bg-gray-700 transition p-2 m-2">
-                    <a href ='${data.chatLink}'>${text}</a>
+                    <a href ='app/${data.chatId}'>${text}</a>
                 </div>`;
                 recent.appendChild(new_div);
+                const newUrl = `app/${data.chatId}`;
+            window.history.pushState({},'Unveyl', newUrl);
             } else {
                 alert('Error creating chat. Please try again.');
             }
+            
         } catch (error) {
             console.error(error);
             alert('Error creating chat. Please try again.');
