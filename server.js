@@ -112,12 +112,14 @@ app.get('/', (req, res) => {
   });
   app.post('/create-chat', async (req, res) => {
     try {
+      const { message } = req.body;
+      console.log(req.body)
       const chatId = uid(16);
       const userId = auth.currentUser.uid
       const db = getFirestore(fb)
       const docData = {
         chatid: chatId, // Use 'chatid' to match your security rule field name
-        content:'',
+        content:message,
         createdBy: userId, // Use the currently authenticated user's ID
         dateCreated: Timestamp.now(),
       };
@@ -130,27 +132,10 @@ app.get('/', (req, res) => {
       res.status(500).send('Error creating chat');
     }
   });
-  app.get('/app/:chatId', (req, res) => {
+  /*app.get('/app/:chatId', (req, res) => {
     console.log(req.params.chatId)
     res.sendFile(path.join(initial_path, "chat.html"));
-  })
-  app.post('/api/post', async (req, res) => {
-    try {
-      const message = req.body.message;
-      if (!message) {
-        return res.status(400).json({ error: 'Missing message content' });
-      }
-      const chatsRef = doc(db, "chats");
-      await updateDoc(chatsRef, {
-        capital: true
-      });
-  
-      res.json({ message: 'Message sent successfully!', id: docRef.id });
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: 'Failed to send message' });
-    }
-  });
+  })*/
   app.post('/chatIds', async (req, res) => {
     try {
       const db = getFirestore(fb)

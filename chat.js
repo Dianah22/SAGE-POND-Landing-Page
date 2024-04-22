@@ -22,7 +22,9 @@ editor.addEventListener('input',e=>{
           send.disabled=true
         }
 })
+let clickCount = 0;
 send.addEventListener('click',e=>{
+  clickCount++;
   const pdiv=document.createElement('div')
     pdiv.innerHTML
      = `<div class="user_query h-[100px]">
@@ -32,10 +34,17 @@ send.addEventListener('click',e=>{
     <div class="info text-ellipsis text-xl">
       ${editor.innerHTML}
     </div>`
+    const message = editor.innerHTML
+  if(clickCount==1){
+    fetchCreateChat(message)
+  }
     query_div.classList.remove('hidden')
     query_div.classList.add('flex')
     history.classList.add('hidden')
     query_div.appendChild(pdiv)
+    editor.innerHTML=''
+    
+  
 })
 editor.addEventListener('keydown', function(event) {
     if (event.key === 'Enter') {
@@ -80,68 +89,13 @@ editor.addEventListener('keydown', function(event) {
         isMenuOpen = true; // Set menu as open for larger screens
       }
     });
-    // Responsive behavior on screen resize
-    const urlParts = window.location.pathname.split('/');
-console.log(urlParts)
-    // The route identifier is likely the last part after "app"
-    const route = urlParts[urlParts.length - 1];
-const chatLinkContainer = document.getElementById('chat-link-container');
-const loadingIndicator = document.getElementById('loading-indicator');
-send.addEventListener('click', function() {
-  const message = editor.textContent.trim()
-  if (message) {
-    // Send data to backend using fetch
-    fetch('/api/post', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ message })
-    })
-    .then(response => response.json())
-    .then(data => {
-      console.log('Message sent:', data);
-      // Clear message input and display success message (optional)
-      messageInput.value = '';
-    })
-    .catch(error => {
-      console.error('Error sending message:', error);
-      // Display error message to user (optional)
-    });
-  } else {
-    // Handle empty message case (optional)
-  }
-});
-chatbtn.addEventListener('click', async ()=> {
-  try {
-    const response = await fetch('/create-chat', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({}) // You can add data to the chat object if needed
-    });
-    const data = await response.json();
-    if (data.chatLink) {
-      const text = 'new chat'
-
-      const new_div = document.createElement('div')
-      new_div.innerHTML = `<div class="rchat h-10 rounded-3xl hover:bg-gray-700 transition p-2 m-2">
-       <a href ='${data.chatLink}'>${text}</a>
-       </div>`
-   recent.appendChild(new_div)
-          } else {
-            alert('Error creating chat. Please try again.');
-          }
-        } catch (error) {
-          console.error(error);
-          alert('Error creating chat. Please try again.');
-        }
-      });
-      const fetchCreateChat = async () => {
+      const fetchCreateChat = async (message) => {
+        
         try {
             const response = await fetch('/create-chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({}) // You can add data to the chat object if needed
+                body: JSON.stringify({message}) // You can add data to the chat object if needed
             });
             const data = await response.json();
             if (data.chatLink) {
