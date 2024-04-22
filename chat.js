@@ -32,19 +32,17 @@ send.addEventListener('click',e=>{
       <img src="images/caleb.jpg" class="w-10 rounded-full">
     </div>
     <div class="info text-ellipsis text-xl">
-      ${editor.innerHTML}
+      ${sanitizeInput(editor.innerHTML)}
     </div>`
     const message = editor.innerHTML
   if(clickCount==1){
-    fetchCreateChat(message)
+    fetchCreateChat(sanitizeInput(message))
   }
     query_div.classList.remove('hidden')
     query_div.classList.add('flex')
     history.classList.add('hidden')
     query_div.appendChild(pdiv)
-    editor.innerHTML=''
-    
-  
+    editor.innerHTML='' 
 })
 editor.addEventListener('keydown', function(event) {
     if (event.key === 'Enter') {
@@ -83,6 +81,17 @@ editor.addEventListener('keydown', function(event) {
         gsap.to(recents,{duration:0.3,ease:'power2.inOut',width:'25%'})
       }
       isMenuOpen = !isMenuOpen;
+    }
+    function sanitizeInput(userInput) {
+      const allowedTags = ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6','b','em','i']; // Adjust as needed
+      const allowedAttributes = ['class', 'style']; // Optional: Allow specific attributes
+    
+      const config = {
+        ALLOWED_TAGS: allowedTags,
+        ALLOWED_ATTR: allowedAttributes // Optional: If allowing attributes
+      };
+    
+      return DOMPurify.sanitize(userInput, config);
     }
     window.addEventListener('load', function() {
       if (window.innerWidth > 768) {

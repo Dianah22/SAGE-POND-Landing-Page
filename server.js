@@ -1,6 +1,6 @@
 
 const {initializeApp} = require('firebase/app')
-const {doc, setDoc, Timestamp,getFirestore, collection,getDocs,updateDoc} = require('firebase/firestore')
+const {doc, setDoc, Timestamp,getFirestore, collection,getDocs,updateDoc,FieldValue} = require('firebase/firestore')
 const firebaseConfig = {
   apiKey: "AIzaSyDyXWSxpBqk7lgomflc_Sl3BCXp8Dvffbg",
   authDomain: "sage-pond-gen-ai.firebaseapp.com",
@@ -41,7 +41,7 @@ app.use(helmet.noSniff())
 app.use(helmet.contentSecurityPolicy({
 directives: {
 defaultSrc: ["'self'"], // Restrict most resources to self
-scriptSrc: ["'self'", 'https://www.google.com/recaptcha/api.js'], // Allow specific script (e.g., Google reCAPTCHA)
+scriptSrc: ["'self'", 'https://www.google.com/recaptcha/api.js','https://cdn.jsdelivr.net/npm/dompurify@3.1.0/dist/purify.min.js'], // Allow specific script (e.g., Google reCAPTCHA)
 styleSrc: ["'self'", 'https://fonts.googleapis.com/','https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css'], // Allow specific styles (e.g., Google Fonts)
 imgSrc: ["'self'", 'data:'], // Restrict image sources
 },
@@ -122,18 +122,33 @@ app.get('/', (req, res) => {
         createdBy: userId, // Use the currently authenticated user's ID
         dateCreated: Timestamp.now(),
       };
+      const messageObj = {
+        messages:db.FieldValue.arrayUnion(docData)
+      }
       const docRef = doc(db, 'chats', chatId);
           await setDoc(docRef, docData);
+          await updateDoc(docRef, messageObj);
       res.json({chatId });
     } catch (error) {
       console.error(error);
       res.status(500).send('Error creating chat');
     }
   });
-  app.get('/app/:chatId', (req, res) => {
-    console.log(req.params.chatId)
+  app.get('/app/:chatId', async(req, res) => {
+    const chatId = req.params.chatId;
+  // Firebase access logic (replace with your specific setup)
+  const db = getFirestore(fb)
+  const userId = auth.currentUser.uid
+  const chatIds = [];
+  const chatIdsCol = collection(db, 'chats'); // Get the chatIds collection reference
+  const snapshot = await getDocs(chatIdsCol); // Get all documents in the collection
+  snapshot.forEach(doc => {
+    if (doc.data().createdBy === userId) {
+    res.send({data:doc.data().content})
+  }
     res.sendFile(path.join(initial_path, "chat.html"));
   })
+})
   app.post('/chatIds', async (req, res) => {
     try {
       const db = getFirestore(fb)
