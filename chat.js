@@ -84,6 +84,31 @@ editor.addEventListener('keydown', function(event) {
     
 const chatLinkContainer = document.getElementById('chat-link-container');
 const loadingIndicator = document.getElementById('loading-indicator');
+send.addEventListener('click', function() {
+  const message = editor.textContent.trim()
+  if (message) {
+    // Send data to backend using fetch
+    fetch('/api/post', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ message })
+    })
+    .then(response => response.json())
+    .then(data => {
+      console.log('Message sent:', data);
+      // Clear message input and display success message (optional)
+      messageInput.value = '';
+    })
+    .catch(error => {
+      console.error('Error sending message:', error);
+      // Display error message to user (optional)
+    });
+  } else {
+    // Handle empty message case (optional)
+  }
+});
 chatbtn.addEventListener('click', async ()=> {
   try {
     const response = await fetch('/create-chat', {

@@ -30,4 +30,7 @@ html,body{
     font-family: 'Poppins';
     src: url('Poppins-Regular.ttf');
  }
+ [contenteditable] {
+    outline: 0px solid transparent;
+  }
 

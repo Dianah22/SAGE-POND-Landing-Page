@@ -129,6 +129,25 @@ app.get('/', (req, res) => {
       res.status(500).send('Error creating chat');
     }
   });
+  app.post('/api/post', async (req, res) => {
+    try {
+      const message = req.body.message;
+      if (!message) {
+        return res.status(400).json({ error: 'Missing message content' });
+      }
+  
+      // Add data to Firestore
+      const docRef = await admin.firestore().collection('messages').add({
+        message: message,
+        timestamp: admin.firestore.FieldValue.serverTimestamp()
+      });
+  
+      res.json({ message: 'Message sent successfully!', id: docRef.id });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: 'Failed to send message' });
+    }
+  });
   app.post('/chatIds', async (req, res) => {
     try {
       const db = getFirestore(fb)
