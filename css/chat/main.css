@@ -702,6 +702,10 @@ video {
   margin: 1rem;
 }
 
+.m-5 {
+  margin: 1.25rem;
+}
+
 .mx-auto {
   margin-left: auto;
   margin-right: auto;
@@ -795,6 +799,10 @@ video {
 
 .mt-3 {
   margin-top: 0.75rem;
+}
+
+.mt-32 {
+  margin-top: 8rem;
 }
 
 .mt-4 {
@@ -1534,11 +1542,6 @@ html,body{
   width:calc(100% - 25%);
 }
 
-.side ~ .chatarea{
-  left:25%;
-  width:calc(100% - 450px);
-}
-
 .editor::after{
   display: block;
   content:attr(data-placeholder);
@@ -1551,14 +1554,13 @@ html,body{
   right:16px;
 }
 
-.side ~.welcome_screen{
+.side ~.chatarea{
   left:25%;
   width:calc(100% - 25%);
 }
 
 .side{
   width:25%;
-  transition: transform 0.3s ease-in-out;
 }
 
 @font-face {

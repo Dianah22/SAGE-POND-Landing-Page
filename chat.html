@@ -12,13 +12,11 @@
         <div class = "content  w-full h-full items-center self-center"> 
         <div class="side h-screen  text-center absolute  bg-yellow-400 nav">
           <div class="side-menu-button fixed top-0 z-[2] min-h-[40px] justify-center items-center flex mt-3 mr-0 mb-0 ml-4">
-           <button class="p-2 flex-shrink text-white menuButton">   Menu
-  
-           </button>
+           <button class="p-2 flex-shrink text-white menuButton">   Menu</button>
           </div>
           <div class="side-button flex flex-col gap-y-4 pb-4 ps-2">
             <div class="new_conv-container flex">
-              <button class="relative grid-cols-1 h-[40px] min-w-[unset] max-w-fit me-4 ms-3  bg-blue-900 flex rounded-[40px]"id='new_chat'>
+              <button class="relative grid-cols-1 h-[40px] min-w-[unset] max-w-fit me-4 ms-3 mt-32 bg-blue-900 flex rounded-[40px]"id='new_chat'>
                 <span class="relative material-symbols-outlined text-2xl m-0 ">add</span>
                 <span class="whitespace-nowrap overflow-hidden h-[40px] top-0 left-0 relative">
                   <span class="mt-2 mr-2 mb-2 ml-4 block text-left text-ellipsis pr-2 pl-2 z-[1] ">New Chat</span>
@@ -35,14 +33,14 @@
             </div>
         </div>
     </div>
-  <div class="chatarea h-screen top-0  right-0 absolute overflow-y-scroll  bg-zinc-950 text-white overflow-x-hidden">
+  <div class="chatarea h-screen top-0  right-0 absolute overflow-hidden  bg-zinc-950 text-white overflow-x-hidden ">
     <nav class="w-full z-20">
       <h4 class="text-left">UNVEYL</h4>
       <h4 class="text-right"> caleb</h4>
     </nav>
-    <div class="welcome_screen  h-screen rounded-[30px] w-full">
-    <div class="chat_window flex flex-1 flex-col"id='chat_window'>
-      <div class="chat_history flex flex-col flex-1 w-full h-full flex-wrap content-center ">
+    <div class="h-screen rounded-[30px] w-full flex flex-wrap justify-center overflow-y-scroll">
+    <div class="chat_window flex flex-1 flex-col "id='chat_window'>
+      <div class="chat_history flex flex-col flex-1 w-full h-full flex-wrap  p-3 ps-0 m-5   ">
         <div class="welcome_screen max-w-[800px] w-full  flex flex-shrink-0 ">
           <div class="discover md:mt-[10rem] flex gap-5 snap-mandatory overflow-x-auto -ms-5 -me-5 scroll-p-5 m-12">
                <div class="cards-container flex">
@@ -72,16 +70,9 @@
         </div>
       </div>
       <div class="query w-full flex p-3 ps-0 m-3 flex-1 hidden">
-        <div class="user_query h-[100px]">
-        <div class="image-container">
-          <img src="images/caleb.jpg" class="w-10 rounded-full">
-        </div>
-        <div class="info text-ellipsis text-xl">
-          <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Eius alias vitae pariatur qui magni minima ad nihil modi, earum, architecto eum et cum repellendus tempore amet doloribus suscipit blanditiis provident.</p>
-        </div>
         </div>
         <div class="response_container ps-6 pt-1 flex-1 min-w-0 mt-[130px] absolute">
-          <div class="response-content overflow-hidden">
+          <div class="response-content overflow-x-hidden">
         <div class="model_response flex flex-1 overflow-x-hidden">
             <div class="inner_container pt-0 flex mr-1 relative">
             </div>
@@ -128,8 +119,8 @@
          </div>
         </div>
       </div>
-  </div>
-  </div>
+      </div>
+      </div>
   </main>
   <script src="gsap-public/gsap-public/minified/gsap.min.js"></script>
   <script src="chat.js"></script>

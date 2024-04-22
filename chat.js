@@ -8,13 +8,34 @@ const query_div = document.querySelector('.query')
 const menuBtn = document.querySelector('.menuButton')
 const content = document.querySelector('.chatarea')
 const nav = document.querySelector('.nav')
+const side_btn = document.querySelector('.side-button')
+const recents = document.querySelector('.recent')
+const history = document.querySelector('.chat_history')
+const welcome_screen = document.querySelector('.welcome_screen')
 send.disabled = true
 editor.addEventListener('input',e=>{
     const content = editor.textContent.trim(); // Get the text content and trim any whitespace
     e.preventDefault()
         if (content.length > 0) {
             send.disabled=false;
+        }else{
+          send.disabled=true
         }
+})
+send.addEventListener('click',e=>{
+  const pdiv=document.createElement('div')
+    pdiv.innerHTML
+     = `<div class="user_query h-[100px]">
+    <div class="image-container">
+      <img src="images/caleb.jpg" class="w-10 rounded-full">
+    </div>
+    <div class="info text-ellipsis text-xl">
+      <p>${editor.textContent.trim()}</p>
+    </div>`
+    query_div.classList.remove('hidden')
+    query_div.classList.add('flex')
+    welcome_screen.classList.add('hidden')
+    history.appendChild(pdiv)
 })
 editor.addEventListener('keydown', function(event) {
     if (event.key === 'Enter') {
@@ -31,7 +52,6 @@ editor.addEventListener('keydown', function(event) {
             editor.textContent = '';
         }
     });
-
     editor.addEventListener('blur', function() {
         if (editor.textContent === '') {
             editor.textContent = placeholder;
@@ -41,12 +61,17 @@ editor.addEventListener('keydown', function(event) {
     let isMenuOpen = false;
     menuBtn.addEventListener('click', toggleMenu);
     function toggleMenu() {
+      const calc = 100-25
       if (!isMenuOpen) {
         gsap.to(nav, { duration: 0.3, ease: "power3.inOut", x:"0%" });
-        gsap.to(content, { duration: 0.3, ease: "power3.inOut", x: '75%' });
+        gsap.to(content,{duration:0.3,ease:'power3.inOut',left:"25%",width:`${calc}%`})
+        gsap.to(side_btn,{duration:0.3,ease:'power2.inOut',width:'100%'})
+        gsap.to(recents,{duration:0.3,ease:'power2.inOut',width:'50%'})
       } else {
-        gsap.to(nav, { duration: 0.3, ease: "power3.inOut", x: "-75%" });
-        gsap.to(content, { duration: 0.3, ease: "power3.inOut", x: "-25%" });
+        gsap.to(nav, { duration: 0.3, ease: "power3.inOut", width: "50%" })
+        gsap.to(content,{duration:0.3,ease:'power3.inOut',left:"5%",width:'100%'})
+        gsap.to(side_btn,{duration:0.3,ease:'power2.inOut',width:'25%'})
+        gsap.to(recents,{duration:0.3,ease:'power2.inOut',width:'25%'})
       }
       isMenuOpen = !isMenuOpen;
     }
@@ -56,15 +81,7 @@ editor.addEventListener('keydown', function(event) {
       }
     });
     // Responsive behavior on screen resize
-    window.addEventListener('resize', function() {
-      if (window.innerWidth > 768) {
-        nav.style.transform = '';
-        content.style.transform = ''; // Reset content transform on larger screens
-        isMenuOpen = false; // Close menu on resize to larger screen
-      } else {
-        nav.style.transform = 'translateX(-100%)'; // Hide menu on smaller screens
-      }
-    });
+    
 const chatLinkContainer = document.getElementById('chat-link-container');
 const loadingIndicator = document.getElementById('loading-indicator');
 chatbtn.addEventListener('click', async ()=> {
@@ -121,7 +138,6 @@ chatbtn.addEventListener('click', async ()=> {
         if (response.ok) {
             const data = await response.json();
             const text = 'new chat';
-            console.log('Chat IDs:', data.chatIds);
             data.chatIds.forEach(item => {
                 const di = document.createElement("div");
                 di.innerHTML = `<div class="rchat h-10 rounded-3xl hover:bg-gray-700 transition p-2 m-2">

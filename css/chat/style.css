@@ -9,8 +9,6 @@ html,body{
 .chatarea{
    width:calc(100% - 25%);
 }
-
-
 .editor::after{
     display: block;
     content:attr(data-placeholder);
@@ -21,13 +19,12 @@ html,body{
     left:0;
     right:16px;
 }
-.side ~.welcome_screen{
+.side ~.chatarea{
     left:25%;
     width:calc(100% - 25%);
 }
 .side{
   width:25%;
-  transition: transform 0.3s ease-in-out;
 }
  @font-face {
     font-family: 'Poppins';
