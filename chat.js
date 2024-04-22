@@ -81,7 +81,10 @@ editor.addEventListener('keydown', function(event) {
       }
     });
     // Responsive behavior on screen resize
-    
+    const urlParts = window.location.pathname.split('/');
+console.log(urlParts)
+    // The route identifier is likely the last part after "app"
+    const route = urlParts[urlParts.length - 1];
 const chatLinkContainer = document.getElementById('chat-link-container');
 const loadingIndicator = document.getElementById('loading-indicator');
 send.addEventListener('click', function() {

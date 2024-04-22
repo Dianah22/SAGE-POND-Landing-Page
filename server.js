@@ -1,6 +1,6 @@
 
 const {initializeApp} = require('firebase/app')
-const {doc, setDoc, Timestamp,getFirestore, collection,getDocs} = require('firebase/firestore')
+const {doc, setDoc, Timestamp,getFirestore, collection,getDocs,updateDoc} = require('firebase/firestore')
 const firebaseConfig = {
   apiKey: "AIzaSyDyXWSxpBqk7lgomflc_Sl3BCXp8Dvffbg",
   authDomain: "sage-pond-gen-ai.firebaseapp.com",
@@ -117,6 +117,7 @@ app.get('/', (req, res) => {
       const db = getFirestore(fb)
       const docData = {
         chatid: chatId, // Use 'chatid' to match your security rule field name
+        content:'',
         createdBy: userId, // Use the currently authenticated user's ID
         dateCreated: Timestamp.now(),
       };
@@ -129,17 +130,19 @@ app.get('/', (req, res) => {
       res.status(500).send('Error creating chat');
     }
   });
+  app.get('/app/:chatId', (req, res) => {
+    console.log(req.params.chatId)
+    res.sendFile(path.join(initial_path, "chat.html"));
+  })
   app.post('/api/post', async (req, res) => {
     try {
       const message = req.body.message;
       if (!message) {
         return res.status(400).json({ error: 'Missing message content' });
       }
-  
-      // Add data to Firestore
-      const docRef = await admin.firestore().collection('messages').add({
-        message: message,
-        timestamp: admin.firestore.FieldValue.serverTimestamp()
+      const chatsRef = doc(db, "chats");
+      await updateDoc(chatsRef, {
+        capital: true
       });
   
       res.json({ message: 'Message sent successfully!', id: docRef.id });
