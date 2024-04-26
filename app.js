@@ -19,8 +19,6 @@ const gsaptl = gsap.timeline({paused:true})
 document.addEventListener('DOMContentLoaded',e=>{
    gsap.set('.img',{y:1000})
    gsap.set('.loader-imgs',{x:500})
-   gsap.set('.nav-item',{y:25,opacity:0})
-   gsap.set('h1,.item',{y:200})
    const tl =gsap.timeline({delay:1})
    tl.to('.img',{
       y:0,
@@ -43,43 +41,8 @@ document.addEventListener('DOMContentLoaded',e=>{
       duration:1,
       ease:'power3.inOut'
    },"-=0.5")
-   .to('.nav-item, h1,.item',{
-      y:0,
-      opacity:1,
-      duration:1,
-      stagger:0.1,
-      ease:'power3.inOut'
-   },'-=0.5')
+  
 })
-function setup(){
-   let radius = wheel.offsetWidth/2
-   let center = wheel.offsetWidth/2
-   let total = images.length
-   let slice = (2* Math.PI)/total
-   images.forEach((item,i)=>{
-      let angle = i * slice
-      let x = center * radius * Math.sin(angle)
-      let y = center * radius * Math.cos(angle)
-      gsap.set(item,{
-         rotation:angle + '-rad',
-         xPercent:-50,
-         yPercent:-50,
-         x:x,
-         y:y
-      })
-   })
-}
-const handleOnMouseMOve =e=>{
-   const {currentTarget:target} = e;
-   const rect = target.getBoundingClientRect();
-   x=e.clientX-rect.left
-   y=e.clientY-rect.top
-   target.style.setProperty('--mouse-x',`${x}px`)
-   target.style.setProperty('--mouse-y',`${y}px`)
-}
-for(const card of document.querySelectorAll('.card')){
-   card.onmousemove = e => handleOnMouseMOve(e)
-}
 const letters='ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 document.querySelector('.team').onmouseover = e=>{
    let iterations =0

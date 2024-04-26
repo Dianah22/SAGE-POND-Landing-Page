@@ -11,16 +11,16 @@
 <body class="bg-black overflow-hidden">
     <main class="flex flex-col h-screen">
         <div class = "content  w-full h-full items-center self-center"> 
-        <div class="side h-screen  text-center absolute  bg-yellow-400 nav">
+        <div class="side h-screen  text-center absolute  bg-[#141414] nav z-[30] md:z-0">
           <div class="side-menu-button fixed top-0 z-[2] min-h-[40px] justify-center items-center flex mt-3 mr-0 mb-0 ml-4">
            <button class="p-2 flex-shrink text-white menuButton">   Menu</button>
           </div>
           <div class="side-button flex flex-col gap-y-4 pb-4 ps-2">
-            <div class="new_conv-container flex">
-              <button class="relative grid-cols-1 h-[40px] min-w-[unset] max-w-fit me-4 ms-3 mt-32 bg-blue-900 flex rounded-[40px]"id='new_chat'>
-                <span class="relative material-symbols-outlined text-2xl m-0 ">add</span>
+            <div class="new_conv-container flex h-full relative mt-32">
+              <button class="relative grid   h-[40px] min-w-[unset] max-w-fit me-4 ms-3  bg-blue-900  rounded-[40px] items-center justify-start"id='new_chat'>
+                <span class="relative material-symbols-outlined text-2xl m-0  w-[24px] ">add</span>
                 <span class="whitespace-nowrap overflow-hidden h-[40px] top-0 left-0 relative">
-                  <span class="mt-2 mr-2 mb-2 ml-4 block text-left text-ellipsis pr-2 pl-2 z-[1] ">New Chat</span>
+                  <span class="mt-2 mr-2 mb-2 ml-4 block text-left text-ellipsis pr-2 pl-2 z-[1]">New Chat</span>
                 </span>
                 <span class='absolute top-1/2 left-0 right-0 h-[48px] -translate-y-1/2'></span>
               </button>
@@ -34,33 +34,32 @@
             </div>
         </div>
     </div>
-  <div class="chatarea h-screen top-0  right-0 absolute overflow-hidden  bg-zinc-950 text-white overflow-x-hidden ">
+  <div class="chatarea h-screen top-0  right-0 absolute overflow-hidden  bg-zinc-950 text-white overflow-x-hidden w-full md:w-[calc(100%-25%)] ">
     <nav class="w-full z-20">
-      <h4 class="text-left">UNVEYL</h4>
-      <h4 class="text-right"> caleb</h4>
+      
     </nav>
     <div class="h-screen rounded-[30px] w-full flex flex-wrap justify-center overflow-y-scroll">
     <div class="chat_window flex flex-1 flex-col "id='chat_window'>
       <div class="chat_history flex flex-col flex-1 w-full h-full flex-wrap content-center">
-        <div class="welcome_screen max-w-[800px] w-full  flex flex-shrink-0 ">
-          <div class="discover md:mt-[10rem] flex gap-5 snap-mandatory overflow-x-auto -ms-5 -me-5 scroll-p-5 m-12">
-               <div class="cards-container flex">
-                <div class="card1 ms-5 snap-start cursor-pointer bg-slate-800 rounded-[40px]">
-                    <div class="flex flex-col justify-between h-40 items-center overflow-hidden rounded-xl ">
+        <div class="welcome_screen max-w-[800px] w-full  flex flex-shrink-0 h-full flex-wrap content-center">
+          <div class="discover mt-4  flex gap-5 snap-mandatory overflow-x-auto -ms-5 -me-5 scroll-p-5 m-12 h-40">
+               <div class="cards-container flex  gap-5  ">
+                <div class="card1 ms-5 snap-start cursor-pointer bg-slate-800 rounded-[40px] w-[150px]">
+                    <div class="flex flex-col justify-between h-40 items-center overflow-hidden rounded-xl  ">
                       <p class="text-lg m-4 mb-0">Explain how to Make a Car as if i am 2</p>
                     </div>
                 </div>
-                <div class="card1 ms-5 snap-start cursor-pointer bg-slate-800 rounded-[40px]">
-                  <div class="flex flex-col justify-between h-40 items-center overflow-hidden rounded-xl">
+                <div class="card1 ms-5 snap-start cursor-pointer bg-slate-800 rounded-[40px] w-[150px]">
+                  <div class="flex flex-col justify-between h-40 items-center overflow-hidden rounded-xl ">
                     <p class="text-lg m-4 mb-0">Explain how to Make a Car as if i am 2</p>
                   </div>
               </div>
-              <div class="card1 ms-5 snap-start cursor-pointer bg-slate-800 rounded-[40px]">
+              <div class="card1 ms-5 snap-start cursor-pointer bg-slate-800 rounded-[40px] w-[150px]">
                 <div class="flex flex-col justify-between h-40 items-center overflow-hidden rounded-xl">
                   <p class="text-lg m-4 mb-0">Explain how to Make a Car as if i am 2</p>
                 </div>
             </div>
-            <div class="card1 ms-5 snap-start cursor-pointer bg-slate-800 rounded-[40px]">
+            <div class="card1 ms-5 snap-start cursor-pointer bg-slate-800 rounded-[40px] w-[150px] ">
               <div class="flex flex-col justify-between h-40 items-center overflow-hidden rounded-xl">
                 <p class="text-lg m-4 mb-0">Explain how to Make a Car as if i am 2</p>
               </div>
@@ -81,8 +80,8 @@
       </div>
       </div>
       </div>
-        <div class="bottom absolute bottom-0  max-w-[900px] w-full z-10 self-center min-h-14 -mt-12 flex-col pl-5 pr-5 content-center">
-          <div class="input-cont-area w-full flex flex-col self-center text-center bg-white max-w-[830px] rounded-3xl max-h-[200px] text-black">
+        <div class="bottom absolute bottom-0  max-w-[900px] w-full z-10 self-center min-h-14 -mt-12 flex-col pl-5 pr-5 content-center backdrop-blur-lg">
+          <div class="input-cont-area w-full flex flex-col self-center text-center bg-[#141414] max-w-[830px] rounded-3xl max-h-[200px] text-white">
             <div class="input-area relative p-0 inline-flex items-end ">
             <div class="prompt min-w-0 flex items-center justify-end flex-grow flex-wrap p-2 overflow-hidden rounded-3xl  z-10">
               <div class="text-area-wrapper ms-3 justify-between flex  flex-grow max-w-full self-stretch items-start">
@@ -90,7 +89,7 @@
                  </div>
                 <div class="w-full h-full">
                   <div class="relative h-full">
-                    <div class="editor ps-0 overflow-auto break-normal leading-3 h-full p-3 whitespace-pre-wrap text-left max-h-[100px]" contenteditable="true" role="textbox" aria-multiline="true" aria-label="input for prmpt" data-placeholder="Enter Prompt here" id="editor">
+                    <div class="editor ps-0 overflow-auto break-normal leading-5 h-full p-3 whitespace-pre-wrap text-left max-h-[100px]  " contenteditable="true" role="textbox" aria-multiline="true" aria-label="input for prmpt" data-placeholder="Enter Prompt here" id="editor">
                     </div>
                   </div>
                  </div>

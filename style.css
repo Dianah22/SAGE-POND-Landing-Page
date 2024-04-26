@@ -95,7 +95,7 @@ a{
    text-decoration: none;
    text-transform: uppercase;
 }
-.h1{
+.k{
    width:100%;
    text-align: center;
    clip-path: polygon(0% 0%,100% 0%,100% 100%,0% 100%);
@@ -106,7 +106,7 @@ h1{
    font-weight: 400;
    line-height: 85%;
 }
-h1 span{
+.k span{
    font-weight: 700;
 }
 .overlay{
@@ -117,9 +117,6 @@ h1 span{
    left:0;
    z-index: 0;
 
-}
-svg path{
-   fill:black;
 }
 .btn-outline{
  position: absolute;
@@ -224,6 +221,7 @@ section img{
    z-index: 999;
    cursor:pointer;
 }
+
 .card::before{
    background: linear-gradient(
       transparent,
@@ -240,67 +238,15 @@ section img{
    z-index: -1;
    transition:top 600ms ease, opacity 600ms ease
 }
-.nav_content {
-   clip-path: url(#rounded-rect-path); /* Clip using the SVG path */
- }
-.nav_content::after{
-   content:'';
-   height:2px;
-   width:70px;
-   position: absolute;
-   border-radius: 40%;
-   background: linear-gradient(
-      to left,
-      mediumslateblue,
-      transparent,
-      transparent
-   );
-   animation: animatePath 2s linear forwards, afterOpacity 0.5s ease-in-out forwards; /* Combine animations */
-  }
-  .nav_content::after {
-   content: '';
-   height: 2px;
-   width: 70px;
-   position: absolute;
-   border-radius: 40%;
-   background: linear-gradient(
-      to left,
-      mediumslateblue,
-      transparent,
-      transparent
-   );
-   animation: animatePath 2s linear forwards infinite, afterOpacity 0.5s ease-in-out forwards; /* Combine animations */
-   /* Other styles remain the same */
- }
- .nav-wrapper svg { /* New SVG element for animation */
-   position: absolute;
-   top: 300px; /* Adjust starting position as needed */
-   left: 200px; /* Adjust starting position as needed */
-   width: 0; /* Initial width is 0 */
-   height: 2px; /* Match height of ::after */
- }
- 
- .nav-wrapper svg path {
-   stroke: mediumslateblue; /* Match color of ::after */
-   stroke-width: 2px; /* Adjust stroke width as needed */
-   fill: none; /* Remove fill for line appearance */
-   animation: animatePath 2s linear forwards infinite; /* Animation for the path */
- }
 .card:hover:before{
    top:25%;
    opacity:1;
 }
-
-@keyframes animatePath {
-   0% { width: 0; } /* Start with width 0 */
-   50% { width: calc(100% - 50px); } /* Animate to full width (minus ::after width) in first half */
-   100% {
-     width: calc(100% - 50px); /* Maintain width in second half */
-     transform: path("url(#rounded-rect-path)"); /* Apply SVG path at the end */
+@keyframes animateGradient{
+   0%{
+      background-size:200% 400%;
    }
- }
- 
- @keyframes afterOpacity {
-   from { opacity: 0; } /* Start invisible */
-   to { opacity: 1; } /* Fade in after path animation */
- }
+   100%{
+      background-size:300% 600%;
+   }
+}

@@ -15,7 +15,13 @@ html,body{
     visibility: hidden;
     margin-top:-24px;
 }
+#new_chat{
+    grid-template-columns: min-content 1fr;
+    grid-template-rows: 1fr;
+}
 .editor::before{
+    position: absolute;
+    
     left:0;
     right:16px;
 }
@@ -26,6 +32,7 @@ html,body{
 .side{
   width:25%;
 }
+
  @font-face {
     font-family: 'Poppins';
     src: url('Poppins-Regular.ttf');
@@ -33,4 +40,6 @@ html,body{
  [contenteditable] {
     outline: 0px solid transparent;
   }
-
+@media (min-width:768){
+ 
+}
