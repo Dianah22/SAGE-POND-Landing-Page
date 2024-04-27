@@ -25,7 +25,7 @@ editor.addEventListener('input',e=>{
 let clickCount = 0;
 send.addEventListener('click',e=>{
   clickCount++
-    const message = editor.innerHTML
+    const message = document.querySelector('.user_query').innerHTML
     if(clickCount==1){
       fetchCreateChat(sanitizeInput(message))
     }else{
