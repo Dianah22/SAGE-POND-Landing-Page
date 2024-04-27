@@ -1,6 +1,6 @@
 
 const {initializeApp} = require('firebase/app')
-const {doc, setDoc, Timestamp,getFirestore, collection,getDocs,updateDoc,FieldValue,arrayUnion} = require('firebase/firestore')
+const {doc, setDoc, Timestamp,getFirestore, collection,getDocs,updateDoc,FieldValue,arrayUnion,getDoc} = require('firebase/firestore')
 const firebaseConfig = {
   apiKey: "AIzaSyDyXWSxpBqk7lgomflc_Sl3BCXp8Dvffbg",
   authDomain: "sage-pond-gen-ai.firebaseapp.com",
@@ -46,11 +46,6 @@ styleSrc: ["'self'", 'https://fonts.googleapis.com/','https://cdn.jsdelivr.net/n
 imgSrc: ["'self'", 'data:'], // Restrict image sources
 },
 }));
-app.use((req, res, next) => {
-  // Set cache control headers to prevent caching
-  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-  next();
-});
 app.get('/', (req, res) => {
     res.sendFile(path.join(initial_path, "index.html"));
   });
@@ -163,18 +158,18 @@ app.get('/', (req, res) => {
   });
   app.get('/app/:chatId', async(req, res) => {
     const chatId = req.params.chatId;
-  // Firebase access logic (replace with your specific setup)
   const db = getFirestore(fb)
-  const userId = auth.currentUser.uid
-  const chatIds = [];
-  const chatIdsCol = collection(db, 'chats'); // Get the chatIds collection reference
-  const snapshot = await getDocs(chatIdsCol); // Get all documents in the collection
-  snapshot.forEach(doc => {
-    if (doc.data().createdBy === userId) {
-    res.send({data:doc.data().content})
-  }
-    res.sendFile(path.join(initial_path, "chat.html"));
-  })
+  const docRef = await doc(db, "chats", chatId);
+  const docSnap = await getDoc(docRef);
+if (docSnap.exists && docSnap.data.createdBy==auth.currentUser.uid) {
+  const messages = docSnap.data().messages || []; // Extract messages array or empty array
+  messages.sort((a, b) => a.timestamp - b.timestamp);
+  console.log(messages);
+
+}
+
+
+res.json(messages); 
 })
   app.post('/chatIds', async (req, res) => {
     try {

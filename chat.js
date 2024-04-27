@@ -25,7 +25,7 @@ editor.addEventListener('input',e=>{
 let clickCount = 0;
 send.addEventListener('click',e=>{
   clickCount++
-    const message = document.querySelector('.user_query').innerHTML
+    const message = editor.textContent
     if(clickCount==1){
       fetchCreateChat(sanitizeInput(message))
     }else{
@@ -49,7 +49,7 @@ const msend = async(message)=>{
       <img src="images/caleb.jpg" class="w-10 rounded-full">
     </div>
     <div class="info text-ellipsis text-xl">
-      ${sanitizeInput(editor.innerHTML)}
+      <h2>${sanitizeInput(editor.textContent)}</h2>
     </div>`
     query_div.classList.remove('hidden')
     query_div.classList.add('flex')
@@ -139,7 +139,6 @@ editor.addEventListener('keydown', function(event) {
                 body: JSON.stringify({message}) // You can add data to the chat object if needed
             });
             const data = await response.json();
-            
               if (data.chatId) {
                 const text = 'new chat';
                 const new_div = document.createElement('div');
@@ -147,9 +146,13 @@ editor.addEventListener('keydown', function(event) {
                     <a href ='app/${data.chatId}'>${text}</a>
                 </div>`;
                 recent.appendChild(new_div);
+                const chatDetailsResponse = await fetch(`/app/${data.chatId}`, {
+                  method: 'GET'
+                });
+                const chatDetails = await chatDetailsResponse.json();
+                console.log("Chat details:", chatDetails);
                 const newUrl = `app/${data.chatId}`;
-            window.history.pushState({},'Unveyl', newUrl);
-            return data.chatId;
+                window.history.pushState({}, 'Unveyl', newUrl);
             }else {
               alert('Error creating chat. Please try again.');
           }   
