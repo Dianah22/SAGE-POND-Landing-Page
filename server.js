@@ -1,6 +1,6 @@
 
 const {initializeApp} = require('firebase/app')
-const {doc, setDoc, Timestamp,getFirestore, collection,getDocs,updateDoc,FieldValue} = require('firebase/firestore')
+const {doc, setDoc, Timestamp,getFirestore, collection,getDocs,updateDoc,FieldValue,arrayUnion} = require('firebase/firestore')
 const firebaseConfig = {
   apiKey: "AIzaSyDyXWSxpBqk7lgomflc_Sl3BCXp8Dvffbg",
   authDomain: "sage-pond-gen-ai.firebaseapp.com",
@@ -110,28 +110,55 @@ app.get('/', (req, res) => {
       res.status(400).json({ success: false, message: error.message }); // Handle specific errors
     }
   });
+  app.post('/send-message', async (req, res) => {
+    const db = getFirestore(fb)
+    const userId = auth.currentUser.uid
+    const message = req.body.message; // Get message from request body
+    const chatId = req.body.chatId;
+    try {
+      const newMessage = {
+        sender: userId,
+        content: message,
+        timestamp: Timestamp.now(),
+      };
+      const docData = {
+        chatid: chatId,
+        messages: [
+  ],
+        createdBy: userId, 
+        dateCreated: Timestamp.now(),
+      };
+      docData.messages.push(newMessage);
+
+      const docRef = doc(db, 'chats', chatId)
+      await updateDoc(docRef, {messages: arrayUnion(newMessage)});
+      res.send({success:true})
+    } catch (error) {
+      console.error(error);
+      res.status(500).send({ error: 'Failed to send message' });
+    }
+  });
   app.post('/create-chat', async (req, res) => {
     try {
+      const db = getFirestore(fb)
+
       const { message } = req.body;
       const chatId = uid(16);
       const userId = auth.currentUser.uid
-      const db = getFirestore(fb)
       const docData = {
-        chatid: chatId, // Use 'chatid' to match your security rule field name
-        content:message,
-        createdBy: userId, // Use the currently authenticated user's ID
+        chatid: chatId,
+        messages: [
+          message
+  ],
+        createdBy: userId, 
         dateCreated: Timestamp.now(),
       };
-      const messageObj = {
-        messages:FieldValue.arrayUnion(docData)
-      }
       const docRef = doc(db, 'chats', chatId);
-          await setDoc(docRef, docData);
-          await updateDoc(docRef, messageObj);
+      await setDoc(docRef, docData)
       res.json({chatId });
     } catch (error) {
       console.error(error);
-      res.status(500).send('Error creating chat');
+      res.status(500).send('Error!!!');
     }
   });
   app.get('/app/:chatId', async(req, res) => {

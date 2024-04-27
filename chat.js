@@ -24,8 +24,25 @@ editor.addEventListener('input',e=>{
 })
 let clickCount = 0;
 send.addEventListener('click',e=>{
-  clickCount++;
-  const pdiv=document.createElement('div')
+  clickCount++
+    const message = editor.innerHTML
+    if(clickCount==1){
+      fetchCreateChat(sanitizeInput(message))
+    }else{
+      msend(sanitizeInput(message))
+    }
+})
+const msend = async(message)=>{
+  const chatId = window.location.pathname.split('/')[2]
+  try{
+    const response = await fetch('/send-message', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({message,chatId}) 
+  });
+  const data = await response.json();
+  if (data.success) {
+    const pdiv=document.createElement('div')
     pdiv.innerHTML
      = `<div class="user_query h-[100px]">
     <div class="image-container">
@@ -34,16 +51,19 @@ send.addEventListener('click',e=>{
     <div class="info text-ellipsis text-xl">
       ${sanitizeInput(editor.innerHTML)}
     </div>`
-    const message = editor.innerHTML
-  if(clickCount==1){
-    fetchCreateChat(sanitizeInput(message))
-  }
     query_div.classList.remove('hidden')
     query_div.classList.add('flex')
     history.classList.add('hidden')
     query_div.appendChild(pdiv)
     editor.innerHTML='' 
-})
+  } else {
+    console.error('Error sending message:', data.error);
+  }
+  }catch(e){
+    console.log(e)
+  }
+  
+}
 editor.addEventListener('keydown', function(event) {
     if (event.key === 'Enter') {
         event.preventDefault(); // Prevent default behavior (line break)
@@ -111,7 +131,7 @@ editor.addEventListener('keydown', function(event) {
       }
     });
       const fetchCreateChat = async (message) => {
-        
+        clickCount++
         try {
             const response = await fetch('/create-chat', {
                 method: 'POST',
@@ -119,7 +139,8 @@ editor.addEventListener('keydown', function(event) {
                 body: JSON.stringify({message}) // You can add data to the chat object if needed
             });
             const data = await response.json();
-            if (data.chatId) {
+            
+              if (data.chatId) {
                 const text = 'new chat';
                 const new_div = document.createElement('div');
                 new_div.innerHTML = `<div class="rchat h-10 rounded-3xl hover:bg-gray-700 transition p-2 m-2">
@@ -128,9 +149,10 @@ editor.addEventListener('keydown', function(event) {
                 recent.appendChild(new_div);
                 const newUrl = `app/${data.chatId}`;
             window.history.pushState({},'Unveyl', newUrl);
-            } else {
-                alert('Error creating chat. Please try again.');
-            }
+            return data.chatId;
+            }else {
+              alert('Error creating chat. Please try again.');
+          }   
             
         } catch (error) {
             console.error(error);
