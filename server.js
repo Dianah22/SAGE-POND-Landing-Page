@@ -123,7 +123,7 @@ app.get('/', (req, res) => {
         dateCreated: Timestamp.now(),
       };
       const messageObj = {
-        messages:db.FieldValue.arrayUnion(docData)
+        messages:FieldValue.arrayUnion(docData)
       }
       const docRef = doc(db, 'chats', chatId);
           await setDoc(docRef, docData);
