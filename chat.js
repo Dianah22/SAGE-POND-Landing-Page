@@ -9,6 +9,8 @@ const menuBtn = document.querySelector('.menuButton')
 const content = document.querySelector('.chatarea')
 const nav = document.querySelector('.nav')
 const side_btn = document.querySelector('.side-button')
+const side_b = document.querySelector('.side-b')
+
 const recents = document.querySelector('.recent')
 const history = document.querySelector('.chat_history')
 const welcome_screen = document.querySelector('.welcome_screen')
@@ -93,12 +95,13 @@ editor.addEventListener('keydown', function(event) {
       if (!isMenuOpen && window.innerWidth>768) {
         gsap.to(nav, { duration: 0.3, ease: "power3.inOut", x:"0%" });
         gsap.to(content,{duration:0.3,ease:'power3.inOut',left:"25%",width:`${calc}%`})
+        gsap.to(side_b,{duration:0.3,ease:'power2.inOut',width:'100%'})
         gsap.to(side_btn,{duration:0.3,ease:'power2.inOut',width:'100%'})
         gsap.to(recents,{duration:0.3,ease:'power2.inOut',width:'50%'})
       } else if (isMenuOpen==true && window.innerWidth>768){
         gsap.to(nav, { duration: 0.3, ease: "power3.inOut", width: "50%" })
+        gsap.to(side_b,{duration:0.3,ease:'Power3.inOut',width:'45px'})
         gsap.to(content,{duration:0.3,ease:'power3.inOut',left:"5%",width:'95%'})
-        gsap.to(side_btn,{duration:0.3,ease:'power2.inOut',width:'25%'})
         gsap.to(recents,{duration:0.3,ease:'power2.inOut',width:'25%'})
       } else if(window.innerWidth<=768 && isMenuOpen==true){
         gsap.to(side_btn,{duration:0.1,ease:'power2.inOut',width:'0%',display:'none',opacity:'0'})

@@ -164,12 +164,9 @@ app.get('/', (req, res) => {
 if (docSnap.exists && docSnap.data.createdBy==auth.currentUser.uid) {
   const messages = docSnap.data().messages || []; // Extract messages array or empty array
   messages.sort((a, b) => a.timestamp - b.timestamp);
-  console.log(messages);
-
 }
-
-
 res.json(messages); 
+res.sendFile(path.join(initial_path, "chat.html"))
 })
   app.post('/chatIds', async (req, res) => {
     try {
