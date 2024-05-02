@@ -1,3 +1,42 @@
+const seetings = document.getElementById('settings')
+const seetings_btn = document.getElementById('settings-btn')
+const main = document.getElementById('main')
+let isOpen = false
+seetings_btn.addEventListener('click',e=>{
+        settings.classList.remove('hidden')
+		main.classList.add('hidden')
+})
+const sidebar = document.getElementById('sidebar');
+let opened = false
+if (!opened) {
+    const toggleSidebarMobile = (sidebar, sidebarBackdrop, toggleSidebarMobileHamburger, toggleSidebarMobileClose) => {
+        sidebar.classList.toggle('hidden');
+        sidebarBackdrop.classList.toggle('hidden');
+        toggleSidebarMobileHamburger.classList.toggle('hidden');
+        toggleSidebarMobileClose.classList.toggle('hidden');
+    }
+    const toggleSidebarMobileEl = document.getElementById('toggleSidebarMobile');
+    const sidebarBackdrop = document.getElementById('sidebarBackdrop');
+    const toggleSidebarMobileHamburger = document.getElementById('toggleSidebarMobileHamburger');
+    const toggleSidebarMobileClose = document.getElementById('toggleSidebarMobileClose');
+    const toggleSidebarMobileSearch = document.getElementById('toggleSidebarMobileSearch');
+    
+    toggleSidebarMobileSearch.addEventListener('click', () => {
+		alert('side bar')
+        toggleSidebarMobile(sidebar, sidebarBackdrop, toggleSidebarMobileHamburger, toggleSidebarMobileClose);
+    });
+    
+    toggleSidebarMobileEl.addEventListener('click', () => {
+		alert('g')
+        toggleSidebarMobile(sidebar, sidebarBackdrop, toggleSidebarMobileHamburger, toggleSidebarMobileClose);
+    });
+    
+    sidebarBackdrop.addEventListener('click', () => {
+		alert('f')
+        toggleSidebarMobile(sidebar, sidebarBackdrop, toggleSidebarMobileHamburger, toggleSidebarMobileClose);
+    });
+}
+
 const getMainChartOptions = () => {
 	let mainChartColors = {}
 
@@ -641,29 +680,3 @@ themeToggleBtn.addEventListener('click', function() {
     document.dispatchEvent(event);
     
 });
-const sidebar = document.getElementById('sidebar');
-if (sidebar) {
-    const toggleSidebarMobile = (sidebar, sidebarBackdrop, toggleSidebarMobileHamburger, toggleSidebarMobileClose) => {
-        sidebar.classList.toggle('hidden');
-        sidebarBackdrop.classList.toggle('hidden');
-        toggleSidebarMobileHamburger.classList.toggle('hidden');
-        toggleSidebarMobileClose.classList.toggle('hidden');
-    }
-    const toggleSidebarMobileEl = document.getElementById('toggleSidebarMobile');
-    const sidebarBackdrop = document.getElementById('sidebarBackdrop');
-    const toggleSidebarMobileHamburger = document.getElementById('toggleSidebarMobileHamburger');
-    const toggleSidebarMobileClose = document.getElementById('toggleSidebarMobileClose');
-    const toggleSidebarMobileSearch = document.getElementById('toggleSidebarMobileSearch');
-    
-    toggleSidebarMobileSearch.addEventListener('click', () => {
-        toggleSidebarMobile(sidebar, sidebarBackdrop, toggleSidebarMobileHamburger, toggleSidebarMobileClose);
-    });
-    
-    toggleSidebarMobileEl.addEventListener('click', () => {
-        toggleSidebarMobile(sidebar, sidebarBackdrop, toggleSidebarMobileHamburger, toggleSidebarMobileClose);
-    });
-    
-    sidebarBackdrop.addEventListener('click', () => {
-        toggleSidebarMobile(sidebar, sidebarBackdrop, toggleSidebarMobileHamburger, toggleSidebarMobileClose);
-    });
-}

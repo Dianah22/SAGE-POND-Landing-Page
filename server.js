@@ -1,6 +1,6 @@
 
 const {initializeApp} = require('firebase/app')
-const {doc, setDoc, Timestamp,getFirestore, collection,getDocs,updateDoc,FieldValue,arrayUnion,getDoc} = require('firebase/firestore')
+const {doc, setDoc, Timestamp,getFirestore, collection,getDocs,updateDoc,arrayUnion,getDoc} = require('firebase/firestore')
 const firebaseConfig = {
   apiKey: "AIzaSyDyXWSxpBqk7lgomflc_Sl3BCXp8Dvffbg",
   authDomain: "sage-pond-gen-ai.firebaseapp.com",
@@ -167,6 +167,9 @@ if (docSnap.exists && docSnap.data.createdBy==auth.currentUser.uid) {
 }
 res.json(messages); 
 res.sendFile(path.join(initial_path, "chat.html"))
+})
+app.get('/welcome',(req,res)=>{
+  res.sendFile(path.join(initial_path,'welcome.html'))
 })
   app.post('/chatIds', async (req, res) => {
     try {
