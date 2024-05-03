@@ -40,35 +40,17 @@
     </nav>
     <div class="h-screen rounded-[30px] w-full flex flex-wrap justify-center overflow-y-scroll">
     <div class="chat_window flex flex-1 flex-col "id='chat_window'>
-      <div class="chat_history flex flex-col flex-1 w-full h-full flex-wrap content-center">
-        <div class="welcome_screen max-w-[800px] w-full  flex flex-shrink-0 h-full flex-wrap content-center">
-          <div class="discover mt-4  flex gap-5 snap-mandatory overflow-x-auto -ms-5 -me-5 scroll-p-5 m-12 h-40">
-               <div class="cards-container flex  gap-5  ">
-                <div class="card1 ms-5 snap-start cursor-pointer bg-slate-800 rounded-[40px] w-[150px]">
-                    <div class="flex flex-col justify-between h-40 items-center overflow-hidden rounded-xl  ">
-                      <p class="text-lg m-4 mb-0">Explain how to Make a Car as if i am 2</p>
-                    </div>
-                </div>
-                <div class="card1 ms-5 snap-start cursor-pointer bg-slate-800 rounded-[40px] w-[150px]">
-                  <div class="flex flex-col justify-between h-40 items-center overflow-hidden rounded-xl ">
-                    <p class="text-lg m-4 mb-0">Explain how to Make a Car as if i am 2</p>
-                  </div>
-              </div>
-              <div class="card1 ms-5 snap-start cursor-pointer bg-slate-800 rounded-[40px] w-[150px]">
-                <div class="flex flex-col justify-between h-40 items-center overflow-hidden rounded-xl">
-                  <p class="text-lg m-4 mb-0">Explain how to Make a Car as if i am 2</p>
-                </div>
-            </div>
-            <div class="card1 ms-5 snap-start cursor-pointer bg-slate-800 rounded-[40px] w-[150px] ">
-              <div class="flex flex-col justify-between h-40 items-center overflow-hidden rounded-xl">
-                <p class="text-lg m-4 mb-0">Explain how to Make a Car as if i am 2</p>
-              </div>
-          </div>
+      <div class="chat_history flex flex-col flex-1 w-full h-full flex-wrap content-center justify-center">
+        <div class="welcome_screen max-w-[800px] w-full  flex flex-shrink-0  flex-wrap content-center h-[400px] justify-center flex-col">
+          <div class="discover mt-4  flex  m-6 h-full">
+               <div class="flex flex-col">
+                <img src="images/logo.svg"class='h-[300px]'>
+                <h1 class="text-3xl">What can i help you with Today?</h1>
                </div>
           </div>
-
+          </div>
         </div>
-      </div>
+      
       <div class="query w-full flex p-3 ps-0 m-3 flex-1 hidden flex-col absolute left-[15%]">
         </div>
         <div class="response_container ps-6 pt-1 flex-1 min-w-0 mt-[130px] absolute left-[15%]">
@@ -80,7 +62,7 @@
       </div>
       </div>
       </div>
-        <div class="bottom absolute bottom-0  max-w-[900px] w-full z-10 self-center min-h-14 -mt-12 flex-col pl-5 pr-5 content-center  backdrop-blur-lg shadow-2xl rounded-t-3xl rounded-r-3xl">
+        <div class="bottom flex absolute bottom-0  max-w-[900px] w-full z-10 self-center min-h-14 -mt-12 flex-col pl-5 pr-5 content-center  backdrop-blur-lg shadow-2xl rounded-t-3xl rounded-r-3xl">
           <div class="input-cont-area w-full flex flex-col self-center text-center bg-[#141414] max-w-[830px] rounded-3xl max-h-[200px] text-white">
             <div class="input-area relative p-0 inline-flex items-end ">
             <div class="prompt min-w-0 flex items-center justify-end flex-grow flex-wrap p-2 overflow-hidden rounded-3xl  z-10">
@@ -121,6 +103,7 @@
       </div>
       </div>
       </div>
+    </div>
   </main>
   <script src="gsap-public/gsap-public/minified/gsap.min.js"></script>
   <script src="chat.js"></script>
