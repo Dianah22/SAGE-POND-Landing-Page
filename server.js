@@ -109,7 +109,9 @@ app.get('/', (req, res) => {
     const db = getFirestore(fb)
     const userId = auth.currentUser.uid
     const message = req.body.message; // Get message from request body
+    console.log(message)
     const chatId = req.body.chatId;
+
     try {
       const newMessage = {
         sender: userId,
@@ -136,7 +138,6 @@ app.get('/', (req, res) => {
   app.post('/create-chat', async (req, res) => {
     try {
       const db = getFirestore(fb)
-
       const { message } = req.body;
       const chatId = uid(16);
       const userId = auth.currentUser.uid
@@ -159,13 +160,13 @@ app.get('/', (req, res) => {
   app.get('/app/:chatId', async(req, res) => {
     const chatId = req.params.chatId;
   const db = getFirestore(fb)
-  const docRef = await doc(db, "chats", chatId);
+  const docRef = await doc(db, "chats", chatId)
   const docSnap = await getDoc(docRef);
-if (docSnap.exists && docSnap.data.createdBy==auth.currentUser.uid) {
-  const messages = docSnap.data().messages || []; // Extract messages array or empty array
+if (docSnap.exists && docSnap.data().createdBy==auth.currentUser.uid) {
+  const messages = docSnap.data().messages || []; // Extract messages array or empty arra
   messages.sort((a, b) => a.timestamp - b.timestamp);
+  res.json({ messages });
 }
-res.json(messages); 
 res.sendFile(path.join(initial_path, "chat.html"))
 })
 app.get('/welcome',(req,res)=>{
