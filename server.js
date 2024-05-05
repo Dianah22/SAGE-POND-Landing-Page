@@ -109,9 +109,7 @@ app.get('/', (req, res) => {
     const db = getFirestore(fb)
     const userId = auth.currentUser.uid
     const message = req.body.message; // Get message from request body
-    console.log(message)
     const chatId = req.body.chatId;
-
     try {
       const newMessage = {
         sender: userId,

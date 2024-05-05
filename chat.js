@@ -152,21 +152,56 @@ editor.addEventListener('keydown', function(event) {
                     </div
                 </div>`;
                 recent.appendChild(new_div);
-                const chatDetailsResponse = await fetch(`/app/${data.chatId}`, {
-                  method: 'GET'
-                });
+                const chatDetailsResponse = await fetch(`/app/${data.chatId}`);
                 const chatDetails = await chatDetailsResponse.json();
                 console.log("Chat details:", chatDetails);
                 const newUrl = `app/${data.chatId}`;
                 window.history.pushState({}, 'Unveyl', newUrl);
             }else {
               alert('Error creating chat. Please try again.');
-          }   
-            
+          }
         } catch (error) {
             console.error(error);
             alert('Error creating chat. Please try again.');
         }
+    };
+window.addEventListener('popstate',async ()=>{
+    const chatId = window.location.pathname.split('/')[2]
+    console.log(chatId)
+    try{
+       const chatDetailsResponse = await fetch(`/app/${chatId}`);
+    const chatDetails = await chatDetailsResponse.json();
+    console.log("Chat details:", chatDetails);
+    }catch(error){
+      console.log(error)
+    }
+})
+   async function fetchData() {
+    try {
+        const response = await fetch('/app/5800e6037eb1f8b5');
+        const data = await response.json();
+        console.log(data.messages);
+        // Update the DOM or use the data in your frontend application
+    } catch (error) {
+        console.error('Error fetching data:', error);
+    }
+}
+
+fetchData()
+    const renderChatMessages = (messages) => {
+      chat_window.innerHTML = '';
+      messages.forEach(message => {
+        chat_window += `
+        <div class="user_query h-[100px]">
+        <div class="image-container">
+          <img src="images/caleb.jpg" class="w-10 rounded-full">
+        </div>
+        <div class="info text-ellipsis text-xl">
+          <h2>${message}</h2>
+        </div>
+        `;
+      });
+      chat_window.innerHTML = chatWindowContent;
     };
       const fetchChatIds = async () => {
         const response = await fetch('/chatIds', {
