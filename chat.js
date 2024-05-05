@@ -146,7 +146,7 @@ editor.addEventListener('keydown', function(event) {
                 const text = 'new chat';
                 const new_div = document.createElement('div');
                 new_div.innerHTML = `<div class="rchat h-10 rounded-3xl hover:bg-gray-700 transition p-2 m-2 flex">
-                    <a href =/app/${data.chatId}>${text}</a>
+                    <button data-chat-id=${data.chatId}>${text}</button>
                     <div class='menu h-[24px] w-[24px] pt-[5px]'>
                     <span>Push Btn</span>
                     </div
@@ -165,16 +165,18 @@ editor.addEventListener('keydown', function(event) {
             alert('Error creating chat. Please try again.');
         }
     };
-window.addEventListener('popstate',async ()=>{
-    const chatId = window.location.pathname.split('/')[2]
-    console.log(chatId)
-    try{
-       const chatDetailsResponse = await fetch(`/app/${chatId}`);
+recents.addEventListener('click',async (e)=>{
+  const chatItem = e.target;
+  const chatId = chatItem.dataset.chatId;
+  if(chatId){
+    const chatDetailsResponse = await fetch(`/app/${chatId}`);
     const chatDetails = await chatDetailsResponse.json();
     console.log("Chat details:", chatDetails);
-    }catch(error){
-      console.log(error)
-    }
+    const newUrl = `app/${chatId}`;
+    window.history.pushState({}, 'Unveyl', newUrl);
+  }else{
+    next()
+  }
 })
    async function fetchData() {
     try {
@@ -213,7 +215,7 @@ fetchData()
             data.chatIds.forEach(item => {
                 const di = document.createElement("div");
                 di.innerHTML = `<div class="rchat h-10 rounded-3xl hover:bg-gray-700 transition p-2 m-2">
-                    <a href ='app/${item}'>${text}</a>
+                <button data-chat-id=${item}>${text}</button>
                 </div>`;
                 recent.append(di);
             });

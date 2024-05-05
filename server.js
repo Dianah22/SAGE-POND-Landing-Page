@@ -124,7 +124,6 @@ app.get('/', (req, res) => {
         dateCreated: Timestamp.now(),
       };
       docData.messages.push(newMessage);
-
       const docRef = doc(db, 'chats', chatId)
       await updateDoc(docRef, {messages: arrayUnion(newMessage)});
       res.send({success:true})
@@ -142,13 +141,14 @@ app.get('/', (req, res) => {
       const docData = {
         chatid: chatId,
         messages: [
-          message
+         {content:message,sender:userId,timestamp:Timestamp.now()}
   ],
         createdBy: userId, 
         dateCreated: Timestamp.now(),
       };
       const docRef = doc(db, 'chats', chatId);
       await setDoc(docRef, docData)
+      console.log(chatId)
       res.json({chatId });
     } catch (error) {
       console.error(error);
@@ -160,10 +160,11 @@ app.get('/', (req, res) => {
   const db = getFirestore(fb)
   const docRef = await doc(db, "chats", chatId)
   const docSnap = await getDoc(docRef);
-if (docSnap.exists && docSnap.data().createdBy==auth.currentUser.uid) {
+if (docSnap.exists() && docSnap.data().createdBy==auth.currentUser.uid) {
   const messages = docSnap.data().messages || []; // Extract messages array or empty arra
   messages.sort((a, b) => a.timestamp - b.timestamp);
   res.json({ messages });
+}else{
 }
 //res.sendFile(path.join(initial_path, "chat.html"))
 })
