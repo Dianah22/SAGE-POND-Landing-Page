@@ -146,7 +146,7 @@ editor.addEventListener('keydown', function(event) {
                 const text = 'new chat';
                 const new_div = document.createElement('div');
                 new_div.innerHTML = `<div class="rchat h-10 rounded-3xl hover:bg-gray-700 transition p-2 m-2 flex">
-                    <a href ='app/${data.chatId}'>${text}</a>
+                    <a href =/app/${data.chatId}>${text}</a>
                     <div class='menu h-[24px] w-[24px] pt-[5px]'>
                     <span>Push Btn</span>
                     </div
@@ -178,7 +178,7 @@ editor.addEventListener('keydown', function(event) {
             data.chatIds.forEach(item => {
                 const di = document.createElement("div");
                 di.innerHTML = `<div class="rchat h-10 rounded-3xl hover:bg-gray-700 transition p-2 m-2">
-                    <a href ='${item}'>${text}</a>
+                    <a href ='app/${item}'>${text}</a>
                 </div>`;
                 recent.append(di);
             });

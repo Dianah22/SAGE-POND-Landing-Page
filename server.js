@@ -167,7 +167,7 @@ if (docSnap.exists && docSnap.data().createdBy==auth.currentUser.uid) {
   messages.sort((a, b) => a.timestamp - b.timestamp);
   res.json({ messages });
 }
-res.sendFile(path.join(initial_path, "chat.html"))
+//res.sendFile(path.join(initial_path, "chat.html"))
 })
 app.get('/welcome',(req,res)=>{
   res.sendFile(path.join(initial_path,'welcome.html'))
