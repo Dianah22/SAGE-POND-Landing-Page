@@ -10,7 +10,7 @@ const content = document.querySelector('.chatarea')
 const nav = document.querySelector('.nav')
 const side_btn = document.querySelector('.side-button')
 const side_b = document.querySelector('.side-b')
-
+const chat_history = document.querySelector('.chat_history')
 const recents = document.querySelector('.recent')
 const history = document.querySelector('.chat_history')
 const welcome_screen = document.querySelector('.welcome_screen')
@@ -146,9 +146,12 @@ editor.addEventListener('keydown', function(event) {
                 const text = 'new chat';
                 const new_div = document.createElement('div');
                 new_div.innerHTML = `<div class="rchat h-10 rounded-3xl hover:bg-gray-700 transition p-2 m-2 flex">
+                <span class="material-symbols-outlined">
+chat_bubble
+</span>
                     <button data-chat-id=${data.chatId}>${text}</button>
                     <div class='menu h-[24px] w-[24px] pt-[5px]'>
-                    <span>Push Btn</span>
+                    
                     </div
                 </div>`;
                 recent.appendChild(new_div);
@@ -171,11 +174,23 @@ recents.addEventListener('click',async (e)=>{
   if(chatId){
     const chatDetailsResponse = await fetch(`/app/${chatId}`);
     const chatDetails = await chatDetailsResponse.json();
-    console.log("Chat details:", chatDetails);
+    console.log("Chat details:", chatDetails.messages);
+    chatDetails.messages.forEach(message=>{
+      const x =  document.createElement('div')
+      welcome_screen.style.display='none'
+      x.innerHTML=`<div class="user_query h-[100px]">
+    <div class="image-container">
+      <img src="images/caleb.jpg" class="w-10 rounded-full">
+    </div>
+    <div class="info text-ellipsis text-xl">
+      <h2>${message.content}</h2>
+    </div>`
+    history.appendChild(x)
+    })
     const newUrl = `app/${chatId}`;
     window.history.pushState({}, 'Unveyl', newUrl);
   }else{
-    next()
+  
   }
 })
    async function fetchData() {

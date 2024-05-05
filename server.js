@@ -119,8 +119,10 @@ app.get('/', (req, res) => {
       const docData = {
         chatid: chatId,
         messages: [
-  ],
-        createdBy: userId, 
+  
+  
+        ],
+        createdBy: userId,
         dateCreated: Timestamp.now(),
       };
       docData.messages.push(newMessage);
