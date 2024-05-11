@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "webpack",
     "start": "nodemon server.js",
-    "build": "tailwindcss -i ./css/chat/style.css -o ./css/chat/main.css",
+    "build": "tailwindcss -i ./ss.css -o ./admin.css",
     "watch": "tailwindcss -i /admin/content/style.css -o /admin/content/main.css --watch"
   },
   "author": "",
