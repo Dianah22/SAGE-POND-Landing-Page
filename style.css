@@ -1,7 +1,15 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+canvas {
+   position: absolute;
+   top: 0;
+   left: 0;
+   z-index: -1; /* behind everything else */
+   filter:blur(40px)
 
+ }
+ 
 .sticky{
    position: fixed;
    top:15px;

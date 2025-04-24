@@ -6,12 +6,13 @@
   "scripts": {
     "dev": "webpack",
     "start": "nodemon server.js",
-    "build": "tailwindcss -i ./ss.css -o ./admin.css",
-    "watch": "tailwindcss -i /admin/content/style.css -o /admin/content/main.css --watch"
+    "build": "tailwindcss -i style.css -o css/main.css",
+    "watch": "tailwindcss -i style.css -o css/main.css --watch"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@thi.ng/color": "^5.7.34",
     "body-parser": "^1.20.2",
     "crypto": "^1.0.1",
     "dompurify": "^3.1.0",
