@@ -1,65 +1,16 @@
+// DOM
+const navbar = document.querySelector('#nav');
+const mobo_cont = document.querySelector(".mobo-container");
 
-const navbar = document.querySelector('#nav')
-const mobo_cont = document.querySelector(".mobo-container")
-window.addEventListener('scroll',e=>{
-   var nav = navbar.offsetTop
-   if(nav<window.pageYOffset){
-      navbar.classList.add("sticky")
-   }
-})
-function  delay(n){
-   n=n||2000;
-   return new Promise((done)=>{
-      setTimeout(()=>{
-         done();
-      },n)
-   })
-}
-const gsaptl = gsap.timeline({paused:true})
-document.addEventListener('DOMContentLoaded',e=>{
-   gsap.set('.img',{y:1000})
-   gsap.set('.loader-imgs',{x:500})
-   const tl =gsap.timeline({delay:1})
-   tl.to('.img',{
-      y:0,
-      duration:1.5,
-      stagger:0.05,
-      ease:'power3.inOut'
-   }).to('.loader-imgs',{
-      x:0,
-      duration:3,
-      ease:'power3.inOut'
-   },"-=2.5")
-   .to('.img:not(#loader-logo)',{
-      clipPath:'polygon(0% 0%, 100% 0%,100% 0%,0% 0%)',
-      duration:1,
-      stagger:0.1,
-      ease:'power3.inOut'
-   })
-   .to('.loader',{
-      clipPath:'polygon(0% 0%, 100% 0%,100% 0%,0% 0%)',
-      duration:1,
-      ease:'power3.inOut'
-   },"-=0.5")
-  
-})
-const letters='ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-document.querySelector('.team').onmouseover = e=>{
-   let iterations =0
-const interval=setInterval(()=>{
-   e.target.innerText = e.target.innerText.split('')
-   .map((letter,index)=>{
-      if(index<iterations){
-         return e.target.dataset.value[index]
-      }
-      return letters[Math.floor(Math.random()*26)]
-})
-   .join('')
- if(iterations>=e.target.dataset.value.length) clearInterval(interval)
-iterations+=1/2
-},30)
-}
-// Scene, Camera, Renderer
+// Sticky Nav Scroll Event
+window.addEventListener('scroll', () => {
+  var nav = navbar.offsetTop;
+  if (nav < window.pageYOffset) {
+    navbar.classList.add("sticky");
+  }
+});
+
+// Three.js Setup: Scene, Camera, Renderer
 const scene = new THREE.Scene();
 const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
 const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -69,36 +20,55 @@ document.body.appendChild(renderer.domElement);
 // Clock
 const clock = new THREE.Clock();
 
-// Load Shaders
-const vertexShader = fetch('gradient.vert').then(res => res.text());
-const fragmentShader = fetch('gradient.frag').then(res => res.text());
+// Shader Loader
+Promise.all([
+  fetch('gradient.vert').then(res => res.text()),
+  fetch('output.frag').then(res => res.text())
+]).then(([vertexShaderSource, fragmentShaderSource]) => {
 
-Promise.all([vertexShader, fragmentShader]).then(([vert, frag]) => {
+  // Uniform values
+  const colourPalette = [
+    new THREE.Vector3(0.95, 0.2, 0.2),
+    new THREE.Vector3(0.2, 0.95, 0.2),
+    new THREE.Vector3(0.2, 0.2, 0.95),
+    new THREE.Vector3(0.95, 0.95, 0.2)
+  ];
+
   const material = new THREE.ShaderMaterial({
-    vertexShader: vert,
-    fragmentShader: frag,
+    vertexShader: vertexShaderSource,
+    fragmentShader: fragmentShaderSource,
     uniforms: {
-      uTime: { value: 0.0 }
+      uTime: { value: 0.0 },
+      uScrollProgress: { value: 0.0 },
+      uColourPalette: { value: colourPalette },
+      uUvScale: { value: 1.0 },
+      uUvDistortionIterations: { value: 4.0 },
+      uUvDistortionIntensity: { value: 0.2 }
     }
   });
 
-  // Plane geometry covering the viewport
+  // Fullscreen Quad Geometry
   const geometry = new THREE.PlaneGeometry(2, 2);
   const mesh = new THREE.Mesh(geometry, material);
   scene.add(mesh);
 
-  // Render loop
+  // Animate Loop
   function animate() {
     requestAnimationFrame(animate);
-    material.uniforms.uTime.value = clock.getElapsedTime();
+
+    const elapsedTime = clock.getElapsedTime();
+
+    // Update uniforms
+    material.uniforms.uTime.value = elapsedTime;
+    material.uniforms.uScrollProgress.value = window.scrollY / (document.body.scrollHeight - window.innerHeight);
+
     renderer.render(scene, camera);
   }
 
   animate();
 });
 
-// Responsive resize
+// Window Resize Handling
 window.addEventListener('resize', () => {
   renderer.setSize(window.innerWidth, window.innerHeight);
 });
-
