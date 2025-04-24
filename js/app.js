@@ -36,14 +36,12 @@ Promise.all([
 
   // Uniform values
   const colourPalette = [
-    new THREE.Vector3(0.117, 0.164, 0.471), // Deep Blue
-    new THREE.Vector3(0.0, 0.784, 1.0),     // Cyan
-    new THREE.Vector3(0.631, 0.619, 1.0),   // Soft Purple
-    new THREE.Vector3(0.518, 0.953, 0.816), // Pale Teal
-    new THREE.Vector3(0.659, 0.333, 0.969), // Purple
-    new THREE.Vector3(0.980, 0.800, 0.082), // Yellow
-    new THREE.Vector3(0.231, 0.510, 0.965), // Bright Blue
-    new THREE.Vector3(0.937, 0.267, 0.267)  // Soft Red
+    new THREE.Vector3(0.9647, 0.5176, 0.4039),//#F68467
+    new THREE.Vector3(0.6118, 0.7490, 0.9451), // 9CBFF1
+    new THREE.Vector3(0.7294, 0.1608, 0.7843), // BA29C8
+    new THREE.Vector3(1.0, 0.2, 0.2392), // #FF333D
+    new THREE.Vector3(0.6902, 0.3922, 0.8667),//B064DD
+   // new THREE.Vector3(0.9216, 0.3843, 0.4667)//EB6277
   ];
 
   const material = new THREE.ShaderMaterial({
@@ -54,7 +52,7 @@ Promise.all([
       uScrollProgress: { value: 0.0 },
       uColourPalette: { value: colourPalette },
       uUvScale: { value: 1.0 },
-      uUvDistortionIterations: { value: 4.0 },
+      uUvDistortionIterations: { value: 2.0 },
       uUvDistortionIntensity: { value: 0.2 }
     }
   });
@@ -76,9 +74,7 @@ Promise.all([
     const elapsedTime = clock.getElapsedTime();
 
     // Update uniforms
-    material.uniforms.uTime.value = elapsedTime;
-    material.uniforms.uScrollProgress.value = window.scrollY / (document.body.scrollHeight - window.innerHeight);
-
+    material.uniforms.uTime.value = elapsedTime * 0.47;
     renderer.render(scene, camera);
   }
 

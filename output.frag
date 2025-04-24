@@ -115,7 +115,11 @@ varying vec2 vUv;
 // Color palette function
 // http://dev.thi.ng/gradients/
 vec3 cosineGradientColour(in float t, in vec3 a, in vec3 b, in vec3 c, in vec3 d) {
-  return clamp(a + b * cos(6.28318 * (c * t + d)), 0.0, 1.0);
+  vec3 col = a + b * cos(6.28318 * (c * t + d));
+col = max(col, vec3(0.2)); // set a floor value
+ // blend towards white to avoid black areas
+return clamp(col, 0.0, 1.0);
+
 }
 
 void main() {

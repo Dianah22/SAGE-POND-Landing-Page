@@ -1802,11 +1802,6 @@ video {
   --tw-gradient-to: #ec4899 var(--tw-gradient-to-position);
 }
 
-.bg-clip-text {
-  -webkit-background-clip: text;
-          background-clip: text;
-}
-
 .object-contain {
   -o-object-fit: contain;
      object-fit: contain;
@@ -2239,10 +2234,6 @@ video {
   color: rgb(13 148 136 / var(--tw-text-opacity));
 }
 
-.text-transparent {
-  color: transparent;
-}
-
 .text-white {
   --tw-text-opacity: 1;
   color: rgb(255 255 255 / var(--tw-text-opacity));
@@ -2351,7 +2342,7 @@ canvas {
   left: 0;
   z-index: -1;
   /* behind everything else */
-  filter:blur(40px)
+  filter:blur(60px)
 }
 
 .sticky{

@@ -6,7 +6,7 @@ canvas {
    top: 0;
    left: 0;
    z-index: -1; /* behind everything else */
-   filter:blur(40px)
+   filter:blur(60px)
 
  }
  
