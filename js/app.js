@@ -36,11 +36,10 @@ Promise.all([
 
   // Uniform values
   const colourPalette = [
-    new THREE.Vector3(0.9647, 0.5176, 0.4039),//#F68467
-    new THREE.Vector3(0.6118, 0.7490, 0.9451), // 9CBFF1
-    new THREE.Vector3(0.7294, 0.1608, 0.7843), // BA29C8
-    new THREE.Vector3(1.0, 0.2, 0.2392), // #FF333D
-    new THREE.Vector3(0.6902, 0.3922, 0.8667),//B064DD
+    new THREE.Vector3(0.65, 0.25, 0.75), // purple-pink
+    new THREE.Vector3(0.25, 0.65, 0.85), // cyan-blue
+    new THREE.Vector3(0.95, 0.75, 0.35), // warm yellow
+    new THREE.Vector3(0.85, 0.45, 0.95)  // magenta
    // new THREE.Vector3(0.9216, 0.3843, 0.4667)//EB6277
   ];
 
@@ -80,5 +79,3 @@ Promise.all([
 
   animate();
 });
-
-// Window Resize Handling
