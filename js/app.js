@@ -85,12 +85,11 @@ gsap.to(unveyl, {
   scrollTrigger: {
     trigger: '.herod',
      start:"top",
-    //end: "bottom 100%",
-    scrub:4,
+    scrub:2,
     pin: '.herod',
     markers: true,  
     toggleActions: "restart pause reverse pause",  
   },
   x: -1900,
-  duration: 5
+  duration: 3
 });
