@@ -73,9 +73,24 @@ Promise.all([
     const elapsedTime = clock.getElapsedTime();
 
     // Update uniforms
-    material.uniforms.uTime.value = elapsedTime * 0.47;
+    material.uniforms.uTime.value = elapsedTime * 0.45;
     renderer.render(scene, camera);
   }
 
   animate();
+});
+gsap.registerPlugin(ScrollTrigger);
+const unveyl = document.getElementById('unveyl')
+gsap.to(unveyl, {
+  scrollTrigger: {
+    trigger: '.herod',
+     start:"top",
+    //end: "bottom 100%",
+    scrub:4,
+    pin: '.herod',
+    markers: true,  
+    toggleActions: "restart pause reverse pause",  
+  },
+  x: -1900,
+  duration: 5
 });
