@@ -20,6 +20,15 @@ const app = express()
 const helmet = require('helmet'); // Added Helmet
 const rateLimit = require('express-rate-limit'); // Added rate limiter
 const validator = require('validator');
+const admin = require('firebase-admin'); // Added Firebase Admin SDK
+
+// Initialize Firebase Admin SDK
+if (!admin.apps.length) {
+    admin.initializeApp({
+        credential: admin.credential.applicationDefault(),
+    });
+}
+
 let initial_path = __dirname 
 const port = process.env.PORT || 4000
 app.use(express.static(initial_path))
@@ -62,35 +71,33 @@ app.get('/login', (req, res) => {
 app.get('/about',(req,res)=>{
   res.sendFile(path.join(initial_path,"about.html"))
   })
-  const isAuthenticated = async (req, res, next) => {
-    try {
-        const user = await new Promise((resolve, reject) => {
-            const unsubscribe = onAuthStateChanged(auth, (user) => {
-                unsubscribe(); // Ensure the listener is removed after being called
-                resolve(user);
-            }, reject);
-        });
 
-        if (user) {
-            req.user = user; // Attach user to request
-            console.log('User is authenticated:', user.uid);
-            next(); // Proceed to the next middleware or route handler
-        } else {
-            if (!res.headersSent) {
-                console.log('User is not authenticated, redirecting to login');
-                res.redirect('/login'); // Redirect to login if no user is signed in
-            }
-        }
+// Refactor isAuthenticated middleware to verify token instead of using onAuthStateChanged
+const isAuthenticated = async (req, res, next) => {
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return res.status(401).json({ success: false, message: 'Unauthorized: No token provided' });
+    }
+
+    const token = authHeader.split(' ')[1]; // Extract the token from the Authorization header
+
+    try {
+        // Verify the token using Firebase Admin SDK
+        const decodedToken = await admin.auth().verifyIdToken(token);
+        req.user = decodedToken; // Attach decoded token to the request object
+        next(); // Proceed to the next middleware or route handler
     } catch (error) {
-        console.error('Error checking authentication:', error);
-        if (!res.headersSent) {
-            res.status(500).send('Internal Server Error');
-        }
+        res.redirect('/login'); // Redirect to login if token verification fails
+        console.error('Error verifying token:', error);
+        res.status(401).json({ success: false, message: 'Unauthorized: Invalid or expired token' });
     }
 };
-  app.get('/app',isAuthenticated,(req,res)=>{
-    res.sendFile(path.join(initial_path,"chat.html"))
-  })
+
+app.get('/app', isAuthenticated, (req, res) => {
+    res.sendFile(path.join(initial_path, 'chat.html'));
+});
+
   app.get('/signup',(req,res)=>{
     res.sendFile(path.join(initial_path,"signup.html"))
   }) 
@@ -278,6 +285,28 @@ app.get('/api/blogs', async (req, res) => {
     console.error('Error fetching blogs:', error);
     res.status(500).json({ success: false, message: 'Internal Server Error' });
   }
+});
+
+app.post('/api/verify-token', async (req, res) => {
+    const { token } = req.body;
+
+    if (!token) {
+        return res.status(400).json({ success: false, message: 'Token is required' });
+    }
+
+    try {
+        // Verify the token using Firebase Admin SDK
+        const decodedToken = await admin.auth().verifyIdToken(token);
+        const uid = decodedToken.uid;
+
+        // Optionally, enforce single-session login by checking custom claims or database
+        console.log('Token verified for user:', uid);
+
+        res.json({ success: true, uid });
+    } catch (error) {
+        console.error('Error verifying token:', error);
+        res.status(401).json({ success: false, message: 'Invalid or expired token' });
+    }
 });
 
 app.use((req,res)=>{
