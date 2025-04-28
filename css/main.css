@@ -1060,6 +1060,10 @@ video {
   height: 80px;
 }
 
+.h-auto {
+  height: auto;
+}
+
 .h-full {
   height: 100%;
 }
@@ -1194,10 +1198,6 @@ video {
 
 .min-w-full {
   min-width: 100%;
-}
-
-.max-w-3xl {
-  max-width: 48rem;
 }
 
 .max-w-\[800px\] {
@@ -2268,7 +2268,23 @@ canvas {
   left: 0;
   z-index: -1;
   /* behind everything else */
-  filter:blur(60px)
+  filter:blur(40px)
+}
+
+#glow{
+  position: relative;
+  bottom: 18px;
+  left: 0;
+  width: 100px;
+  height: 25px;
+  background: linear-gradient(90deg, 
+     #ff0000, 
+     #ffa500, 
+     #00ffff, 
+     #8a2be2
+   );
+  border-radius: 0 0 16px 16px;
+  z-index: -1;
 }
 
 .sticky{
@@ -2621,6 +2637,12 @@ section img{
     -moz-transform:rotate(-2turn) tranlate(200px) rotate(2turn);
     -o-transform:rotate(-2turn) translate(200px) rotate(2turn);
   }
+}
+
+.hover\:scale-105:hover {
+  --tw-scale-x: 1.05;
+  --tw-scale-y: 1.05;
+  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
 }
 
 .hover\:bg-gray-100:hover {

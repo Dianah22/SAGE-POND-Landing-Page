@@ -6,10 +6,25 @@ canvas {
    top: 0;
    left: 0;
    z-index: -1; /* behind everything else */
-   filter:blur(60px)
+   filter:blur(40px)
 
  }
- 
+ #glow{
+   position: relative;
+   bottom: 18px;
+   left: 0;
+   width: 100px;
+   height: 25px;
+   background: linear-gradient(90deg, 
+     #ff0000, 
+     #ffa500, 
+     #00ffff, 
+     #8a2be2
+   );
+   border-radius: 0 0 16px 16px;
+   z-index: -1;
+   
+ }
 .sticky{
    position: fixed;
    top:15px;

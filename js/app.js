@@ -84,10 +84,9 @@ const unveyl = document.getElementById('unveyl')
 gsap.to(unveyl, {
   scrollTrigger: {
     trigger: '.herod',
-     start:"top",
+     start:"top 40%",
     scrub:2,
-    pin: '.herod',
-    markers: true,  
+    pin: '.herod', 
     toggleActions: "restart pause reverse pause",  
   },
   x: -1900,
