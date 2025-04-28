@@ -2,10 +2,13 @@
 <html>
 <head>
 <title>SAGE POND DASH</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="stylesheet" href="./admin.css">
 <link rel="stylesheet" href="./css/apexcharts.min.css">
 <link rel="stylesheet" href="css/rte_theme_default.css">
 </head>
+<body class="bg-gray-50 dark:bg-gray-900">
 <nav class="fixed z-30 w-full bg-white border-b border-gray-200 dark:bg-gray-800 dark:border-gray-700">
   <div class="px-3 py-3 lg:px-5 lg:pl-3">
     <div class="flex items-center justify-between">
@@ -18,7 +21,8 @@
           <img src="/images/logo.svg" class="h-8 mr-3" alt="SAGE POND Logo" />
           <span class="self-center text-xl font-semibold sm:text-2xl whitespace-nowrap dark:text-white">SAGE POND</span>
         </a>
-        <form action="#" method="GET" class="hidden lg:block lg:pl-3.5"autocomplete>
+        <!-- Search input - hidden on mobile -->
+        <div class="hidden lg:block lg:pl-3.5 flex-1">
           <label for="topbar-search" class="sr-only">Search</label>
           <div class="relative mt-1 lg:w-96">
             <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
@@ -26,7 +30,7 @@
             </div>
             <input type="text" name="email" id="topbar-search" class="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full pl-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="Search">
           </div>
-        </form>
+        </div>
       </div>
       <div class="flex items-center">
           <!-- Search mobile -->
@@ -122,7 +126,7 @@
             <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM11 13a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
           </button>
           <!-- Dropdown menu -->
-          <div class="z-20 z-50 hidden max-w-sm my-4 overflow-hidden text-base list-none bg-white divide-y divide-gray-100 rounded shadow-lg dark:bg-gray-700 dark:divide-gray-600" id="apps-dropdown">
+          <div class="z-50 hidden max-w-sm my-4 overflow-hidden text-base list-none bg-white divide-y divide-gray-100 rounded shadow-lg dark:bg-gray-700 dark:divide-gray-600" id="apps-dropdown">
             <div class="block px-4 py-2 text-base font-medium text-center text-gray-700 bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                 Apps
             </div>
@@ -412,7 +416,7 @@
   </div>
 </nav>
 <div class="flex pt-16 overflow-hidden bg-gray-50 dark:bg-gray-900">
-  <aside id="sidebar" class="fixed flex top-0 left-0 z-20  flex-col flex-shrink-0 hidden w-64 h-full pt-16 font-normal duration-75 lg:flex transition-width" aria-label="Sidebar">
+  <aside id="sidebar" class="fixed top-0 left-0 z-20 flex-col flex-shrink-0 w-64 h-full pt-16 font-normal duration-75 hidden lg:flex transition-width" aria-label="Sidebar">
     <div class="relative flex flex-col flex-1 min-h-0 pt-0 bg-white border-r border-gray-200 dark:bg-gray-800 dark:border-gray-700">
       <div class="flex flex-col flex-1 pt-5 pb-4 overflow-y-auto">
         <div class="flex-1 px-3 space-y-1 bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
@@ -2403,4 +2407,58 @@
 <script type="text/javascript" src="richtexteditor/richtexteditor/rte.js"></script>
 <script type="text/javascript" src='richtexteditor/richtexteditor/plugins/all_plugins.js'></script>
 <script src='js/editor.js'></script>
+<script>
+// Mobile menu toggle
+document.getElementById('toggleSidebarMobile').addEventListener('click', function() {
+  document.getElementById('sidebar').classList.toggle('hidden');
+  document.getElementById('toggleSidebarMobileHamburger').classList.toggle('hidden');
+  document.getElementById('toggleSidebarMobileClose').classList.toggle('hidden');
+});
+
+// Mobile search toggle
+document.getElementById('toggleMobileSearch').addEventListener('click', function() {
+  document.getElementById('mobileSearchInput').classList.remove('hidden');
+  document.getElementById('mobileSearchInput').classList.add('flex');
+});
+
+// Theme toggle functionality
+if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+    document.documentElement.classList.add('dark');
+} else {
+    document.documentElement.classList.remove('dark');
+}
+
+let themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');
+let themeToggleLightIcon = document.getElementById('theme-toggle-light-icon');
+
+if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+    themeToggleLightIcon.classList.remove('hidden');
+} else {
+    themeToggleDarkIcon.classList.remove('hidden');
+}
+
+document.getElementById('theme-toggle').addEventListener('click', function() {
+    themeToggleDarkIcon.classList.toggle('hidden');
+    themeToggleLightIcon.classList.toggle('hidden');
+
+    if (localStorage.getItem('color-theme')) {
+        if (localStorage.getItem('color-theme') === 'light') {
+            document.documentElement.classList.add('dark');
+            localStorage.setItem('color-theme', 'dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+            localStorage.setItem('color-theme', 'light');
+        }
+    } else {
+        if (document.documentElement.classList.contains('dark')) {
+            document.documentElement.classList.remove('dark');
+            localStorage.setItem('color-theme', 'light');
+        } else {
+            document.documentElement.classList.add('dark');
+            localStorage.setItem('color-theme', 'dark');
+        }
+    }
+});
+</script>
+</body>
 </html>

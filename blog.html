@@ -1,12 +1,64 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Blog</title>
+    <title>Blog - SAGE POND</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="icon" type="image/png" href="images/favicon.png">
 </head>
-<body>
-    
+<body class="bg-white dark:bg-gray-900 text-gray-900 dark:text-white min-h-screen">
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full z-50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center">
+                    <a href="/" class="flex-shrink-0">
+                        <img src="images/loadeer.svg" alt="SAGE POND" class="h-8">
+                    </a>
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-4">
+                        <a href="/" class="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white px-3 py-2 rounded-md text-sm font-medium">Home</a>
+                        <a href="/blog" class="text-gray-900 dark:text-white px-3 py-2 rounded-md text-sm font-medium">Blog</a>
+                        <a href="/research" class="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white px-3 py-2 rounded-md text-sm font-medium">Research</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Blog Content -->
+    <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-16">
+        <article class="prose dark:prose-invert lg:prose-lg mx-auto">
+            <!-- Blog content will be dynamically inserted here -->
+            <div id="blog-content">
+                <div class="animate-pulse">
+                    <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-4"></div>
+                    <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2 mb-8"></div>
+                    <div class="h-64 bg-gray-200 dark:bg-gray-700 rounded mb-8"></div>
+                    <div class="space-y-3">
+                        <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                        <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-5/6"></div>
+                        <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-4/6"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-8 border-t border-gray-200 dark:border-gray-700 pt-8">
+                <div class="flex items-center space-x-4">
+                    <img id="author-image" src="images/loadeer.svg" alt="" class="h-12 w-12 rounded-full">
+                    <div>
+                        <div id="author-name" class="text-sm font-medium"></div>
+                        <div id="publish-date" class="text-sm text-gray-500 dark:text-gray-400"></div>
+                    </div>
+                </div>
+            </div>
+        </article>
+    </main>
+
+    <script src="https://www.gstatic.com/firebasejs/9.x.x/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.x.x/firebase-firestore.js"></script>
+    <script src="js/blog.js"></script>
 </body>
-<script src="js/blog.js"></script>
 </html>

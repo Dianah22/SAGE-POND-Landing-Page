@@ -1,6 +1,5 @@
-
 const {initializeApp} = require('firebase/app')
-const {doc, setDoc, Timestamp,getFirestore, collection,getDocs,updateDoc,arrayUnion,getDoc} = require('firebase/firestore')
+const {doc, setDoc, Timestamp,getFirestore, collection,getDocs,updateDoc,arrayUnion,getDoc, query, orderBy} = require('firebase/firestore')
 const firebaseConfig = {
   apiKey: "AIzaSyDyXWSxpBqk7lgomflc_Sl3BCXp8Dvffbg",
   authDomain: "sage-pond-gen-ai.firebaseapp.com",
@@ -12,7 +11,7 @@ const firebaseConfig = {
 };
 const fb = initializeApp(firebaseConfig);
 const {uid} = require('uid')
-const {getAuth,createUserWithEmailAndPassword,updateProfile,signInWithEmailAndPassword} = require('firebase/auth')
+const {getAuth, createUserWithEmailAndPassword, updateProfile, signInWithEmailAndPassword, setPersistence, browserLocalPersistence, onAuthStateChanged, browserSessionPersistence} = require('firebase/auth')
 const auth = getAuth(fb)
 const express = require('express')
 const path = require('path') 
@@ -49,26 +48,46 @@ imgSrc: ["'self'", 'data:'], // Restrict image sources
 app.get('/', (req, res) => {
     res.sendFile(path.join(initial_path, "index.html"));
   });
-  app.get('/login',(req,res)=>{
-    res.sendFile(path.join(__dirname,'login.html'))
-  })
-  app.get('/about',(req,res)=>{
+app.get('/login', (req, res) => {
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            // If user is already logged in, redirect to /app
+            res.redirect('/app');
+        } else {
+            // Otherwise, serve the login page
+            res.sendFile(path.join(__dirname, 'login.html'));
+        }
+    });
+});
+app.get('/about',(req,res)=>{
   res.sendFile(path.join(initial_path,"about.html"))
   })
   const isAuthenticated = async (req, res, next) => {
     try {
-      // Check if user is logged in using Firebase Authentication
-      const user = await auth.currentUser;
-      if (user) {
-        next();
-      } else {
-        res.status(401).redirect('/login'); // Adjust redirect path as needed
-      }
+        const user = await new Promise((resolve, reject) => {
+            const unsubscribe = onAuthStateChanged(auth, (user) => {
+                unsubscribe(); // Ensure the listener is removed after being called
+                resolve(user);
+            }, reject);
+        });
+
+        if (user) {
+            req.user = user; // Attach user to request
+            console.log('User is authenticated:', user.uid);
+            next(); // Proceed to the next middleware or route handler
+        } else {
+            if (!res.headersSent) {
+                console.log('User is not authenticated, redirecting to login');
+                res.redirect('/login'); // Redirect to login if no user is signed in
+            }
+        }
     } catch (error) {
-      console.error('Error checking authentication:', error);
-      res.status(500).send('Internal Server Error'); // Handle errors appropriately
+        console.error('Error checking authentication:', error);
+        if (!res.headersSent) {
+            res.status(500).send('Internal Server Error');
+        }
     }
-  };
+};
   app.get('/app',isAuthenticated,(req,res)=>{
     res.sendFile(path.join(initial_path,"chat.html"))
   })
@@ -94,17 +113,33 @@ app.get('/', (req, res) => {
     }
   });   
   app.post('/api/login', async (req, res) => {
-    const { email, password} = req.body;
-    try {
-      //await req.csrf.verify(crsf);
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      const uid = userCredential.user.uid;
-      res.json({ success: true, uid,redirectTo: '/app' });
-    } catch (error) {
-      console.error(error);
-      res.status(400).json({ success: false, message: error.message }); // Handle specific errors
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+        return res.status(400).json({ 
+            success: false, 
+            message: 'Email and password are required' 
+        });
     }
-  });
+
+    try {
+        // Set persistence to SESSION (cleared when browser tab closes)
+        await setPersistence(auth, browserSessionPersistence);
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        const uid = userCredential.user.uid;
+        res.json({ 
+            success: true, 
+            uid, 
+            redirectTo: '/app' 
+        });
+    } catch (error) {
+        console.error('Login error:', error);
+        res.status(400).json({ 
+            success: false, 
+            message: error.message 
+        });
+    }
+});
   app.post('/send-message', async (req, res) => {
     const db = getFirestore(fb)
     const userId = auth.currentUser.uid
@@ -191,10 +226,63 @@ app.get('/welcome',(req,res)=>{
       res.status(500).send({ message: 'Error fetching chat IDs' });
     }
   });
+
+// Blog routes
+app.get('/blog/:id', async (req, res) => {
+  try {
+    const blogId = req.params.id;
+    const db = getFirestore(fb);
+    const blogDoc = await getDoc(doc(db, 'blogs', blogId));
+    
+    if (blogDoc.exists()) {
+      res.sendFile(path.join(initial_path, "blog.html"));
+    } else {
+      res.status(404).send('Blog post not found');
+    }
+  } catch (error) {
+    console.error('Error fetching blog:', error);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+app.get('/api/blog/:id', async (req, res) => {
+  try {
+    const blogId = req.params.id;
+    const db = getFirestore(fb);
+    const blogDoc = await getDoc(doc(db, 'blogs', blogId));
+    
+    if (blogDoc.exists()) {
+      res.json({ success: true, blog: { id: blogDoc.id, ...blogDoc.data() } });
+    } else {
+      res.status(404).json({ success: false, message: 'Blog post not found' });
+    }
+  } catch (error) {
+    console.error('Error fetching blog:', error);
+    res.status(500).json({ success: false, message: 'Internal Server Error' });
+  }
+});
+
+app.get('/api/blogs', async (req, res) => {
+  try {
+    const db = getFirestore(fb);
+    const blogsQuery = query(collection(db, 'blogs'), orderBy('publishedAt', 'desc'));
+    const querySnapshot = await getDocs(blogsQuery);
+    
+    const blogs = [];
+    querySnapshot.forEach((doc) => {
+      blogs.push({ id: doc.id, ...doc.data() });
+    });
+    
+    res.json({ success: true, blogs });
+  } catch (error) {
+    console.error('Error fetching blogs:', error);
+    res.status(500).json({ success: false, message: 'Internal Server Error' });
+  }
+});
+
 app.use((req,res)=>{
     res.send('404')
   })
   app.listen(port,()=>{
     console.log(`listening on Port ${port}`)
   })
-  
