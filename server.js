@@ -108,20 +108,23 @@ app.get('/about',(req,res)=>{
   })
 
 // Refactor isAuthenticated middleware to verify token instead of using Firebase Auth
-const isAuthenticated = async (req, res, next,user) => {
-  console.log(user)
+const isAuthenticated = async (req, res, next) => {
     try {
-        // Assume the user is already verified and attach the user object to the request
-        if (req.user) {
-            next(); // Proceed to the next middleware or route handler
-        } else {
-            res.status(401).json({ success: false, message: 'Unauthorized: User not verified' });
+        const token = req.headers.authorization?.split(' ')[1];
+        if (!token) {
+            return res.status(401).json({ success: false, message: 'No token provided' });
         }
+
+        // Verify the token using Firebase Admin SDK
+        const decodedToken = await admin.auth().verifyIdToken(token);
+        req.user = decodedToken;
+        next();
     } catch (error) {
-        console.log('Error in isAuthenticated middleware:', error);
-        res.status(500).json({ success: false, message: 'Internal Server Error' });
+        console.error('Error in isAuthenticated middleware:', error);
+        res.status(401).json({ success: false, message: 'Invalid token' });
     }
 };
+
 app.post('/api/verify-token', async (req, res) => {
     const { token } = req.body;
 
@@ -146,100 +149,32 @@ app.post('/api/verify-token', async (req, res) => {
         res.status(401).json({ success: false, message: 'Invalid or expired token' });
     }
 });
-app.get('/app', isAuthenticated, (req, res) => {
+
+// Generate unique chat ID and handle chat creation route
+app.post('/create-chat', (req, res) => {
+    try {
+        const chatId = uid(); // Generate unique ID for the chat
+        res.json({ success: true, chatId });
+    } catch (error) {
+        console.error('Error creating chat:', error);
+        res.status(500).json({ success: false, message: 'Error creating chat' });
+    }
+});
+
+// Handle specific chat route
+app.get('/app/:chatId', (req, res) => {
+    const chatId = req.params.chatId;
     res.sendFile(path.join(initial_path, 'chat.html'));
 });
 
-  app.get('/signup',(req,res)=>{
-    res.sendFile(path.join(initial_path,"signup.html"))
-  })   
-  app.post('/send-message', async (req, res) => {
-    const db = getFirestore(fb)
-    const userId = auth.currentUser.uid
-    const message = req.body.message; // Get message from request body
-    const chatId = req.body.chatId;
-    try {
-      const newMessage = {
-        sender: userId,
-        content: message,
-        timestamp: Timestamp.now(),
-      };
-      const docData = {
-        chatid: chatId,
-        messages: [
-  
-  
-        ],
-        createdBy: userId,
-        dateCreated: Timestamp.now(),
-      };
-      docData.messages.push(newMessage);
-      const docRef = doc(db, 'chats', chatId)
-      await updateDoc(docRef, {messages: arrayUnion(newMessage)});
-      res.send({success:true})
-    } catch (error) {
-      console.error(error);
-      res.status(500).send({ error: 'Failed to send message' });
-    }
-  });
-  app.post('/create-chat', async (req, res) => {
-    try {
-      const db = getFirestore(fb)
-      const { message } = req.body;
-      const chatId = uid(16);
-      const userId = auth.currentUser.uid
-      const docData = {
-        chatid: chatId,
-        messages: [
-         {content:message,sender:userId,timestamp:Timestamp.now()}
-  ],
-        createdBy: userId, 
-        dateCreated: Timestamp.now(),
-      };
-      const docRef = doc(db, 'chats', chatId);
-      await setDoc(docRef, docData)
-      console.log(chatId)
-      res.json({chatId });
-    } catch (error) {
-      console.error(error);
-      res.status(500).send('Error!!!');
-    }
-  });
-  app.get('/app/:chatId', async(req, res) => {
-    const chatId = req.params.chatId;
-  const db = getFirestore(fb)
-  const docRef = await doc(db, "chats", chatId)
-  const docSnap = await getDoc(docRef);
-if (docSnap.exists() && docSnap.data().createdBy==auth.currentUser.uid) {
-  const messages = docSnap.data().messages || []; // Extract messages array or empty arra
-  messages.sort((a, b) => a.timestamp - b.timestamp);
-  res.json({ messages });
-}else{
-}
-//res.sendFile(path.join(initial_path, "chat.html"))
-})
+// Serve the chat webpage
+app.get('/app', (req, res) => {
+    res.sendFile(path.join(initial_path, 'chat.html'));
+});
+
 app.get('/welcome',(req,res)=>{
   res.sendFile(path.join(initial_path,'welcome.html'))
 })
-app.post('/chatIds', async (req, res) => {
-    try {
-        const db = getFirestore(fb);
-        const userId = req.user.uid; // Use the uid from the verified token
-        console.log(req.user)
-        const chatIds = [];
-        const chatIdsCol = collection(db, 'chats'); // Get the chatIds collection reference
-        const snapshot = await getDocs(chatIdsCol); // Get all documents in the collection
-        snapshot.forEach(doc => {
-            if (doc.data().createdBy === userId) {
-                chatIds.push(doc.id);
-            }
-        });
-        res.status(200).send({ chatIds }); // Send chat IDs as a response
-    } catch (error) {
-        console.error('Error fetching chat IDs:', error);
-        res.status(500).send({ message: 'Error fetching chat IDs' });
-    }
-});
 
 // Blog routes
 app.get('/blog/:id', async (req, res) => {

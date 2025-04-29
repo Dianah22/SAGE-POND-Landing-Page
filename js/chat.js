@@ -1,251 +1,310 @@
-const chatbtn = document.getElementById('new_chat')
-const recent = document.getElementById('recent' )
-const recent_title = document.getElementById('recent_title')
-const chat_window = document.getElementById('chat_window')
-const editor = document.getElementById('editor')
-const send = document.getElementById('send')
-const query_div = document.querySelector('.query')
-const menuBtn = document.querySelector('.menuButton')
-const content = document.querySelector('.chatarea')
-const nav = document.querySelector('.nav')
-const side_btn = document.querySelector('.side-button')
-const side_b = document.querySelector('.side-b')
-const chat_history = document.querySelector('.chat_history')
-const recents = document.querySelector('.recent')
-const history = document.querySelector('.chat_history')
-const welcome_screen = document.querySelector('.welcome_screen')
-send.disabled = true
-editor.addEventListener('input',e=>{
-    const content = editor.textContent.trim(); // Get the text content and trim any whitespace
-    e.preventDefault()
-        if (content.length > 0) {
-            send.disabled=false;
-        }else{
-          send.disabled=true
-        }
-})
+import { initializeApp } from 'firebase/app';
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
+import { getFirestore, collection, getDocs, doc, setDoc, updateDoc, arrayUnion, Timestamp, getDoc } from 'firebase/firestore';
+
+// DOM Elements
+const chatbtn = document.getElementById('new_chat');
+const recent = document.getElementById('recent');
+const recent_title = document.getElementById('recent_title');
+const chat_window = document.getElementById('chat_window');
+const editor = document.getElementById('editor');
+const send = document.getElementById('send');
+const query_div = document.querySelector('.query');
+const menuBtn = document.querySelector('.menuButton');
+const content = document.querySelector('.chatarea');
+const nav = document.querySelector('.nav');
+const side_btn = document.querySelector('.side-button');
+const side_b = document.querySelector('.side-b');
+const chat_history = document.querySelector('.chat_history');
+const recents = document.querySelector('.recent');
+const history = document.querySelector('.chat_history');
+const welcome_screen = document.querySelector('.welcome_screen');
+
 let clickCount = 0;
-send.addEventListener('click',e=>{
-  clickCount++
-    const message = editor.textContent
-    if(clickCount==1){
-      fetchCreateChat(sanitizeInput(message))
-    }else{
-      msend(sanitizeInput(message))
+let isMenuOpen = false;
+
+// Initialize Firebase and setup chat functionality
+(async () => {
+    try {
+        const response = await fetch('/api/firebase-config', {
+            method: 'GET',
+            headers: {
+                'Authorization': 'Bearer secure-fetch-key',
+            },
+        });
+
+        const data = await response.json();
+        if (!data.success) {
+            throw new Error('Failed to fetch Firebase config');
+        }
+
+        const app = initializeApp(data.config);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // Firebase Functions
+        async function createNewChat(message) {
+            try {
+                const response = await fetch('/create-chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message })
+                });
+                
+                const data = await response.json();
+                if (!data.success) {
+                    throw new Error('Failed to create chat');
+                }
+
+                const chatId = data.chatId;
+                const user = auth.currentUser;
+
+                await setDoc(doc(db, 'chats', chatId), {
+                    createdBy: user.uid,
+                    createdAt: Timestamp.now(),
+                    messages: [{
+                        content: message,
+                        sender: user.uid,
+                        timestamp: Timestamp.now()
+                    }]
+                });
+
+                return chatId;
+            } catch (error) {
+                console.error('Error creating chat:', error);
+                throw error;
+            }
+        }
+
+        async function sendMessage(chatId, message) {
+            try {
+                const user = auth.currentUser;
+                const docRef = doc(db, 'chats', chatId);
+                
+                await updateDoc(docRef, {
+                    messages: arrayUnion({
+                        content: message,
+                        sender: user.uid,
+                        timestamp: Timestamp.now()
+                    })
+                });
+
+                return true;
+            } catch (error) {
+                console.error('Error sending message:', error);
+                return false;
+            }
+        }
+
+        async function loadChatHistory(chatId) {
+            try {
+                const docRef = doc(db, 'chats', chatId);
+                const docSnap = await getDoc(docRef);
+                
+                if (docSnap.exists()) {
+                    return docSnap.data().messages || [];
+                }
+                return [];
+            } catch (error) {
+                console.error('Error loading chat history:', error);
+                return [];
+            }
+        }
+
+        async function loadUserChats(userId) {
+            try {
+                const chatIds = [];
+                const chatIdsCol = collection(db, 'chats');
+                const snapshot = await getDocs(chatIdsCol);
+                snapshot.forEach(doc => {
+                    if (doc.data().createdBy === userId) {
+                        chatIds.push({ id: doc.id, ...doc.data() });
+                    }
+                });
+                renderChatList(chatIds);
+            } catch (error) {
+                console.error('Error loading chats:', error);
+            }
+        }
+
+        // Event Handlers
+        send.addEventListener('click', async (e) => {
+            const message = sanitizeInput(editor.textContent);
+            if (clickCount === 0) {
+                await createNewChat(message);
+            } else {
+                const chatId = window.location.pathname.split('/')[2];
+                await sendMessage(chatId, message);
+            }
+            clickCount++;
+            editor.innerHTML = '';
+            send.disabled = true;
+        });
+
+        recents.addEventListener('click', async (e) => {
+            const chatItem = e.target.closest('[data-chat-id]');
+            if (!chatItem) return;
+
+            const chatId = chatItem.dataset.chatId;
+            welcome_screen.style.display = 'none';
+            
+            const messages = await loadChatHistory(chatId);
+            renderChatMessages(messages);
+            
+            window.history.pushState({}, 'Chat', `/app/${chatId}`);
+        });
+
+        // Initialize
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                console.log('User is signed in:', user.uid);
+                await loadUserChats(user.uid);
+            } else {
+                console.log('User is signed out');
+                window.location.href = '/login';
+            }
+        });
+
+    } catch (error) {
+        console.error('Error initializing Firebase:', error);
     }
-})
-const msend = async(message)=>{
-  const chatId = window.location.pathname.split('/')[2]
-  try{
-    const response = await fetch('/send-message', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({message,chatId}) 
-  });
-  const data = await response.json();
-  if (data.success) {
-    const pdiv=document.createElement('div')
-    pdiv.innerHTML
-     = `<div class="user_query h-[100px]">
-    <div class="image-container">
-      <img src="images/caleb.jpg" class="w-10 rounded-full">
-    </div>
-    <div class="info text-ellipsis text-xl">
-      <h2>${sanitizeInput(editor.textContent)}</h2>
-    </div>`
-    query_div.classList.remove('hidden')
-    query_div.classList.add('flex')
-    history.classList.add('hidden')
-    query_div.appendChild(pdiv)
-    editor.innerHTML='' 
-  } else {
-    console.error('Error sending message:', data.error);
-  }
-  }catch(e){
-    console.log(e)
-  }
-  
+})();
+
+// UI Functions
+function renderChatMessages(messages) {
+    chat_window.innerHTML = messages.map(message => `
+        <div class="user_query h-[100px]">
+            <div class="image-container">
+                <img src="images/caleb.jpg" class="w-10 rounded-full">
+            </div>
+            <div class="info text-ellipsis text-xl">
+                <h2>${message.content}</h2>
+            </div>
+        </div>
+    `).join('');
 }
-editor.addEventListener('keydown', function(event) {
-    if (event.key === 'Enter') {
-        event.preventDefault(); // Prevent default behavior (line break)
-        document.execCommand('insertHTML', false, '<p><br></p>'); // Insert a paragraph
+
+function renderChatList(chats) {
+    recent.innerHTML = chats.map(chat => `
+        <div class="rchat h-10 rounded-3xl hover:bg-gray-700 transition p-2 m-2">
+            <button data-chat-id="${chat.id}">new chat</button>
+        </div>
+    `).join('');
+}
+
+// UI Setup
+send.disabled = true;
+editor.addEventListener('input', (e) => {
+    const content = editor.textContent.trim();
+    send.disabled = content.length === 0;
+});
+
+menuBtn.addEventListener('click', toggleMenu);
+
+function toggleMenu() {
+    const calc = 100 - 25;
+    if (!isMenuOpen && window.innerWidth > 768) {
+        gsap.to(nav, { duration: 0.3, ease: "power3.inOut", x: "0%" });
+        gsap.to(content, { duration: 0.3, ease: 'power3.inOut', left: "25%", width: `${calc}%` });
+        gsap.to(side_b, { duration: 0.3, ease: 'power2.inOut', width: '100%' });
+        gsap.to(side_btn, { duration: 0.3, ease: 'power2.inOut', width: '100%' });
+        gsap.to(recents, { duration: 0.3, ease: 'power2.inOut', width: '50%' });
+    } else if (isMenuOpen == true && window.innerWidth > 768) {
+        gsap.to(nav, { duration: 0.3, ease: "power3.inOut", width: "50%" });
+        gsap.to(side_b, { duration: 0.3, ease: 'Power3.inOut', width: '45px' });
+        gsap.to(content, { duration: 0.3, ease: 'power3.inOut', left: "5%", width: '95%' });
+        gsap.to(recents, { duration: 0.3, ease: 'power2.inOut', width: '25%' });
+    } else if (window.innerWidth <= 768 && isMenuOpen == true) {
+        gsap.to(side_btn, { duration: 0.1, ease: 'power2.inOut', width: '0%', display: 'none', opacity: '0' });
+        gsap.to(content, { duration: 0.2, left: "0%", width: '100%' });
+        gsap.to(nav, { duration: 0.3, ease: "power3.inOut", width: "0%" });
+        gsap.to(recents, { duration: 0.05, ease: 'power2.inOut', width: '0%' });
+    } else if (window.innerWidth <= 768 && isMenuOpen == false) {
+        gsap.to(nav, { duration: 0.3, ease: "power3.inOut", width: "70%" });
+        gsap.to(content, { duration: 0.3, ease: 'power3.inOut', left: "0%", width: `100%` });
+        gsap.to(side_btn, { duration: 0.2, ease: 'power2.inOut', width: '100%', display: 'grid', opacity: '1' });
+        gsap.to(recents, { duration: 0.3, ease: 'power2.inOut', width: '100%' });
+    }
+    isMenuOpen = !isMenuOpen;
+}
+
+function sanitizeInput(userInput) {
+    const allowedTags = ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'b', 'em', 'i'];
+    const allowedAttributes = ['class', 'style'];
+
+    const config = {
+        ALLOWED_TAGS: allowedTags,
+        ALLOWED_ATTR: allowedAttributes
+    };
+
+    return DOMPurify.sanitize(userInput, config);
+}
+
+window.addEventListener('load', function () {
+    if (window.innerWidth > 768) {
+        isMenuOpen = true;
     }
 });
-    const placeholder = editor.dataset.placeholder;
-    // Set the initial content to the placeholder value
-    editor.textContent = placeholder;
-    // Add a class when the div is focused to mimic the placeholder behavior
-    editor.addEventListener('focus', function() {
-        if (editor.textContent === placeholder) {
-            editor.textContent = '';
-        }
-    });
 
-    editor.addEventListener('blur', function() {
-        if (editor.textContent === '') {
-            editor.textContent = placeholder;
-        }
-    });
-    // Toggle menu visibility when menu button is clicked
-    let isMenuOpen = false;
-    menuBtn.addEventListener('click', toggleMenu);
-    function toggleMenu() {
-      const calc = 100-25
-      if (!isMenuOpen && window.innerWidth>768) {
-        gsap.to(nav, { duration: 0.3, ease: "power3.inOut", x:"0%" });
-        gsap.to(content,{duration:0.3,ease:'power3.inOut',left:"25%",width:`${calc}%`})
-        gsap.to(side_b,{duration:0.3,ease:'power2.inOut',width:'100%'})
-        gsap.to(side_btn,{duration:0.3,ease:'power2.inOut',width:'100%'})
-        gsap.to(recents,{duration:0.3,ease:'power2.inOut',width:'50%'})
-      } else if (isMenuOpen==true && window.innerWidth>768){
-        gsap.to(nav, { duration: 0.3, ease: "power3.inOut", width: "50%" })
-        gsap.to(side_b,{duration:0.3,ease:'Power3.inOut',width:'45px'})
-        gsap.to(content,{duration:0.3,ease:'power3.inOut',left:"5%",width:'95%'})
-        gsap.to(recents,{duration:0.3,ease:'power2.inOut',width:'25%'})
-      } else if(window.innerWidth<=768 && isMenuOpen==true){
-        gsap.to(side_btn,{duration:0.1,ease:'power2.inOut',width:'0%',display:'none',opacity:'0'})
-        gsap.to(content,{duration:0.2,left:"0%",width:'100%'})
-        gsap.to(nav, { duration: 0.3, ease: "power3.inOut", width: "0%" })
-        gsap.to(recents,{duration:0.05,ease:'power2.inOut',width:'0%'})
-      } else if(window.innerWidth<=768 && isMenuOpen==false){
-        gsap.to(nav, { duration: 0.3, ease: "power3.inOut", width:"70%" });
-        gsap.to(content,{duration:0.3,ease:'power3.inOut',left:"0%",width:`100%`})
-        gsap.to(side_btn,{duration:0.2,ease:'power2.inOut',width:'100%',display:'grid',opacity:'1'})
-        gsap.to(recents,{duration:0.3,ease:'power2.inOut',width:'100%'})
-      }
-      isMenuOpen = !isMenuOpen;
-     
+window.addEventListener('load', fetchChatIds);
+
+window.addEventListener('load', e => {
+    if (window.innerWidth <= 768) {
+        isMenuOpen = false;
+        nav.style.width = '0%';
+        content.style.width = '100%';
+        content.style.left = '0%';
+        side_btn.style.display = 'none';
     }
-    function sanitizeInput(userInput) {
-      const allowedTags = ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6','b','em','i']; // Adjust as needed
-      const allowedAttributes = ['class', 'style']; // Optional: Allow specific attributes
-    
-      const config = {
-        ALLOWED_TAGS: allowedTags,
-        ALLOWED_ATTR: allowedAttributes // Optional: If allowing attributes
-      };
-    
-      return DOMPurify.sanitize(userInput, config);
-    }
-    window.addEventListener('load', function() {
-      if (window.innerWidth > 768) {
-        isMenuOpen = true; // Set menu as open for larger screens
-      }
+});
+
+async function fetchChatIds() {
+    const response = await fetch('/chatIds', {
+        method: 'POST'
     });
-      const fetchCreateChat = async (message) => {
-        clickCount++
-        try {
-            const response = await fetch('/create-chat', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({message}) // You can add data to the chat object if needed
-            });
-            const data = await response.json();
-              if (data.chatId) {
-                const text = 'new chat';
-                const new_div = document.createElement('div');
-                new_div.innerHTML = `<div class="rchat h-10 rounded-3xl hover:bg-gray-700 transition p-2 m-2 flex">
-                <span class="material-symbols-outlined">
-chat_bubble
-</span>
-                    <button data-chat-id=${data.chatId}>${text}</button>
-                    <div class='menu h-[24px] w-[24px] pt-[5px]'>
-                    
-                    </div
+    if (response.ok) {
+        const data = await response.json();
+        const text = 'new chat';
+        data.chatIds.forEach(item => {
+            const di = document.createElement("div");
+            di.innerHTML = `<div class="rchat h-10 rounded-3xl hover:bg-gray-700 transition p-2 m-2">
+                <button data-chat-id=${item}>${text}</button>
                 </div>`;
-                recent.appendChild(new_div);
-                const chatDetailsResponse = await fetch(`/app/${data.chatId}`);
-                const chatDetails = await chatDetailsResponse.json();
-                console.log("Chat details:", chatDetails);
-                const newUrl = `app/${data.chatId}`;
-                window.history.pushState({}, 'Unveyl', newUrl);
-            }else {
-              alert('Error creating chat. Please try again.');
-          }
-        } catch (error) {
-            console.error(error);
-            alert('Error creating chat. Please try again.');
-        }
-    };
-recents.addEventListener('click',async (e)=>{
-  const chatItem = e.target;
-  const chatId = chatItem.dataset.chatId;
-  if(chatId){
-    const chatDetailsResponse = await fetch(`/app/${chatId}`);
-    const chatDetails = await chatDetailsResponse.json();
-    console.log("Chat details:", chatDetails.messages);
-    chatDetails.messages.forEach(message=>{
-      const x =  document.createElement('div')
-      welcome_screen.style.display='none'
-      x.innerHTML=`<div class="user_query h-[100px]">
-    <div class="image-container">
-      <img src="images/caleb.jpg" class="w-10 rounded-full">
-    </div>
-    <div class="info text-ellipsis text-xl">
-      <h2>${message.content}</h2>
-    </div>`
-    history.appendChild(x)
-    })
-    const newUrl = `app/${chatId}`;
-    window.history.pushState({}, 'Unveyl', newUrl);
-  }else{
-  
-  }
-})
-   async function fetchData() {
+            recent.append(di);
+        });
+    } else {
+        console.error('Error fetching chat IDs:', response.statusText);
+    }
+}
+
+async function fetchData() {
     try {
         const response = await fetch('/app/5800e6037eb1f8b5');
         const data = await response.json();
         console.log(data.messages);
-        // Update the DOM or use the data in your frontend application
     } catch (error) {
         console.error('Error fetching data:', error);
     }
 }
 
-//fetchData()
-    const renderChatMessages = (messages) => {
-      chat_window.innerHTML = '';
-      messages.forEach(message => {
-        chat_window += `
-        <div class="user_query h-[100px]">
-        <div class="image-container">
-          <img src="images/caleb.jpg" class="w-10 rounded-full">
-        </div>
-        <div class="info text-ellipsis text-xl">
-          <h2>${message}</h2>
-        </div>
-        `;
-      });
-      chat_window.innerHTML = chatWindowContent;
-    };
-      const fetchChatIds = async () => {
-        const response = await fetch('/chatIds', {
-            method: 'POST'
-        });
-        if (response.ok) {
-            const data = await response.json();
-            const text = 'new chat';
-            data.chatIds.forEach(item => {
-                const di = document.createElement("div");
-                di.innerHTML = `<div class="rchat h-10 rounded-3xl hover:bg-gray-700 transition p-2 m-2">
-                <button data-chat-id=${item}>${text}</button>
-                </div>`;
-                recent.append(di);
-            });
-        } else {
-            console.error('Error fetching chat IDs:', response.statusText);
-            // Handle errors
-        }
-    };
-window.addEventListener('load',fetchChatIds)
-window.addEventListener('load',e=>{
-  if(window.innerWidth<=768){
-    isMenuOpen=false
-    nav.style.width='0%'
-    content.style.width='100%'
-    content.style.left='0%'
-    side_btn.style.display='none'
-  }
-})
+editor.addEventListener('keydown', function (event) {
+    if (event.key === 'Enter') {
+        event.preventDefault();
+        document.execCommand('insertHTML', false, '<p><br></p>');
+    }
+});
+
+const placeholder = editor.dataset.placeholder;
+editor.textContent = placeholder;
+
+editor.addEventListener('focus', function () {
+    if (editor.textContent === placeholder) {
+        editor.textContent = '';
+    }
+});
+
+editor.addEventListener('blur', function () {
+    if (editor.textContent === '') {
+        editor.textContent = placeholder;
+    }
+});
