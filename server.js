@@ -9,6 +9,9 @@ const firebaseConfig = {
   appId: "1:369426724601:web:698e582d4e10ff710c5428",
   measurementId: "G-XY1Y3VW550"
 };
+const cors = require('cors');
+
+
 const fb = initializeApp(firebaseConfig);
 const {uid} = require('uid')
 const {getAuth} = require('firebase/auth')
@@ -42,7 +45,7 @@ app.use(helmet.referrerPolicy({ policy: 'no-referrer' }))
 app.use(helmet.hsts({ // Enable HSTS with a max age of 31536000 seconds (1 year)
 maxAge: 31536000,
 includeSubDomains: true, // Include subdomains
-preload: true, // Send the preload flag
+preload: false, // Send the preload flag
 }));
 app.use(helmet.crossOriginEmbedderPolicy({ policy: 'require-corp' })); // Restricts embedding to the same corporation
 app.use(helmet.xssFilter())
@@ -106,8 +109,9 @@ app.get('/about',(req,res)=>{
 
 // Refactor isAuthenticated middleware to verify token instead of using Firebase Auth
 const isAuthenticated = async (req, res, next) => {
-    const authHeader = req.headers.authorization;
-    console.log('Authorization Header:', req.headers); // Log the authorization header for debugging
+    const authHeader = req.headers["authorization"];
+    console.log(req.body)
+    console.log('Authorization Header:', req.headers["authorization"]); // Log the authorization header for debugging
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
         return res.status(401).json({ success: false, message: 'Unauthorized: No token provided' });
     }
@@ -124,7 +128,26 @@ const isAuthenticated = async (req, res, next) => {
         res.status(401).json({ success: false, message: 'Unauthorized: Invalid or expired token' });
     }
 };
+app.post('/api/verify-token', isAuthenticated, async (req, res) => {
+  const { token } = req.body;
+ console.log(req.headers["authorization"])
+  if (!token) {
+      console.log('No token provided in request body');
+      return res.status(400).json({ success: false, message: 'Token is required' });
+  }
 
+  try {
+      // Verify the token using Firebase Admin SDK
+      const decodedToken = await admin.auth().verifyIdToken(token);
+      const uid = decodedToken.uid;
+
+      console.log('Token verified for user:', uid);
+      res.json({ success: true, uid });
+  } catch (error) {
+      console.error('Error verifying token:', error);
+      res.status(401).json({ success: false, message: 'Invalid or expired token' });
+  }
+});
 app.get('/app', isAuthenticated, (req, res) => {
     res.sendFile(path.join(initial_path, 'chat.html'));
 });
@@ -272,26 +295,7 @@ app.get('/api/blogs', async (req, res) => {
   }
 });
 
-app.post('/api/verify-token', isAuthenticated, async (req, res) => {
-    const { token } = req.body;
 
-    if (!token) {
-        console.log('No token provided in request body');
-        return res.status(400).json({ success: false, message: 'Token is required' });
-    }
-
-    try {
-        // Verify the token using Firebase Admin SDK
-        const decodedToken = await admin.auth().verifyIdToken(token);
-        const uid = decodedToken.uid;
-
-        console.log('Token verified for user:', uid);
-        res.json({ success: true, uid });
-    } catch (error) {
-        console.error('Error verifying token:', error);
-        res.status(401).json({ success: false, message: 'Invalid or expired token' });
-    }
-});
 
 app.all('/api/firebase-config', (req, res) => {
     const firebaseConfig = {

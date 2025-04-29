@@ -37,7 +37,7 @@ async function fetchFirebaseConfig() {
                 console.log('User is signed in:', user.uid);
                 // Redirect to /app if on /login
                 if (window.location.pathname === '/login') {
-                    //window.location.href = '/app';
+                    window.location.href = '/app';
                 }
             } else {
                 console.log('User is signed out');
@@ -72,7 +72,6 @@ async function fetchFirebaseConfig() {
                 });
 
                 const data = await response.json();
-                console.log(data)
                 if (data.success) {
                     console.log('Token verified successfully:', data);
                     alert('Login successful! Redirecting to app...');
