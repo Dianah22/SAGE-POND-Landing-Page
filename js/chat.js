@@ -204,7 +204,7 @@ recents.addEventListener('click',async (e)=>{
     }
 }
 
-fetchData()
+//fetchData()
     const renderChatMessages = (messages) => {
       chat_window.innerHTML = '';
       messages.forEach(message => {

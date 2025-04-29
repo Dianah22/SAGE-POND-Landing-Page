@@ -108,45 +108,43 @@ app.get('/about',(req,res)=>{
   })
 
 // Refactor isAuthenticated middleware to verify token instead of using Firebase Auth
-const isAuthenticated = async (req, res, next) => {
-    const authHeader = req.headers["authorization"];
-    console.log(req.body)
-    console.log('Authorization Header:', req.headers["authorization"]); // Log the authorization header for debugging
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-        return res.status(401).json({ success: false, message: 'Unauthorized: No token provided' });
+const isAuthenticated = async (req, res, next,user) => {
+  console.log(user)
+    try {
+        // Assume the user is already verified and attach the user object to the request
+        if (req.user) {
+            next(); // Proceed to the next middleware or route handler
+        } else {
+            res.status(401).json({ success: false, message: 'Unauthorized: User not verified' });
+        }
+    } catch (error) {
+        console.log('Error in isAuthenticated middleware:', error);
+        res.status(500).json({ success: false, message: 'Internal Server Error' });
     }
+};
+app.post('/api/verify-token', async (req, res) => {
+    const { token } = req.body;
 
-    const token = authHeader.split(' ')[1]; // Extract the token from the Authorization header
+    if (!token) {
+        console.log('No token provided in request body');
+        return res.status(400).json({ success: false, message: 'Token is required' });
+    }
 
     try {
         // Verify the token using Firebase Admin SDK
         const decodedToken = await admin.auth().verifyIdToken(token);
-        req.user = decodedToken; // Attach decoded token to the request object
-        next(); // Proceed to the next middleware or route handler
+        const uid = decodedToken.uid;
+
+        console.log('Token verified for user:', uid);
+
+        // Attach the user to the request object
+        req.user = decodedToken;
+        isAuthenticated(req.user)
+        res.json({ success: true, uid });
     } catch (error) {
         console.error('Error verifying token:', error);
-        res.status(401).json({ success: false, message: 'Unauthorized: Invalid or expired token' });
+        res.status(401).json({ success: false, message: 'Invalid or expired token' });
     }
-};
-app.post('/api/verify-token', isAuthenticated, async (req, res) => {
-  const { token } = req.body;
- console.log(req.headers["authorization"])
-  if (!token) {
-      console.log('No token provided in request body');
-      return res.status(400).json({ success: false, message: 'Token is required' });
-  }
-
-  try {
-      // Verify the token using Firebase Admin SDK
-      const decodedToken = await admin.auth().verifyIdToken(token);
-      const uid = decodedToken.uid;
-
-      console.log('Token verified for user:', uid);
-      res.json({ success: true, uid });
-  } catch (error) {
-      console.error('Error verifying token:', error);
-      res.status(401).json({ success: false, message: 'Invalid or expired token' });
-  }
 });
 app.get('/app', isAuthenticated, (req, res) => {
     res.sendFile(path.join(initial_path, 'chat.html'));
@@ -223,24 +221,25 @@ if (docSnap.exists() && docSnap.data().createdBy==auth.currentUser.uid) {
 app.get('/welcome',(req,res)=>{
   res.sendFile(path.join(initial_path,'welcome.html'))
 })
-  app.post('/chatIds', async (req, res) => {
+app.post('/chatIds', async (req, res) => {
     try {
-      const db = getFirestore(fb)
-      const userId = auth.currentUser.uid
-      const chatIds = [];
-      const chatIdsCol = collection(db, 'chats'); // Get the chatIds collection reference
-      const snapshot = await getDocs(chatIdsCol); // Get all documents in the collection
-      snapshot.forEach(doc => {
-        if (doc.data().createdBy === userId) {
-        chatIds.push(doc.id);
-      }
-      });
-      res.status(200).send({ chatIds }); // Send chat IDs as a response
+        const db = getFirestore(fb);
+        const userId = req.user.uid; // Use the uid from the verified token
+        console.log(req.user)
+        const chatIds = [];
+        const chatIdsCol = collection(db, 'chats'); // Get the chatIds collection reference
+        const snapshot = await getDocs(chatIdsCol); // Get all documents in the collection
+        snapshot.forEach(doc => {
+            if (doc.data().createdBy === userId) {
+                chatIds.push(doc.id);
+            }
+        });
+        res.status(200).send({ chatIds }); // Send chat IDs as a response
     } catch (error) {
-      console.error('Error fetching chat IDs:', error);
-      res.status(500).send({ message: 'Error fetching chat IDs' });
+        console.error('Error fetching chat IDs:', error);
+        res.status(500).send({ message: 'Error fetching chat IDs' });
     }
-  });
+});
 
 // Blog routes
 app.get('/blog/:id', async (req, res) => {
@@ -309,7 +308,7 @@ app.all('/api/firebase-config', (req, res) => {
     };
 
     // Add a security check to ensure only authorized requests can access this route
-    const authHeader = req.headers.authorization;
+    const authHeader = req.headers.authorization; // Log the authorization header for debugging
     if (!authHeader || authHeader !== 'Bearer secure-fetch-key') {
         return res.status(403).json({ success: false, message: 'Forbidden' });
     }
