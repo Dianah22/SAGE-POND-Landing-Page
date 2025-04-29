@@ -46,14 +46,28 @@ app.use(helmet.crossOriginEmbedderPolicy({ policy: 'require-corp' })); // Restri
 app.use(helmet.xssFilter())
 app.use(helmet.ieNoOpen());
 app.use(helmet.noSniff())
-app.use(helmet.contentSecurityPolicy({
-directives: {
-defaultSrc: ["'self'"], // Restrict most resources to self
-scriptSrc: ["'self'", 'https://www.google.com/recaptcha/api.js','https://cdn.jsdelivr.net/npm/dompurify@3.1.0/dist/purify.min.js'], // Allow specific script (e.g., Google reCAPTCHA)
-styleSrc: ["'self'", 'https://fonts.googleapis.com/','https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css'], // Allow specific styles (e.g., Google Fonts)
-imgSrc: ["'self'", 'data:'], // Restrict image sources
-},
-}));
+app.use(
+  helmet.contentSecurityPolicy({
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: [
+        "'self'",
+        "https://www.google.com/recaptcha/api.js",
+        "https://cdn.jsdelivr.net/npm/dompurify@3.1.0/dist/purify.min.js",
+      ],
+      styleSrc: [
+        "'self'",
+        "https://fonts.googleapis.com/",
+        "https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css",
+      ],
+      imgSrc: ["'self'", "data:"],
+      connectSrc: [
+        "'self'",
+        "https://identitytoolkit.googleapis.com", // Allow Firebase Auth API
+      ],
+    },
+  })
+);
 app.get('/', (req, res) => {
     res.sendFile(path.join(initial_path, "index.html"));
   });
@@ -322,6 +336,26 @@ app.post('/api/verify-token', async (req, res) => {
         console.error('Error verifying token:', error);
         res.status(401).json({ success: false, message: 'Invalid or expired token' });
     }
+});
+
+app.all('/api/firebase-config', (req, res) => {
+    const firebaseConfig = {
+        apiKey: "AIzaSyDyXWSxpBqk7lgomflc_Sl3BCXp8Dvffbg",
+        authDomain: "sage-pond-gen-ai.firebaseapp.com",
+        projectId: "sage-pond-gen-ai",
+        storageBucket: "sage-pond-gen-ai.appspot.com",
+        messagingSenderId: "369426724601",
+        appId: "1:369426724601:web:698e582d4e10ff710c5428",
+        measurementId: "G-XY1Y3VW550"
+    };
+
+    // Add a security check to ensure only authorized requests can access this route
+    const authHeader = req.headers.authorization;
+    if (!authHeader || authHeader !== 'Bearer secure-fetch-key') {
+        return res.status(403).json({ success: false, message: 'Forbidden' });
+    }
+
+    res.json({ success: true, config: firebaseConfig });
 });
 
 app.use((req,res)=>{
