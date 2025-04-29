@@ -8,8 +8,8 @@ module.exports = {
     minimize:true,
   },
   output: {
-    path: path.resolve(__dirname, 'js'),
-    filename: 'auth/bundle.login.js',
+    path: path.resolve(__dirname, 'js/auth'),
+    filename: 'bundle.login.js',
     clean:true,
   },
   devtool: 'source-map', // Use 'source-map' to avoid CSP violations

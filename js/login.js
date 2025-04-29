@@ -1,71 +1,77 @@
-import { getAuth, onAuthStateChanged } from 'firebase/auth';
+import { initializeApp } from 'firebase/app';
+import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, setPersistence, browserLocalPersistence } from 'firebase/auth';
 
-const auth = getAuth();
+// Fetch Firebase config from the backend
+async function fetchFirebaseConfig() {
+    try {
+        const response = await fetch('/api/firebase-config', {
+            method: 'GET',
+            headers: {
+                'Authorization': 'Bearer secure-fetch-key',
+            },
+        });
 
-// Monitor authentication state
-onAuthStateChanged(auth, async (user) => {
-    if (user) {
-        // User is signed in, get the ID token
-        const token = await user.getIdToken();
+        const data = await response.json();
+        if (data.success) {
+            return data.config;
+        } else {
+            console.error('Failed to fetch Firebase config:', data.message);
+            throw new Error('Failed to fetch Firebase config');
+        }
+    } catch (error) {
+        console.error('Error fetching Firebase config:', error);
+        throw error;
+    }
+}
 
-        // Send the token to the backend for verification
-        try {
-            const response = await fetch('/api/verify-token', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ token }),
-            });
+// Initialize Firebase on the client side
+(async () => {
+    try {
+        const firebaseConfig = await fetchFirebaseConfig();
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
 
-            const data = await response.json();
-            if (data.success) {
-                console.log('Token verified successfully');
-                // Redirect to /app if not already there
+        // Monitor authentication state
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                console.log('User is signed in:', user.uid);
+                // Redirect to /app if on /login
                 if (window.location.pathname === '/login') {
                     window.location.href = '/app';
                 }
             } else {
-                console.error('Token verification failed:', data.message);
-                // Handle token verification failure (e.g., log out user)
-                auth.signOut();
+                console.log('User is signed out');
+                // Redirect to /login if not already there
+                if (window.location.pathname !== '/login') {
+                    window.location.href = '/login';
+                }
             }
-        } catch (error) {
-            console.error('Error verifying token:', error);
-        }
-    } else {
-        // User is signed out, redirect to login if not already there
-        if (window.location.pathname !== '/login') {
-            window.location.href = '/login';
-        }
-    }
-});
+        });
 
-const sub = document.getElementById('login')
-async function handleLogin(email, password) {
-    try {
-      const response = await fetch('/api/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json'},
-        body: JSON.stringify({ email, password }),
-      });
-      const data = await response.json();
-      if (data.success) {
-        // Handle successful login (store user data, redirect)
-        window.location.href = data.redirectTo
-        console.log('Login successful!');
-      } else {
-        console.error('Login failed:', data.error);
-        alert('Login failed! Please try again.');
-      }
+        const loginButton = document.getElementById('login');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+
+        async function handleLogin(email, password) {
+            try {
+                await setPersistence(auth, browserLocalPersistence);
+                const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                console.log('User logged in successfully:', userCredential.user);
+                alert('Login successful! Redirecting to app...');
+                window.location.href = '/app';
+            } catch (error) {
+                console.error('Error during login:', error);
+                alert('Login failed! Please try again.');
+            }
+        }
+
+        loginButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            const email = emailInput.value;
+            const password = passwordInput.value;
+            handleLogin(email, password);
+        });
     } catch (error) {
-      console.error('Error:', error);
-      alert('An error occurred. Please try again later.');
+        console.error('Error initializing Firebase:', error);
     }
-  }
-const email = document.getElementById('email')
-const password = document.getElementById('password')
-sub.addEventListener('click',e=>{
-    e.preventDefault()
-    handleLogin(email.value,password.value)
-})
+})();

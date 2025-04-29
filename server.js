@@ -57,22 +57,38 @@ imgSrc: ["'self'", 'data:'], // Restrict image sources
 app.get('/', (req, res) => {
     res.sendFile(path.join(initial_path, "index.html"));
   });
-app.get('/login', (req, res) => {
-    onAuthStateChanged(auth, (user) => {
-        if (user) {
-            // If user is already logged in, redirect to /app
-            res.redirect('/app');
-        } else {
-            // Otherwise, serve the login page
-            res.sendFile(path.join(__dirname, 'login.html'));
-        }
-    });
+
+// Middleware to send Firebase config securely when login or signup page is loaded
+app.get(['/login', '/signup'], (req, res, next) => {
+    const firebaseConfig = {
+        apiKey: "AIzaSyDyXWSxpBqk7lgomflc_Sl3BCXp8Dvffbg",
+        authDomain: "sage-pond-gen-ai.firebaseapp.com",
+        projectId: "sage-pond-gen-ai",
+        storageBucket: "sage-pond-gen-ai.appspot.com",
+        messagingSenderId: "369426724601",
+        appId: "1:369426724601:web:698e582d4e10ff710c5428",
+        measurementId: "G-XY1Y3VW550"
+    };
+
+    res.locals.firebaseConfig = firebaseConfig; // Attach config to response locals
+    next();
 });
+
+// Serve login page with Firebase config
+app.get('/login', (req, res) => {
+    res.sendFile(path.join(__dirname, 'login.html'));
+});
+
+// Serve signup page with Firebase config
+app.get('/signup', (req, res) => {
+    res.sendFile(path.join(__dirname, 'signup.html'));
+});
+
 app.get('/about',(req,res)=>{
   res.sendFile(path.join(initial_path,"about.html"))
   })
 
-// Refactor isAuthenticated middleware to verify token instead of using onAuthStateChanged
+// Refactor isAuthenticated middleware to verify token instead of using Firebase Auth
 const isAuthenticated = async (req, res, next) => {
     const authHeader = req.headers.authorization;
 
@@ -88,7 +104,6 @@ const isAuthenticated = async (req, res, next) => {
         req.user = decodedToken; // Attach decoded token to the request object
         next(); // Proceed to the next middleware or route handler
     } catch (error) {
-        res.redirect('/login'); // Redirect to login if token verification fails
         console.error('Error verifying token:', error);
         res.status(401).json({ success: false, message: 'Unauthorized: Invalid or expired token' });
     }
