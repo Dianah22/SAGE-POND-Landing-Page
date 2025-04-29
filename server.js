@@ -11,7 +11,7 @@ const firebaseConfig = {
 };
 const fb = initializeApp(firebaseConfig);
 const {uid} = require('uid')
-const {getAuth, createUserWithEmailAndPassword, updateProfile, signInWithEmailAndPassword, setPersistence, browserLocalPersistence, onAuthStateChanged, browserSessionPersistence} = require('firebase/auth')
+const {getAuth} = require('firebase/auth')
 const auth = getAuth(fb)
 const express = require('express')
 const path = require('path') 
@@ -107,7 +107,7 @@ app.get('/about',(req,res)=>{
 // Refactor isAuthenticated middleware to verify token instead of using Firebase Auth
 const isAuthenticated = async (req, res, next) => {
     const authHeader = req.headers.authorization;
-
+    console.log('Authorization Header:', req.headers); // Log the authorization header for debugging
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
         return res.status(401).json({ success: false, message: 'Unauthorized: No token provided' });
     }
@@ -272,7 +272,7 @@ app.get('/api/blogs', async (req, res) => {
   }
 });
 
-app.all('/api/verify-token', express.json(), async (req, res) => {
+app.post('/api/verify-token', isAuthenticated, async (req, res) => {
     const { token } = req.body;
 
     if (!token) {

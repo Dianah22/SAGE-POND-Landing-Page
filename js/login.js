@@ -59,22 +59,24 @@ async function fetchFirebaseConfig() {
                 console.log('User logged in successfully:', userCredential.user);
 
                 // Get the ID token
-                const token = await userCredential.user.getIdToken();
-                console.log('ID Token:', token);    
+                const token = await userCredential.user.getIdToken();  
                 // Send the token to the backend for verification
                 const response = await fetch('/api/verify-token', {
                     method: 'POST', // Use POST instead of GET
                     headers: {
                         'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`, // Include the token in the Authorization header
+
                     },
                     body: JSON.stringify({ token }), // Include the token in the body
                 });
 
                 const data = await response.json();
+                console.log(data)
                 if (data.success) {
                     console.log('Token verified successfully:', data);
                     alert('Login successful! Redirecting to app...');
-                    window.location.href = '/app';
+                    //window.location.href = '/app';
                 } else {
                     console.error('Token verification failed:', data.message);
                     alert('Login failed! Please try again.');
