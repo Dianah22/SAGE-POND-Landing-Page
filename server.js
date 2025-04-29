@@ -22,10 +22,12 @@ const rateLimit = require('express-rate-limit'); // Added rate limiter
 const validator = require('validator');
 const admin = require('firebase-admin'); // Added Firebase Admin SDK
 
-// Initialize Firebase Admin SDK
+const serviceAccount = require('./sage-pond-gen-ai-firebase-adminsdk-9u1h2-7a16893d3f.json');
+
 if (!admin.apps.length) {
     admin.initializeApp({
-        credential: admin.credential.applicationDefault(),
+        credential: admin.credential.cert(serviceAccount),
+        databaseURL: "https://sage-pond-gen-ai-default-rtdb.firebaseio.com"
     });
 }
 
@@ -129,53 +131,7 @@ app.get('/app', isAuthenticated, (req, res) => {
 
   app.get('/signup',(req,res)=>{
     res.sendFile(path.join(initial_path,"signup.html"))
-  }) 
-  app.post('/api/signup', async (req, res) => {
-    const { email, password ,name} = req.body;
-    try {
-      if (!validator.isEmail(email)) {
-        return res.status(400).json({ success: false, message: 'Invalid email format' });
-      }
-      if (!validator.isStrongPassword(password)) {
-        return res.status(400).json({ success: false, message: 'Password is too weak' });
-      }
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password)
-      const username = await updateProfile(auth.currentUser,{displayName:name})
-      const uid = userCredential.user.uid;
-      res.json({ success: true, uid }); // Send user ID back to front-end
-    } catch (error) {
-      console.error(error);
-      res.status(400).json({ success: false, message: error.message });
-    }
-  });   
-  app.post('/api/login', async (req, res) => {
-    const { email, password } = req.body;
-
-    if (!email || !password) {
-        return res.status(400).json({ 
-            success: false, 
-            message: 'Email and password are required' 
-        });
-    }
-
-    try {
-        // Set persistence to SESSION (cleared when browser tab closes)
-        await setPersistence(auth, browserSessionPersistence);
-        const userCredential = await signInWithEmailAndPassword(auth, email, password);
-        const uid = userCredential.user.uid;
-        res.json({ 
-            success: true, 
-            uid, 
-            redirectTo: '/app' 
-        });
-    } catch (error) {
-        console.error('Login error:', error);
-        res.status(400).json({ 
-            success: false, 
-            message: error.message 
-        });
-    }
-});
+  })   
   app.post('/send-message', async (req, res) => {
     const db = getFirestore(fb)
     const userId = auth.currentUser.uid
@@ -316,10 +272,11 @@ app.get('/api/blogs', async (req, res) => {
   }
 });
 
-app.post('/api/verify-token', async (req, res) => {
+app.all('/api/verify-token', express.json(), async (req, res) => {
     const { token } = req.body;
 
     if (!token) {
+        console.log('No token provided in request body');
         return res.status(400).json({ success: false, message: 'Token is required' });
     }
 
@@ -328,9 +285,7 @@ app.post('/api/verify-token', async (req, res) => {
         const decodedToken = await admin.auth().verifyIdToken(token);
         const uid = decodedToken.uid;
 
-        // Optionally, enforce single-session login by checking custom claims or database
         console.log('Token verified for user:', uid);
-
         res.json({ success: true, uid });
     } catch (error) {
         console.error('Error verifying token:', error);

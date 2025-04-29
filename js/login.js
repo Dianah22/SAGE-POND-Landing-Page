@@ -37,7 +37,7 @@ async function fetchFirebaseConfig() {
                 console.log('User is signed in:', user.uid);
                 // Redirect to /app if on /login
                 if (window.location.pathname === '/login') {
-                    window.location.href = '/app';
+                    //window.location.href = '/app';
                 }
             } else {
                 console.log('User is signed out');
@@ -57,8 +57,28 @@ async function fetchFirebaseConfig() {
                 await setPersistence(auth, browserLocalPersistence);
                 const userCredential = await signInWithEmailAndPassword(auth, email, password);
                 console.log('User logged in successfully:', userCredential.user);
-                alert('Login successful! Redirecting to app...');
-                window.location.href = '/app';
+
+                // Get the ID token
+                const token = await userCredential.user.getIdToken();
+                console.log('ID Token:', token);    
+                // Send the token to the backend for verification
+                const response = await fetch('/api/verify-token', {
+                    method: 'POST', // Use POST instead of GET
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ token }), // Include the token in the body
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    console.log('Token verified successfully:', data);
+                    alert('Login successful! Redirecting to app...');
+                    window.location.href = '/app';
+                } else {
+                    console.error('Token verification failed:', data.message);
+                    alert('Login failed! Please try again.');
+                }
             } catch (error) {
                 console.error('Error during login:', error);
                 alert('Login failed! Please try again.');
