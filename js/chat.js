@@ -45,9 +45,15 @@ let isMenuOpen = false;
         // Firebase Functions
         async function createNewChat(message) {
             try {
+                // Get the current user's ID token
+                const token = await auth.currentUser.getIdToken();
+                
                 const response = await fetch('/create-chat', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
                     body: JSON.stringify({ message })
                 });
                 
@@ -246,8 +252,6 @@ window.addEventListener('load', function () {
     }
 });
 
-window.addEventListener('load', fetchChatIds);
-
 window.addEventListener('load', e => {
     if (window.innerWidth <= 768) {
         isMenuOpen = false;
@@ -257,35 +261,6 @@ window.addEventListener('load', e => {
         side_btn.style.display = 'none';
     }
 });
-
-async function fetchChatIds() {
-    const response = await fetch('/chatIds', {
-        method: 'POST'
-    });
-    if (response.ok) {
-        const data = await response.json();
-        const text = 'new chat';
-        data.chatIds.forEach(item => {
-            const di = document.createElement("div");
-            di.innerHTML = `<div class="rchat h-10 rounded-3xl hover:bg-gray-700 transition p-2 m-2">
-                <button data-chat-id=${item}>${text}</button>
-                </div>`;
-            recent.append(di);
-        });
-    } else {
-        console.error('Error fetching chat IDs:', response.statusText);
-    }
-}
-
-async function fetchData() {
-    try {
-        const response = await fetch('/app/5800e6037eb1f8b5');
-        const data = await response.json();
-        console.log(data.messages);
-    } catch (error) {
-        console.error('Error fetching data:', error);
-    }
-}
 
 editor.addEventListener('keydown', function (event) {
     if (event.key === 'Enter') {

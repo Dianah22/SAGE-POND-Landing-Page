@@ -1,32 +1,16 @@
-const {initializeApp} = require('firebase/app')
-const {doc, setDoc, Timestamp,getFirestore, collection,getDocs,updateDoc,arrayUnion,getDoc, query, orderBy} = require('firebase/firestore')
-const firebaseConfig = {
-  apiKey: "AIzaSyDyXWSxpBqk7lgomflc_Sl3BCXp8Dvffbg",
-  authDomain: "sage-pond-gen-ai.firebaseapp.com",
-  projectId: "sage-pond-gen-ai",
-  storageBucket: "sage-pond-gen-ai.appspot.com",
-  messagingSenderId: "369426724601",
-  appId: "1:369426724601:web:698e582d4e10ff710c5428",
-  measurementId: "G-XY1Y3VW550"
-};
-const cors = require('cors');
-
-
-const fb = initializeApp(firebaseConfig);
 const {uid} = require('uid')
-const {getAuth} = require('firebase/auth')
-const auth = getAuth(fb)
 const express = require('express')
 const path = require('path') 
 const bodyParser = require('body-parser');
 const app = express()
-const helmet = require('helmet'); // Added Helmet
-const rateLimit = require('express-rate-limit'); // Added rate limiter
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
 const validator = require('validator');
-const admin = require('firebase-admin'); // Added Firebase Admin SDK
+const admin = require('firebase-admin');
 
 const serviceAccount = require('./sage-pond-gen-ai-firebase-adminsdk-9u1h2-7a16893d3f.json');
 
+// Initialize Firebase Admin
 if (!admin.apps.length) {
     admin.initializeApp({
         credential: admin.credential.cert(serviceAccount),
@@ -36,78 +20,47 @@ if (!admin.apps.length) {
 
 let initial_path = __dirname 
 const port = process.env.PORT || 4000
+
+// Middleware setup
 app.use(express.static(initial_path))
 app.use(helmet());
 app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 100 }))
 app.use(bodyParser.json())
 app.use(helmet.frameguard({ action: 'deny' }))
 app.use(helmet.referrerPolicy({ policy: 'no-referrer' }))
-app.use(helmet.hsts({ // Enable HSTS with a max age of 31536000 seconds (1 year)
-maxAge: 31536000,
-includeSubDomains: true, // Include subdomains
-preload: false, // Send the preload flag
+app.use(helmet.hsts({
+    maxAge: 31536000,
+    includeSubDomains: true,
+    preload: false,
 }));
-app.use(helmet.crossOriginEmbedderPolicy({ policy: 'require-corp' })); // Restricts embedding to the same corporation
+app.use(helmet.crossOriginEmbedderPolicy({ policy: 'require-corp' }));
 app.use(helmet.xssFilter())
 app.use(helmet.ieNoOpen());
 app.use(helmet.noSniff())
 app.use(
-  helmet.contentSecurityPolicy({
-    directives: {
-      defaultSrc: ["'self'"],
-      scriptSrc: [
-        "'self'",
-        "https://www.google.com/recaptcha/api.js",
-        "https://cdn.jsdelivr.net/npm/dompurify@3.1.0/dist/purify.min.js",
-      ],
-      styleSrc: [
-        "'self'",
-        "https://fonts.googleapis.com/",
-        "https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css",
-      ],
-      imgSrc: ["'self'", "data:"],
-      connectSrc: [
-        "'self'",
-        "https://identitytoolkit.googleapis.com", // Allow Firebase Auth API
-      ],
-    },
-  })
+    helmet.contentSecurityPolicy({
+        directives: {
+            defaultSrc: ["'self'"],
+            scriptSrc: [
+                "'self'",
+                "https://www.google.com/recaptcha/api.js",
+                "https://cdn.jsdelivr.net/npm/dompurify@3.1.0/dist/purify.min.js",
+            ],
+            styleSrc: [
+                "'self'",
+                "https://fonts.googleapis.com/",
+                "https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css",
+            ],
+            imgSrc: ["'self'", "data:"],
+            connectSrc: [
+                "'self'",
+                "https://identitytoolkit.googleapis.com",
+            ],
+        },
+    })
 );
-app.get('/', (req, res) => {
-    res.sendFile(path.join(initial_path, "index.html"));
-  });
 
-// Middleware to send Firebase config securely when login or signup page is loaded
-app.get(['/login', '/signup'], (req, res, next) => {
-    const firebaseConfig = {
-        apiKey: "AIzaSyDyXWSxpBqk7lgomflc_Sl3BCXp8Dvffbg",
-        authDomain: "sage-pond-gen-ai.firebaseapp.com",
-        projectId: "sage-pond-gen-ai",
-        storageBucket: "sage-pond-gen-ai.appspot.com",
-        messagingSenderId: "369426724601",
-        appId: "1:369426724601:web:698e582d4e10ff710c5428",
-        measurementId: "G-XY1Y3VW550"
-    };
-
-    res.locals.firebaseConfig = firebaseConfig; // Attach config to response locals
-    next();
-});
-
-// Serve login page with Firebase config
-app.get('/login', (req, res) => {
-    res.sendFile(path.join(__dirname, 'login.html'));
-});
-
-// Serve signup page with Firebase config
-app.get('/signup', (req, res) => {
-    res.sendFile(path.join(__dirname, 'signup.html'));
-});
-
-app.get('/about',(req,res)=>{
-  res.sendFile(path.join(initial_path,"about.html"))
-  })
-
-// Refactor isAuthenticated middleware to verify token instead of using Firebase Auth
+// Authentication middleware
 const isAuthenticated = async (req, res, next) => {
     try {
         const token = req.headers.authorization?.split(' ')[1];
@@ -125,7 +78,20 @@ const isAuthenticated = async (req, res, next) => {
     }
 };
 
-app.post('/api/verify-token', async (req, res) => {
+// Routes
+app.get('/', (req, res) => {
+    res.sendFile(path.join(initial_path, "index.html"));
+});
+
+app.get('/login', (req, res) => {
+    res.sendFile(path.join(__dirname, 'login.html'));
+});
+
+app.get('/signup', (req, res) => {
+    res.sendFile(path.join(__dirname, 'signup.html'));
+});
+
+app.post('/api/verify-token', express.json(), async (req, res) => {
     const { token } = req.body;
 
     if (!token) {
@@ -134,26 +100,19 @@ app.post('/api/verify-token', async (req, res) => {
     }
 
     try {
-        // Verify the token using Firebase Admin SDK
         const decodedToken = await admin.auth().verifyIdToken(token);
-        const uid = decodedToken.uid;
-
-        console.log('Token verified for user:', uid);
-
-        // Attach the user to the request object
-        req.user = decodedToken;
-        isAuthenticated(req.user)
-        res.json({ success: true, uid });
+        console.log('Token verified for user:', decodedToken.uid);
+        res.json({ success: true, uid: decodedToken.uid });
     } catch (error) {
         console.error('Error verifying token:', error);
         res.status(401).json({ success: false, message: 'Invalid or expired token' });
     }
 });
 
-// Generate unique chat ID and handle chat creation route
-app.post('/create-chat', (req, res) => {
+// Chat routes
+app.post('/create-chat', isAuthenticated, (req, res) => {
     try {
-        const chatId = uid(); // Generate unique ID for the chat
+        const chatId = uid();
         res.json({ success: true, chatId });
     } catch (error) {
         console.error('Error creating chat:', error);
@@ -161,76 +120,19 @@ app.post('/create-chat', (req, res) => {
     }
 });
 
-// Handle specific chat route
-app.get('/app/:chatId', (req, res) => {
-    const chatId = req.params.chatId;
+app.get('/app/:chatId', isAuthenticated, (req, res) => {
     res.sendFile(path.join(initial_path, 'chat.html'));
 });
 
-// Serve the chat webpage
-app.get('/app', (req, res) => {
+app.get('/app', isAuthenticated, (req, res) => {
     res.sendFile(path.join(initial_path, 'chat.html'));
 });
 
-app.get('/welcome',(req,res)=>{
-  res.sendFile(path.join(initial_path,'welcome.html'))
-})
-
-// Blog routes
-app.get('/blog/:id', async (req, res) => {
-  try {
-    const blogId = req.params.id;
-    const db = getFirestore(fb);
-    const blogDoc = await getDoc(doc(db, 'blogs', blogId));
-    
-    if (blogDoc.exists()) {
-      res.sendFile(path.join(initial_path, "blog.html"));
-    } else {
-      res.status(404).send('Blog post not found');
-    }
-  } catch (error) {
-    console.error('Error fetching blog:', error);
-    res.status(500).send('Internal Server Error');
-  }
+app.get('/welcome', (req, res) => {
+    res.sendFile(path.join(initial_path, 'welcome.html'));
 });
 
-app.get('/api/blog/:id', async (req, res) => {
-  try {
-    const blogId = req.params.id;
-    const db = getFirestore(fb);
-    const blogDoc = await getDoc(doc(db, 'blogs', blogId));
-    
-    if (blogDoc.exists()) {
-      res.json({ success: true, blog: { id: blogDoc.id, ...blogDoc.data() } });
-    } else {
-      res.status(404).json({ success: false, message: 'Blog post not found' });
-    }
-  } catch (error) {
-    console.error('Error fetching blog:', error);
-    res.status(500).json({ success: false, message: 'Internal Server Error' });
-  }
-});
-
-app.get('/api/blogs', async (req, res) => {
-  try {
-    const db = getFirestore(fb);
-    const blogsQuery = query(collection(db, 'blogs'), orderBy('publishedAt', 'desc'));
-    const querySnapshot = await getDocs(blogsQuery);
-    
-    const blogs = [];
-    querySnapshot.forEach((doc) => {
-      blogs.push({ id: doc.id, ...doc.data() });
-    });
-    
-    res.json({ success: true, blogs });
-  } catch (error) {
-    console.error('Error fetching blogs:', error);
-    res.status(500).json({ success: false, message: 'Internal Server Error' });
-  }
-});
-
-
-
+// Firebase config route
 app.all('/api/firebase-config', (req, res) => {
     const firebaseConfig = {
         apiKey: "AIzaSyDyXWSxpBqk7lgomflc_Sl3BCXp8Dvffbg",
@@ -242,8 +144,7 @@ app.all('/api/firebase-config', (req, res) => {
         measurementId: "G-XY1Y3VW550"
     };
 
-    // Add a security check to ensure only authorized requests can access this route
-    const authHeader = req.headers.authorization; // Log the authorization header for debugging
+    const authHeader = req.headers.authorization;
     if (!authHeader || authHeader !== 'Bearer secure-fetch-key') {
         return res.status(403).json({ success: false, message: 'Forbidden' });
     }
@@ -251,9 +152,11 @@ app.all('/api/firebase-config', (req, res) => {
     res.json({ success: true, config: firebaseConfig });
 });
 
-app.use((req,res)=>{
-    res.send('404')
-  })
-  app.listen(port,()=>{
-    console.log(`listening on Port ${port}`)
-  })
+// 404 handler
+app.use((req, res) => {
+    res.sendFile(path.join(initial_path, '404.html'));
+});
+
+app.listen(port, () => {
+    console.log(`listening on Port ${port}`);
+});
