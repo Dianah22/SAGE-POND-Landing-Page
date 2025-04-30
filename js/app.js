@@ -14,16 +14,48 @@ window.addEventListener('scroll', () => {
 // Three.js Setup: Scene, Camera, Renderer
 const scene = new THREE.Scene();
 const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
-const renderer = new THREE.WebGLRenderer({ antialias: true });
-renderer.setClearColor(0x1E2A78, 1)
-// Set initial size
+const renderer = new THREE.WebGLRenderer({ 
+    antialias: true,
+    alpha: true,
+    powerPreference: "high-performance"
+});
+renderer.setClearColor(0x1E2A78, 1);
+
+// Set initial size and handle resizing
 function updateCanvasSize() {
-  const heroHeight = heroSection.offsetHeight;
-  renderer.setSize(window.innerWidth, '600');
+    // Get the viewport width
+    const width = window.innerWidth;
+    const height = 600; // Fixed height of 600px
+    
+    // Set renderer size
+    renderer.setSize(width, height);
+    
+    // Set renderer pixel ratio for better mobile display
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    
+    // Position the canvas
+    renderer.domElement.style.position = 'absolute';
+    renderer.domElement.style.top = '0';
+    renderer.domElement.style.left = '0';
+    renderer.domElement.style.width = '100%';
+    renderer.domElement.style.height = '600px';
+    renderer.domElement.style.zIndex = '-1';
+    renderer.domElement.style.pointerEvents = 'none';
 }
 
+// Initial setup
 updateCanvasSize();
-document.body.appendChild(renderer.domElement);
+document.body.insertBefore(renderer.domElement, document.body.firstChild);
+
+// Add resize listener
+window.addEventListener('resize', () => {
+    updateCanvasSize();
+}, false);
+
+// Add orientation change listener for mobile
+window.addEventListener('orientationchange', () => {
+    setTimeout(updateCanvasSize, 100);
+});
 
 // Clock
 const clock = new THREE.Clock();
@@ -84,11 +116,11 @@ const unveyl = document.getElementById('unveyl')
 gsap.to(unveyl, {
   scrollTrigger: {
     trigger: '.herod',
-     start:"top 40%",
+     start:"top 30%",
     scrub:2,
     pin: '.herod', 
     toggleActions: "restart pause reverse pause",  
   },
   x: -1900,
-  duration: 3
+  duration: 3.2
 });
