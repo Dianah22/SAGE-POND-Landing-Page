@@ -21,25 +21,19 @@ window.addEventListener('scroll', () => {
 const scene = new THREE.Scene();
 const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
 const renderer = new THREE.WebGLRenderer({ 
-    antialias: true,
+    antialias: !isMobile(), // Disable antialiasing on mobile
     alpha: true,
-    powerPreference: "high-performance"
+    powerPreference: isMobile() ? "low-power" : "high-performance"
 });
 renderer.setClearColor(0x1E2A78, 1);
 
 // Set initial size and handle resizing
 function updateCanvasSize() {
-    // Get the viewport width
     const width = window.innerWidth;
-    const height = 600; // Fixed height of 600px
-    
-    // Set renderer size
+    const height = 600;
     renderer.setSize(width, height);
-    
-    // Set renderer pixel ratio for better mobile display
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    
-    // Position the canvas
+    // Lower pixel ratio on mobile to save GPU
+    renderer.setPixelRatio(isMobile() ? 1 : Math.min(window.devicePixelRatio, 2));
     renderer.domElement.style.position = 'absolute';
     renderer.domElement.style.top = '0';
     renderer.domElement.style.left = '0';
@@ -95,7 +89,8 @@ Promise.all([
   });
 
   // Fullscreen Quad Geometry
-  const geometry = new THREE.PlaneGeometry(2, 2);
+  // Reduce geometry complexity on mobile
+  const geometry = new THREE.PlaneGeometry(2, 2, isMobile() ? 1 : 2, isMobile() ? 1 : 2);
   const mesh = new THREE.Mesh(geometry, material);
   scene.add(mesh);
 
@@ -106,14 +101,17 @@ Promise.all([
 
   // Animate Loop
   let animationFrameId = null;
-  function animate() {
+  let lastFrameTime = 0;
+  function animate(now) {
     animationFrameId = requestAnimationFrame(animate);
     const elapsedTime = clock.getElapsedTime();
-    
-    // Different animation speeds for mobile and desktop
-    const animationSpeed = isMobile() ? 0 : 0.45; // Zero for mobile, 0.45 for desktop
+    // Throttle to ~30fps on mobile
+    if (isMobile()) {
+      if (now - lastFrameTime < 33) return;
+      lastFrameTime = now;
+    }
+    const animationSpeed = isMobile() ? 0 : 0.45;
     material.uniforms.uTime.value = elapsedTime * animationSpeed;
-    
     renderer.render(scene, camera);
   }
 
@@ -145,3 +143,11 @@ gsap.to(unveyl, {
   x: -1900,
   duration: 3.2
 });
+
+// ---
+// Further mobile optimizations (apply in HTML/CSS):
+// 1. Add 'defer' to <script> tags for non-critical JS.
+// 2. Use <img loading="lazy"> for images below the fold.
+// 3. Minimize or disable parallax/scroll/hover effects on mobile.
+// 4. Reduce CSS transitions/animations for mobile in your styles.
+// ---
