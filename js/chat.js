@@ -23,6 +23,24 @@ const welcome_screen = document.querySelector('.welcome_screen');
 let clickCount = 0;
 let isMenuOpen = false;
 
+// Ensure token is available before making any requests
+async function ensureToken(auth) {
+    if (!auth.currentUser) {
+        return new Promise((resolve) => {
+            const unsubscribe = onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    const token = await user.getIdToken();
+                    unsubscribe();
+                    resolve(token);
+                } else {
+                    window.location.href = '/login';
+                }
+            });
+        });
+    }
+    return auth.currentUser.getIdToken();
+}
+
 // Initialize Firebase and setup chat functionality
 (async () => {
     try {
@@ -42,12 +60,13 @@ let isMenuOpen = false;
         const auth = getAuth(app);
         const db = getFirestore(app);
 
+        // Wait for token before proceeding
+        const token = await ensureToken(auth);
+        
         // Firebase Functions
         async function createNewChat(message) {
             try {
-                // Get the current user's ID token
                 const token = await auth.currentUser.getIdToken();
-                
                 const response = await fetch('/create-chat', {
                     method: 'POST',
                     headers: { 

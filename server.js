@@ -25,7 +25,7 @@ const port = process.env.PORT || 4000
 app.use(express.static(initial_path))
 app.use(helmet());
 app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 100 }))
-app.use(bodyParser.json())
+
 app.use(helmet.frameguard({ action: 'deny' }))
 app.use(helmet.referrerPolicy({ policy: 'no-referrer' }))
 app.use(helmet.hsts({
@@ -55,29 +55,51 @@ app.use(
             connectSrc: [
                 "'self'",
                 "https://identitytoolkit.googleapis.com",
+                "https://securetoken.googleapis.com"
             ],
         },
     })
 );
 
 // Authentication middleware
+// middleware/isAuthenticated.js
+// utils/tokenExtractor.js
+
+function extractToken(req) {
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      return authHeader.split(' ')[1];
+    }
+    if (req.body && req.body.token) {
+      return req.body.token;
+    }
+  }
 const isAuthenticated = async (req, res, next) => {
     try {
-        const token = req.headers.authorization?.split(' ')[1];
-        if (!token) {
-            return res.status(401).json({ success: false, message: 'No token provided' });
-        }
-
-        // Verify the token using Firebase Admin SDK
-        const decodedToken = await admin.auth().verifyIdToken(token);
-        req.user = decodedToken;
-        next();
+      // 1️⃣ Try header first
+      const token = extractToken(req);
+      console.log('token',token)  
+      if (!token) {
+        return res
+          .status(401)
+          .json({ success: false, message: 'No token provided' });
+      }
+  
+      // 3️⃣ Verify via Firebase Admin SDK
+      const decodedToken = await admin.auth().verifyIdToken(token);
+  
+      // 4️⃣ Expose both on req for downstream
+      req.user  = decodedToken;  // decoded claims
+      req.token = token;         // raw JWT
+      next();
     } catch (error) {
-        console.error('Error in isAuthenticated middleware:', error);
-        res.status(401).json({ success: false, message: 'Invalid token' });
+      console.error('Error in isAuthenticated middleware:', error);
+      res
+        .status(401)
+        .json({ success: false, message: 'Invalid or expired token' });
     }
-};
-
+  };
+  app.use(bodyParser.json())
 // Routes
 app.get('/', (req, res) => {
     res.sendFile(path.join(initial_path, "index.html"));
@@ -91,23 +113,17 @@ app.get('/signup', (req, res) => {
     res.sendFile(path.join(__dirname, 'signup.html'));
 });
 
-app.post('/api/verify-token', express.json(), async (req, res) => {
-    const { token } = req.body;
-
-    if (!token) {
-        console.log('No token provided in request body');
-        return res.status(400).json({ success: false, message: 'Token is required' });
+app.post(
+    '/api/verify-token',express.json(),
+    isAuthenticated,
+    (req, res) => {
+      res.json({
+        success: true,
+        uid:     req.user.uid,
+        token:   req.token
+      });
     }
-
-    try {
-        const decodedToken = await admin.auth().verifyIdToken(token);
-        console.log('Token verified for user:', decodedToken.uid);
-        res.json({ success: true, uid: decodedToken.uid });
-    } catch (error) {
-        console.error('Error verifying token:', error);
-        res.status(401).json({ success: false, message: 'Invalid or expired token' });
-    }
-});
+  );
 
 // Chat routes
 app.post('/create-chat', isAuthenticated, (req, res) => {
