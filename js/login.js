@@ -23,6 +23,26 @@ async function fetchFirebaseConfig() {
     }
 }
 
+// Helper function to wait for cookie
+function waitForCookie(cookieName, timeout = 10000) {
+    const startTime = Date.now();
+    
+    return new Promise((resolve, reject) => {
+        const checkCookie = setInterval(() => {
+            const cookies = document.cookie.split(';');
+            const found = cookies.some(cookie => cookie.trim().startsWith(`${cookieName}=`));
+            
+            if (found) {
+                clearInterval(checkCookie);
+                resolve(true);
+            } else if (Date.now() - startTime > timeout) {
+                clearInterval(checkCookie);
+                reject(new Error('Cookie wait timeout'));
+            }
+        }, 100);
+    });
+}
+
 // Initialize Firebase on the client side
 (async () => {
     try {
@@ -61,19 +81,24 @@ async function fetchFirebaseConfig() {
                 const token = await userCredential.user.getIdToken();  
                 // Send the token to the backend for verification
                 const response = await fetch('/api/verify-token', {
-                    method: 'POST', // Use POST instead of GET
+                    method: 'POST',
                     credentials: 'include',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ token }), // Include the token in the body
+                    body: JSON.stringify({ token })
                 });
 
                 const data = await response.json();
                 if (data.success) {
-                    console.log('Token verified successfully:', data);
-                    alert('Login successful! Redirecting to app...');
-                    window.location.href = '/app';
+                    try {
+                        // Wait for session cookie to be set
+                        await waitForSessionCookie();
+                        console.log('Token verified and session cookie set');
+                    } catch (cookieError) {
+                        console.error('Session cookie not set:', cookieError);
+                        alert('Login failed! Session could not be established.');
+                    }
                 } else {
                     console.error('Token verification failed:', data.message);
                     alert('Login failed! Please try again.');
@@ -83,7 +108,26 @@ async function fetchFirebaseConfig() {
                 alert('Login failed! Please try again.');
             }
         }
+        async function waitForSessionCookie(maxAttempts = 5, initialDelay = 300) {
+            for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+                const ping = await fetch('/api/ping-session', {
+                    method: 'GET',
+                    credentials: 'include',
+                });
         
+                if (ping.status === 200) {
+                    window.location.href = '/app'; // Redirect to /app if session cookie is set
+                    console.log(`Session cookie detected on attempt ${attempt}`);
+                    return;
+                }
+        
+                const delay = initialDelay * Math.pow(2, attempt - 1); // exponential backoff
+                console.log(`Session not yet available (attempt ${attempt}). Retrying in ${delay}ms...`);
+                await new Promise(resolve => setTimeout(resolve, delay));
+            }
+        
+            throw new Error('Session cookie setup timeout.');
+        }
 
         loginButton.addEventListener('click', (e) => {
             e.preventDefault();
@@ -91,7 +135,7 @@ async function fetchFirebaseConfig() {
             const password = passwordInput.value;
             handleLogin(email, password);
         });
-       await new Promise(res => setTimeout(res, 1000));
+       
     } catch (error) {
         console.error('Error initializing Firebase:', error);
     }

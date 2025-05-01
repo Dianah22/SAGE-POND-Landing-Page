@@ -80,9 +80,9 @@ app.post('/api/verify-token', async (req, res) => {
         secure: false, 
          sameSite: 'Lax', // Set to 'None' for cross-site cookies  
       };
-      console.log('Session cookie created:', sessionCookie);
       res.cookie('session', sessionCookie, options);
-     res.status(200).json({ success: true });    
+     res.status(200).json({ success: true });  
+      // Redirect to /app after successful login     
     } catch (err) {
       res.status(401).json({ success: false, message: err });
     }
@@ -92,7 +92,7 @@ app.post('/api/verify-token', async (req, res) => {
     try {
       const decodedClaims = await admin.auth().verifySessionCookie(sessionCookie, true);
       req.user = decodedClaims;
-      next();
+      next()
     } catch (err) {
       res.status(401).send('Unauthorized');
     }
@@ -128,7 +128,9 @@ app.get('/app',verifySession, async (req, res) => {
 app.get('/welcome', (req, res) => {
     res.sendFile(path.join(initial_path, 'welcome.html'));
 });
-
+app.get('/api/ping-session', verifySession, (req, res) => {
+    res.status(200).json({ success: true, user: req.user });
+  });
 // Firebase config route
 app.all('/api/firebase-config', (req, res) => {
     const firebaseConfig = {
