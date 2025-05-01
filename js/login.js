@@ -63,10 +63,9 @@ async function fetchFirebaseConfig() {
                 // Send the token to the backend for verification
                 const response = await fetch('/api/verify-token', {
                     method: 'POST', // Use POST instead of GET
+                    credentials: 'include',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`, // Include the token in the Authorization header
-
                     },
                     body: JSON.stringify({ token }), // Include the token in the body
                 });
@@ -85,6 +84,7 @@ async function fetchFirebaseConfig() {
                 alert('Login failed! Please try again.');
             }
         }
+        
 
         loginButton.addEventListener('click', (e) => {
             e.preventDefault();
@@ -92,6 +92,7 @@ async function fetchFirebaseConfig() {
             const password = passwordInput.value;
             handleLogin(email, password);
         });
+        await new Promise(res => setTimeout(res, 200));
     } catch (error) {
         console.error('Error initializing Firebase:', error);
     }

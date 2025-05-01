@@ -76,9 +76,9 @@ app.post('/api/verify-token', async (req, res) => {
          
       const options = { 
         maxAge: expiresIn, 
-        httpOnly: false, 
+        httpOnly: true, 
         secure: false, 
-        sameSite: 'strict' 
+         sameSite: 'Lax', // Set to 'None' for cross-site cookies  
       };
   
       res.cookie('session', sessionCookie, options);
