@@ -146,6 +146,8 @@ ScrollSmoother.create({
 });
 
 gsap.registerPlugin(ScrollTrigger);
+ScrollTrigger.normalizeScroll(true);
+
 const unveyl = document.getElementById('unveyl')
 gsap.to(unveyl, {
   scrollTrigger: {
