@@ -9,6 +9,9 @@ canvas {
    border-radius: 25px;
 
  }
+ .ScrollSmoother-wrapper{
+   position: relative;
+ }
  #glow{
    position: relative;
    bottom: 22px;

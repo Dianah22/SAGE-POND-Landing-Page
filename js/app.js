@@ -130,6 +130,21 @@ Promise.all([
     }
   });
 });
+
+// Remove Lenis smooth scroll setup
+// Add GSAP ScrollSmoother smooth scroll setup
+
+gsap.registerPlugin(ScrollTrigger, ScrollSmoother);
+
+// Initialize GSAP ScrollSmoother
+ScrollSmoother.create({
+  wrapper: "main",      // Use the body as the wrapper
+  content: ".website-content",      // Use your main content container
+  smooth: 1.2,
+  effects: true,
+  smoothTouch: 0.1
+});
+
 gsap.registerPlugin(ScrollTrigger);
 const unveyl = document.getElementById('unveyl')
 gsap.to(unveyl, {
