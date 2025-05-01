@@ -3,6 +3,12 @@ const navbar = document.querySelector('#nav');
 const mobo_cont = document.querySelector(".mobo-container");
 const heroSection = document.querySelector(".hero");
 
+// Check if device is mobile
+function isMobile() {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) 
+        || window.innerWidth <= 768;
+}
+
 // Sticky Nav Scroll Event
 window.addEventListener('scroll', () => {
   var nav = navbar.offsetTop;
@@ -99,17 +105,32 @@ Promise.all([
   });
 
   // Animate Loop
+  let animationFrameId = null;
   function animate() {
-    requestAnimationFrame(animate);
-
+    animationFrameId = requestAnimationFrame(animate);
     const elapsedTime = clock.getElapsedTime();
-
-    // Update uniforms
-    material.uniforms.uTime.value = elapsedTime * 0.45;
+    
+    // Different animation speeds for mobile and desktop
+    const animationSpeed = isMobile() ? 0 : 0.45; // Zero for mobile, 0.45 for desktop
+    material.uniforms.uTime.value = elapsedTime * animationSpeed;
+    
     renderer.render(scene, camera);
   }
 
+  // Start animation
   animate();
+
+  // Handle visibility changes
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+        animationFrameId = null;
+      }
+    } else if (!animationFrameId) {
+      animate();
+    }
+  });
 });
 gsap.registerPlugin(ScrollTrigger);
 const unveyl = document.getElementById('unveyl')
