@@ -1,6 +1,5 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, setPersistence, browserLocalPersistence } from 'firebase/auth';
-
 // Fetch Firebase config from the backend
 async function fetchFirebaseConfig() {
     try {
@@ -74,7 +73,7 @@ async function fetchFirebaseConfig() {
                 if (data.success) {
                     console.log('Token verified successfully:', data);
                     alert('Login successful! Redirecting to app...');
-                    //window.location.href = '/app';
+                    window.location.href = '/app';
                 } else {
                     console.error('Token verification failed:', data.message);
                     alert('Login failed! Please try again.');
@@ -92,7 +91,7 @@ async function fetchFirebaseConfig() {
             const password = passwordInput.value;
             handleLogin(email, password);
         });
-        await new Promise(res => setTimeout(res, 200));
+       await new Promise(res => setTimeout(res, 1000));
     } catch (error) {
         console.error('Error initializing Firebase:', error);
     }

@@ -80,17 +80,15 @@ app.post('/api/verify-token', async (req, res) => {
         secure: false, 
          sameSite: 'Lax', // Set to 'None' for cross-site cookies  
       };
-  
+      console.log('Session cookie created:', sessionCookie);
       res.cookie('session', sessionCookie, options);
-     res.status(200).json({ success: true });
+     res.status(200).json({ success: true });    
     } catch (err) {
-      res.status(401).json({ success: false, message: 'Failed to create session' });
+      res.status(401).json({ success: false, message: err });
     }
   });
   const verifySession = async (req, res, next) => {
     const sessionCookie = req.cookies.session || '';
-    console.log(req.cookies)
-    console.log(sessionCookie);
     try {
       const decodedClaims = await admin.auth().verifySessionCookie(sessionCookie, true);
       req.user = decodedClaims;
