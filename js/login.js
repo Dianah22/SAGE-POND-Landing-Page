@@ -54,10 +54,22 @@ function waitForCookie(cookieName, timeout = 10000) {
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 console.log('User is signed in:', user.uid);
-                // Redirect to /app if on /login
-                if (window.location.pathname === '/login') {
-                    window.location.href = '/app';
-                }
+                // Use Promise chain instead of await
+                waitForCookie('session', 2500)
+                    .then(() => {
+                        console.log('Session cookie found');
+                        // Only redirect if we're on the login page
+                        if (window.location.pathname === '/login') {
+                            window.location.href = '/app';
+                        }
+                    })
+                    .catch((error) => {
+                        console.error('Session cookie not found:', error);
+                        // If no session cookie, sign out the user
+                        auth.signOut().then(() => {
+                            window.location.href = '/login';
+                        });
+                    });
             } else {
                 console.log('User is signed out');
                 // Redirect to /login if not already there

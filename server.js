@@ -128,9 +128,12 @@ app.get('/app',verifySession, async (req, res) => {
 app.get('/welcome', (req, res) => {
     res.sendFile(path.join(initial_path, 'welcome.html'));
 });
+
+// Session ping endpoint
 app.get('/api/ping-session', verifySession, (req, res) => {
     res.status(200).json({ success: true, user: req.user });
   });
+
 // Firebase config route
 app.all('/api/firebase-config', (req, res) => {
     const firebaseConfig = {
