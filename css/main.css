@@ -1159,16 +1159,16 @@ video {
   left: 0px;
 }
 
-.left-\[1000px\] {
-  left: 1000px;
-}
-
 .left-\[15\%\] {
   left: 15%;
 }
 
 .left-\[30\%\] {
   left: 30%;
+}
+
+.left-\[768px\] {
+  left: 768px;
 }
 
 .right-0 {
@@ -4474,6 +4474,10 @@ html.lenis {
 
   .md\:inset-0 {
     inset: 0px;
+  }
+
+  .md\:left-\[1000px\] {
+    left: 1000px;
   }
 
   .md\:z-0 {
