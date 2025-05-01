@@ -2,6 +2,7 @@ const {uid} = require('uid')
 const express = require('express')
 const path = require('path') 
 const bodyParser = require('body-parser');
+const cookieParser = require('cookie-parser');
 const app = express()
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
@@ -37,6 +38,9 @@ app.use(helmet.crossOriginEmbedderPolicy({ policy: 'require-corp' }));
 app.use(helmet.xssFilter())
 app.use(helmet.ieNoOpen());
 app.use(helmet.noSniff())
+app.use(bodyParser.json())
+app.use(cookieParser());
+
 app.use(
     helmet.contentSecurityPolicy({
         directives: {
@@ -64,42 +68,38 @@ app.use(
 // Authentication middleware
 // middleware/isAuthenticated.js
 // utils/tokenExtractor.js
-
-function extractToken(req) {
-    const authHeader = req.headers.authorization;
-    if (authHeader && authHeader.startsWith('Bearer ')) {
-      return authHeader.split(' ')[1];
-    }
-    if (req.body && req.body.token) {
-      return req.body.token;
-    }
-  }
-const isAuthenticated = async (req, res, next) => {
+app.post('/api/verify-token', async (req, res) => {
+    const idToken = req.body.token;
+    const expiresIn = 60 * 60 * 24 * 5 * 1000; // 5 days
     try {
-      // 1️⃣ Try header first
-      const token = extractToken(req);
-      console.log('token',token)  
-      if (!token) {
-        return res
-          .status(401)
-          .json({ success: false, message: 'No token provided' });
-      }
+      const sessionCookie = await admin.auth().createSessionCookie(idToken, { expiresIn });
+         
+      const options = { 
+        maxAge: expiresIn, 
+        httpOnly: false, 
+        secure: false, 
+        sameSite: 'strict' 
+      };
   
-      // 3️⃣ Verify via Firebase Admin SDK
-      const decodedToken = await admin.auth().verifyIdToken(token);
-  
-      // 4️⃣ Expose both on req for downstream
-      req.user  = decodedToken;  // decoded claims
-      req.token = token;         // raw JWT
+      res.cookie('session', sessionCookie, options);
+     res.status(200).json({ success: true });
+    } catch (err) {
+      res.status(401).json({ success: false, message: 'Failed to create session' });
+    }
+  });
+  const verifySession = async (req, res, next) => {
+    const sessionCookie = req.cookies.session || '';
+    console.log(req.cookies)
+    console.log(sessionCookie);
+    try {
+      const decodedClaims = await admin.auth().verifySessionCookie(sessionCookie, true);
+      req.user = decodedClaims;
       next();
-    } catch (error) {
-      console.error('Error in isAuthenticated middleware:', error);
-      res
-        .status(401)
-        .json({ success: false, message: 'Invalid or expired token' });
+    } catch (err) {
+      res.status(401).send('Unauthorized');
     }
   };
-  app.use(bodyParser.json())
+ 
 // Routes
 app.get('/', (req, res) => {
     res.sendFile(path.join(initial_path, "index.html"));
@@ -112,21 +112,8 @@ app.get('/login', (req, res) => {
 app.get('/signup', (req, res) => {
     res.sendFile(path.join(__dirname, 'signup.html'));
 });
-
-app.post(
-    '/api/verify-token',express.json(),
-    isAuthenticated,
-    (req, res) => {
-      res.json({
-        success: true,
-        uid:     req.user.uid,
-        token:   req.token
-      });
-    }
-  );
-
 // Chat routes
-app.post('/create-chat', isAuthenticated, (req, res) => {
+app.post('/create-chat', verifySession, (req, res) => {
     try {
         const chatId = uid();
         res.json({ success: true, chatId });
@@ -135,12 +122,8 @@ app.post('/create-chat', isAuthenticated, (req, res) => {
         res.status(500).json({ success: false, message: 'Error creating chat' });
     }
 });
-
-app.get('/app/:chatId', isAuthenticated, (req, res) => {
-    res.sendFile(path.join(initial_path, 'chat.html'));
-});
-
-app.get('/app', isAuthenticated, (req, res) => {
+// Utility token verifier (not middleware)
+app.get('/app',verifySession, async (req, res) => {
     res.sendFile(path.join(initial_path, 'chat.html'));
 });
 
