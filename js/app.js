@@ -155,7 +155,7 @@ gsap.to(unveyl, {
     pin: '.herod', 
     toggleActions: "restart pause reverse pause",  
   },
-  x: -1900,
+  x: isMobile() ? -768 : -1900,
   duration: 3.2
 });
 
