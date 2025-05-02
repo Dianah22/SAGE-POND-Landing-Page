@@ -135,15 +135,6 @@ Promise.all([
 // Add GSAP ScrollSmoother smooth scroll setup
 
 gsap.registerPlugin(ScrollTrigger, ScrollSmoother,Observer);
-
-// Initialize GSAP ScrollSmoother
-ScrollSmoother.create({
-  wrapper: "main",      // Use the body as the wrapper
-  content: ".website-content",      // Use your main content container
-  smooth: 1,
-});
-
-gsap.registerPlugin(ScrollTrigger);
 const unveyl = document.getElementById('unveyl')
 gsap.to(unveyl, {
   scrollTrigger: {
@@ -154,7 +145,7 @@ gsap.to(unveyl, {
     toggleActions: "restart pause reverse pause",  
   },
   x: isMobile() ? '-50%' : "-50%",
-  duration: 3.2
+  duration: 2
 });
 
 // ---
