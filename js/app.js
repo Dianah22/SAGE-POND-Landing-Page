@@ -140,9 +140,9 @@ gsap.registerPlugin(ScrollTrigger, ScrollSmoother);
 ScrollSmoother.create({
   wrapper: "main",      // Use the body as the wrapper
   content: ".website-content",      // Use your main content container
-  smooth: 1.2,
+  smooth: 0.2,
   effects: true,
-  smoothTouch: 0.1
+  
 });
 
 gsap.registerPlugin(ScrollTrigger);
@@ -155,7 +155,7 @@ gsap.to(unveyl, {
     pin: '.herod', 
     toggleActions: "restart pause reverse pause",  
   },
-  x: isMobile() ? -768 : -1900,
+  x: isMobile() ? '=50%' : "-50%",
   duration: 3.2
 });
 
