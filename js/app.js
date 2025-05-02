@@ -134,15 +134,13 @@ Promise.all([
 // Remove Lenis smooth scroll setup
 // Add GSAP ScrollSmoother smooth scroll setup
 
-gsap.registerPlugin(ScrollTrigger, ScrollSmoother);
+gsap.registerPlugin(ScrollTrigger, ScrollSmoother,Observer);
 
 // Initialize GSAP ScrollSmoother
 ScrollSmoother.create({
   wrapper: "main",      // Use the body as the wrapper
   content: ".website-content",      // Use your main content container
-  smooth: 0.2,
-  effects: true,
-  
+  smooth: 1,
 });
 
 gsap.registerPlugin(ScrollTrigger);
@@ -155,7 +153,7 @@ gsap.to(unveyl, {
     pin: '.herod', 
     toggleActions: "restart pause reverse pause",  
   },
-  x: isMobile() ? '=50%' : "-50%",
+  x: isMobile() ? '-50%' : "-50%",
   duration: 3.2
 });
 
