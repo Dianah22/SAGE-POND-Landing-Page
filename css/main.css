@@ -4621,6 +4621,11 @@ html.lenis {
     padding-right: 1rem;
   }
 
+  .md\:text-6xl {
+    font-size: 3.75rem;
+    line-height: 1;
+  }
+
   .md\:text-9xl {
     font-size: 8rem;
     line-height: 1;
