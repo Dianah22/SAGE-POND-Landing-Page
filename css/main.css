@@ -4310,6 +4310,10 @@ html.lenis {
     position: absolute;
   }
 
+  .sm\:bottom-\[49px\] {
+    bottom: 49px;
+  }
+
   .sm\:col-span-3 {
     grid-column: span 3 / span 3;
   }
@@ -4369,6 +4373,10 @@ html.lenis {
 
   .sm\:grid-cols-3 {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .sm\:flex-col {
+    flex-direction: column;
   }
 
   .sm\:items-center {
