@@ -1163,6 +1163,10 @@ video {
   left: 0px;
 }
 
+.left-\[100\%\] {
+  left: 100%;
+}
+
 .left-\[15\%\] {
   left: 15%;
 }
@@ -4501,10 +4505,6 @@ html.lenis {
 
   .md\:inset-0 {
     inset: 0px;
-  }
-
-  .md\:left-\[100\%\] {
-    left: 100%;
   }
 
   .md\:z-0 {

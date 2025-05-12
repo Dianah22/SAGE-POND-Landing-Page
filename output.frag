@@ -137,7 +137,7 @@ void main() {
     uv += snoise(vec3(uv - i * 0.2, uTime + i * 32.)) * uUvDistortionIntensity;
   }
 
-  float colourInput = snoise(vec3(uv, sin(uTime))) * 0.5 + 0.5;
+  float colourInput = snoise(vec3(uv, sin(uTime))) * 0.4 + 0.4;
   vec3 colour = cosineGradientColour(colourInput, uColourPalette[0], uColourPalette[1], uColourPalette[2], uColourPalette[3]);
 
   gl_FragColor = vec4(colour, 1.0);
