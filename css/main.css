@@ -4479,12 +4479,12 @@ html.lenis {
     position: absolute;
   }
 
-  .md\:inset-0 {
-    inset: 0px;
+  .md\:relative {
+    position: relative;
   }
 
-  .md\:bottom-60 {
-    bottom: 15rem;
+  .md\:inset-0 {
+    inset: 0px;
   }
 
   .md\:left-\[100\%\] {
@@ -4621,6 +4621,10 @@ html.lenis {
 }
 
 @media (min-width: 1024px) {
+  .lg\:bottom-60 {
+    bottom: 15rem;
+  }
+
   .lg\:my-12 {
     margin-top: 3rem;
     margin-bottom: 3rem;
