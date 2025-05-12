@@ -4343,6 +4343,10 @@ html.lenis {
     display: none;
   }
 
+  .sm\:h-12 {
+    height: 3rem;
+  }
+
   .sm\:h-5 {
     height: 1.25rem;
   }
