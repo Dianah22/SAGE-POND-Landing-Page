@@ -2818,11 +2818,6 @@ video {
   line-height: 1;
 }
 
-.text-7xl {
-  font-size: 4.5rem;
-  line-height: 1;
-}
-
 .text-\[16\.1px\] {
   font-size: 16.1px;
 }
@@ -4486,6 +4481,10 @@ html.lenis {
 
   .md\:inset-0 {
     inset: 0px;
+  }
+
+  .md\:bottom-60 {
+    bottom: 15rem;
   }
 
   .md\:left-\[100\%\] {
