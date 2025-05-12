@@ -4379,10 +4379,6 @@ html.lenis {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
-  .sm\:flex-col {
-    flex-direction: column;
-  }
-
   .sm\:items-center {
     align-items: center;
   }
@@ -4581,10 +4577,6 @@ html.lenis {
 
   .md\:flex-row {
     flex-direction: row;
-  }
-
-  .md\:justify-center {
-    justify-content: center;
   }
 
   .md\:justify-between {
