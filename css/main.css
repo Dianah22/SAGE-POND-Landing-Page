@@ -2258,6 +2258,10 @@ video {
   border-radius: 40px;
 }
 
+.rounded-\[50px\] {
+  border-radius: 50px;
+}
+
 .rounded-full {
   border-radius: 9999px;
 }
