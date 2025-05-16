@@ -36,7 +36,7 @@ async function ensureToken(auth) {
                     window.location.href = '/login';
                 }
             });
-        },2000);
+        },500);
     }
     return auth.currentUser.getIdToken();
 }

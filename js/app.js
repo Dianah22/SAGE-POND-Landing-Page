@@ -143,8 +143,15 @@ gsap.to(unveyl, {
     scrub:2,
     pin: '.herod', 
     toggleActions: "restart pause reverse pause",  
+    onEnterBack: () => {
+      gsap.to(unveyl, {
+        display: 'block',
+        duration: 0.5,
+        ease: "power2.inOut"
+      });
+    },
   },
-  display:isMobile() ? 'none' : 'block',
+  display:'block',
   x: isMobile() ? '-100%' : "-100%",
   duration: 2
 });
