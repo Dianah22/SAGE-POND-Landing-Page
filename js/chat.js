@@ -143,7 +143,6 @@ async function ensureToken(auth) {
                 const snapshot = await getDocs(chatIdsCol);
                 snapshot.forEach(doc => {
                     if (doc.data().createdBy === userId) {
-                        console.log('Chat ID:', doc.id);
                         chatIds.push({ id: doc.id, ...doc.data() });
                     }
                 });
