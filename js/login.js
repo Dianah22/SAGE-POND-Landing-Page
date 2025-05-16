@@ -24,7 +24,7 @@ async function fetchFirebaseConfig() {
 }
 
 // Helper function to wait for cookie
-function waitForCookie(cookieName, timeout = 10000) {
+function waitForCookie(cookieName, timeout) {
     const startTime = Date.now();
     
     return new Promise((resolve, reject) => {
