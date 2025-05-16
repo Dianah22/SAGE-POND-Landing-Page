@@ -136,15 +136,21 @@ Promise.all([
 
 gsap.registerPlugin(ScrollTrigger, ScrollSmoother,Observer);
 const unveyl = document.getElementById('unveyl')
-gsap.registerPlugin(ScrollTrigger, ScrollSmoother);
-
-// Initialize ScrollSmoother
-const smoother = ScrollSmoother.create({
-  wrapper: ".herod",   // the outer container
-  content: ".sm",   // the scrolling content container
-  smooth: 1.5,                  // smoothness factor (higher = slower smoothing)
-  effects: true                 // enable data-speed / data-lag effects if used
+const lenis = new Lenis({
+  duration: 1.5,        // smoothness factor (higher = smoother)
+  easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)), // optional custom easing
+  smooth: true
 });
+
+
+// Update on each animation frame
+function raf(time) {
+  lenis.raf(time);
+  requestAnimationFrame(raf);
+}
+
+lenis.on('scroll', ScrollTrigger.update);
+
 gsap.to(unveyl, {
   scrollTrigger: {
     trigger: '.herod',
@@ -164,3 +170,5 @@ gsap.to(unveyl, {
   x: isMobile() ? '-100%' : "-100%",
   duration: 2
 });
+
+requestAnimationFrame(raf);
