@@ -36,7 +36,7 @@ async function ensureToken(auth) {
                     window.location.href = '/login';
                 }
             });
-        });
+        },2000);
     }
     return auth.currentUser.getIdToken();
 }
@@ -165,7 +165,13 @@ async function ensureToken(auth) {
             editor.innerHTML = '';
             send.disabled = true;
         });
+       side_btn.addEventListener('click',  (e) => {
+        if (window.location.pathname != '/app') {
 
+            window.history.pushState({}, 'main', '/app');
+                        welcome_screen.style.display = 'block';
+            chat_window.innerHTML = '';
+        }})
         recents.addEventListener('click', async (e) => {
             const chatItem = e.target.closest('[data-chat-id]');
             if (!chatItem) return;
@@ -265,11 +271,9 @@ function sanitizeInput(userInput) {
     return DOMPurify.sanitize(userInput, config);
 }
 
-window.addEventListener('load', function () {
     if (window.innerWidth > 768) {
         isMenuOpen = true;
     }
-});
 
     if (window.innerWidth <= 768) {
         isMenuOpen = false;
