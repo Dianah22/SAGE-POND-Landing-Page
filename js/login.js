@@ -55,9 +55,9 @@ function waitForCookie(cookieName, timeout) {
             if (user) {
                 console.log('User is signed in:', user.uid);
                 // Use Promise chain instead of await
-                waitForCookie('session', 2500)
+               waitForSessionCookie()
                     .then(() => {
-                        console.log('Session cookie found');
+                        alert('Session cookie found!');
                         // Only redirect if we're on the login page
                         if (window.location.pathname === '/login') {
                             window.location.href = '/app';
