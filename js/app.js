@@ -144,14 +144,7 @@ gsap.to(unveyl, {
     pin: '.herod', 
     toggleActions: "restart pause reverse pause",  
   },
+  display:isMobile() ? 'none' : 'block',
   x: isMobile() ? '-100%' : "-100%",
   duration: 2
 });
-
-// ---
-// Further mobile optimizations (apply in HTML/CSS):
-// 1. Add 'defer' to <script> tags for non-critical JS.
-// 2. Use <img loading="lazy"> for images below the fold.
-// 3. Minimize or disable parallax/scroll/hover effects on mobile.
-// 4. Reduce CSS transitions/animations for mobile in your styles.
-// ---

@@ -59,7 +59,9 @@ app.use(
             connectSrc: [
                 "'self'",
                 "https://identitytoolkit.googleapis.com",
-                "https://securetoken.googleapis.com"
+                "https://securetoken.googleapis.com",
+                "https://firestore.googleapis.com",
+                "https://firebase.googleapis.com",
             ],
         },
     })

@@ -143,6 +143,7 @@ async function ensureToken(auth) {
                 const snapshot = await getDocs(chatIdsCol);
                 snapshot.forEach(doc => {
                     if (doc.data().createdBy === userId) {
+                        console.log('Chat ID:', doc.id);
                         chatIds.push({ id: doc.id, ...doc.data() });
                     }
                 });
@@ -236,18 +237,18 @@ function toggleMenu() {
         gsap.to(recents, { duration: 0.3, ease: 'power2.inOut', width: '50%' });
     } else if (isMenuOpen == true && window.innerWidth > 768) {
         gsap.to(nav, { duration: 0.3, ease: "power3.inOut", width: "50%" });
-        gsap.to(side_b, { duration: 0.3, ease: 'Power3.inOut', width: '45px' });
+        gsap.to(side_b, { duration: 0.4, ease: 'Power3.inOut', width: '45px' });
         gsap.to(content, { duration: 0.3, ease: 'power3.inOut', left: "5%", width: '95%' });
         gsap.to(recents, { duration: 0.3, ease: 'power2.inOut', width: '25%' });
     } else if (window.innerWidth <= 768 && isMenuOpen == true) {
-        gsap.to(side_btn, { duration: 0.1, ease: 'power2.inOut', width: '0%', display: 'none', opacity: '0' });
+        gsap.to(side_btn, { duration: 0.4, ease: 'power2.inOut', width: '0%', display: 'none', opacity: '0' });
         gsap.to(content, { duration: 0.2, left: "0%", width: '100%' });
         gsap.to(nav, { duration: 0.3, ease: "power3.inOut", width: "0%" });
         gsap.to(recents, { duration: 0.05, ease: 'power2.inOut', width: '0%' });
     } else if (window.innerWidth <= 768 && isMenuOpen == false) {
         gsap.to(nav, { duration: 0.3, ease: "power3.inOut", width: "70%" });
         gsap.to(content, { duration: 0.3, ease: 'power3.inOut', left: "0%", width: `100%` });
-        gsap.to(side_btn, { duration: 0.2, ease: 'power2.inOut', width: '100%', display: 'grid', opacity: '1' });
+        gsap.to(side_btn, { duration: 0.4, ease: 'power2.inOut', width: '100%', display: 'grid', opacity: '1' });
         gsap.to(recents, { duration: 0.3, ease: 'power2.inOut', width: '100%' });
     }
     isMenuOpen = !isMenuOpen;
@@ -271,7 +272,6 @@ window.addEventListener('load', function () {
     }
 });
 
-window.addEventListener('load', e => {
     if (window.innerWidth <= 768) {
         isMenuOpen = false;
         nav.style.width = '0%';
@@ -279,7 +279,6 @@ window.addEventListener('load', e => {
         content.style.left = '0%';
         side_btn.style.display = 'none';
     }
-});
 
 editor.addEventListener('keydown', function (event) {
     if (event.key === 'Enter') {
