@@ -136,6 +136,15 @@ Promise.all([
 
 gsap.registerPlugin(ScrollTrigger, ScrollSmoother,Observer);
 const unveyl = document.getElementById('unveyl')
+gsap.registerPlugin(ScrollTrigger, ScrollSmoother);
+
+// Initialize ScrollSmoother
+const smoother = ScrollSmoother.create({
+  wrapper: ".herod",   // the outer container
+  content: ".sm",   // the scrolling content container
+  smooth: 1.5,                  // smoothness factor (higher = slower smoothing)
+  effects: true                 // enable data-speed / data-lag effects if used
+});
 gsap.to(unveyl, {
   scrollTrigger: {
     trigger: '.herod',
