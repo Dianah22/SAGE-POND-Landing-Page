@@ -81,6 +81,7 @@ async function ensureToken(auth) {
                     throw new Error('Failed to create chat');
                 }
 
+
                 const chatId = data.chatId;
                 const user = auth.currentUser;
 
@@ -103,6 +104,7 @@ async function ensureToken(auth) {
 
         async function sendMessage(chatId, message) {
             try {
+                console.log(chatId, message);
                 const user = auth.currentUser;
                 const docRef = doc(db, 'chats', chatId);
                 
@@ -156,7 +158,10 @@ async function ensureToken(auth) {
         send.addEventListener('click', async (e) => {
             const message = sanitizeInput(editor.textContent);
             if (clickCount === 0) {
-                await createNewChat(message);
+                const chatId=await createNewChat(message);
+                window.history.pushState({},'conversation',`/app/${chatId}`)
+                await sendMessage(chatId, message);
+                
             } else {
                 const chatId = window.location.pathname.split('/')[2];
                 await sendMessage(chatId, message);
@@ -286,7 +291,9 @@ function sanitizeInput(userInput) {
 editor.addEventListener('keydown', function (event) {
     if (event.key === 'Enter') {
         event.preventDefault();
-        document.execCommand('insertHTML', false, '<p><br></p>');
+        if (!send.disabled) {
+            send.click();
+        }
     }
 });
 
@@ -304,3 +311,28 @@ editor.addEventListener('blur', function () {
         editor.textContent = placeholder;
     }
 });
+
+// --- Editor dynamic style for wrapping and overflow ---
+function applyEditorStyles() {
+    editor.style.display = 'block';
+    editor.style.width = '100%'; // or set a fixed px width if needed
+   
+    editor.style.whiteSpace = 'pre-wrap';
+    editor.style.wordBreak = 'break-word';
+    editor.style.overflowY = 'hidden';
+    editor.style.overflowX = 'hidden';
+    editor.style.boxSizing = 'border-box';
+}
+
+function checkEditorOverflow() {
+    if (editor.scrollHeight > editor.clientHeight) {
+        editor.style.overflowY = 'auto';
+    } else {
+        editor.style.overflowY = 'hidden';
+    }
+}
+
+applyEditorStyles();
+
+editor.addEventListener('input', checkEditorOverflow);
+window.addEventListener('resize', checkEditorOverflow);
