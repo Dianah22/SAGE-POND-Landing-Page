@@ -2751,6 +2751,10 @@ video {
   padding-right: 0.5rem;
 }
 
+.pr-20 {
+  padding-right: 5rem;
+}
+
 .pr-5 {
   padding-right: 1.25rem;
 }
