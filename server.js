@@ -126,9 +126,13 @@ app.post('/create-chat', verifySession, (req, res) => {
 app.get('/app',verifySession, async (req, res) => {
     res.sendFile(path.join(initial_path, 'chat.html'));
 });
-
 app.get('/welcome', (req, res) => {
     res.sendFile(path.join(initial_path, 'welcome.html'));
+});
+
+// Serve chat.html for /app/:chatId route
+app.get('/app/:chatId', verifySession, (req, res) => {
+    res.sendFile(path.join(initial_path, 'chat.html'));
 });
 
 // Session ping endpoint

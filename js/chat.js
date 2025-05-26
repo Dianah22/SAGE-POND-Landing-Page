@@ -158,13 +158,24 @@ async function ensureToken(auth) {
         send.addEventListener('click', async (e) => {
             const message = sanitizeInput(editor.textContent);
             if (clickCount === 0) {
-                const chatId=await createNewChat(message);
-                window.history.pushState({},'conversation',`/app/${chatId}`)
+                const chatId = await createNewChat(message);
+                window.history.pushState({}, 'conversation', `/app/${chatId}`);
                 await sendMessage(chatId, message);
-                
+                // Hide welcome screen and show chat window
+                welcome_screen.style.display = 'none';
+                chat_window.style.display = '';
+                // Load chat history for new chat
+                const messages = await loadChatHistory(chatId);
+                renderChatMessages(messages);
             } else {
                 const chatId = window.location.pathname.split('/')[2];
                 await sendMessage(chatId, message);
+                // Hide welcome screen and show chat window
+                welcome_screen.style.display = 'none';
+                chat_window.style.display = '';
+                // Load chat history for existing chat
+                const messages = await loadChatHistory(chatId);
+                renderChatMessages(messages);
             }
             clickCount++;
             editor.innerHTML = '';
@@ -208,16 +219,24 @@ async function ensureToken(auth) {
 
 // UI Functions
 function renderChatMessages(messages) {
-    chat_window.innerHTML = messages.map(message => `
-        <div class="user_query h-[100px]">
-            <div class="image-container">
-                <img src="images/caleb.jpg" class="w-10 rounded-full">
+    chat_window.innerHTML = messages.map(message => {
+        const isUser = message.sender === (auth.currentUser && auth.currentUser.uid);
+        return `
+            <div class="flex w-full mb-4 ${isUser ? 'justify-end' : 'justify-start'}">
+                <div class="max-w-[70%] px-4 py-2 rounded-2xl shadow-md text-base ${isUser ? 'bg-blue-600 text-white ml-auto' : 'bg-gray-200 text-gray-900 mr-auto'}">
+                    <div class="flex items-center gap-2">
+                        ${isUser
+                            ? ''
+                            : '<img src="images/caleb.jpg" class="w-8 h-8 rounded-full">'}
+                        <span>${message.content}</span>
+                        ${isUser
+                            ? '<img src="images/caleb.jpg" class="w-8 h-8 rounded-full">'
+                            : ''}
+                    </div>
+                </div>
             </div>
-            <div class="info text-ellipsis text-xl">
-                <h2>${message.content}</h2>
-            </div>
-        </div>
-    `).join('');
+        `;
+    }).join('');
 }
 
 function renderChatList(chats) {
@@ -336,3 +355,21 @@ applyEditorStyles();
 
 editor.addEventListener('input', checkEditorOverflow);
 window.addEventListener('resize', checkEditorOverflow);
+
+// On page load, if on /app/:chatId, load chat history and show chat UI
+window.addEventListener('DOMContentLoaded', async () => {
+    const pathParts = window.location.pathname.split('/');
+    if (pathParts[1] === 'app' && pathParts[2]) {
+        const chatId = pathParts[2];
+        const messages = await loadChatHistory(chatId);
+        if (messages.length > 0) {
+            renderChatMessages(messages);
+            welcome_screen.style.display = 'none';
+            chat_window.style.display = '';
+        } else {
+            // If no messages, show welcome screen (optional)
+            welcome_screen.style.display = '';
+            chat_window.style.display = 'none';
+        }
+    }
+});
