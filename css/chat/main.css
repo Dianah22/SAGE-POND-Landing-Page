@@ -2767,10 +2767,6 @@ video {
   padding-inline-start: 0.5rem;
 }
 
-.ps-4 {
-  padding-inline-start: 1rem;
-}
-
 .ps-6 {
   padding-inline-start: 1.5rem;
 }
@@ -3211,7 +3207,7 @@ html,body{
 
 @media (max-width:965px){
   .side{
-    z-index: 1;
+    z-index: 15;
   }
 }
 

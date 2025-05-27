@@ -42,6 +42,6 @@ html,body{
   }
 @media (max-width:965px){
  .side{
-    z-index: 1;
+    z-index: 15;
  }
 }
