@@ -130,8 +130,13 @@ app.get('/welcome', (req, res) => {
     res.sendFile(path.join(initial_path, 'welcome.html'));
 });
 
+// Serve static files for /app/* so CSS/JS load on chat routes
+app.use('/app', express.static(initial_path));
+
 // Serve chat.html for /app/:chatId route
+//app.use(express.static(initial_path))
 app.get('/app/:chatId', verifySession, (req, res) => {
+
     res.sendFile(path.join(initial_path, 'chat.html'));
 });
 

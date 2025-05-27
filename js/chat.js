@@ -41,6 +41,10 @@ async function ensureToken(auth) {
     return auth.currentUser.getIdToken();
 }
 
+// --- Firebase ready promise for DOMContentLoaded handler ---
+let firebaseReadyResolve;
+const firebaseReady = new Promise((resolve) => { firebaseReadyResolve = resolve; });
+
 // Initialize Firebase and setup chat functionality
 (async () => {
     try {
@@ -212,10 +216,25 @@ async function ensureToken(auth) {
             }
         });
 
+        // At the end of successful Firebase setup:
+        firebaseReadyResolve({ loadChatHistory, renderChatMessages, welcome_screen, chat_window });
     } catch (error) {
         console.error('Error initializing Firebase:', error);
     }
 })();
+
+// On page load, if on /app/:chatId, load chat history and show chat UI
+window.addEventListener('DOMContentLoaded', async () => {
+    const chatId = window.location.pathname.split('/')[2];
+    console.log('Chat ID from URL:', chatId);
+    if (chatId) {
+        const { loadChatHistory, renderChatMessages, welcome_screen, chat_window } = await firebaseReady;
+        const messages = await loadChatHistory(chatId);
+        renderChatMessages(messages);
+        welcome_screen.style.display = 'none';
+        chat_window.style.display = '';
+    }
+});
 
 // UI Functions
 function renderChatMessages(messages) {
@@ -241,7 +260,7 @@ function renderChatMessages(messages) {
 
 function renderChatList(chats) {
     recent.innerHTML = chats.map(chat => `
-        <div class="rchat h-10 rounded-3xl hover:bg-gray-700 transition p-2 m-2">
+        <div class="rchat h-10 rounded-3xl hover:bg-gray-700 transition p-2 m-2 flex flex-wrap justify-center content-center items-center">
             <button data-chat-id="${chat.id}">new chat</button>
         </div>
     `).join('');
@@ -355,21 +374,3 @@ applyEditorStyles();
 
 editor.addEventListener('input', checkEditorOverflow);
 window.addEventListener('resize', checkEditorOverflow);
-
-// On page load, if on /app/:chatId, load chat history and show chat UI
-window.addEventListener('DOMContentLoaded', async () => {
-    const pathParts = window.location.pathname.split('/');
-    if (pathParts[1] === 'app' && pathParts[2]) {
-        const chatId = pathParts[2];
-        const messages = await loadChatHistory(chatId);
-        if (messages.length > 0) {
-            renderChatMessages(messages);
-            welcome_screen.style.display = 'none';
-            chat_window.style.display = '';
-        } else {
-            // If no messages, show welcome screen (optional)
-            welcome_screen.style.display = '';
-            chat_window.style.display = 'none';
-        }
-    }
-});
