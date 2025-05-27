@@ -276,28 +276,28 @@ window.addEventListener('resize',toggleMenu)
 menuBtn.addEventListener('click', toggleMenu);
 const side = document.querySelector('.side');
 function toggleMenu() {
-    const calc = 100 - 25;
+    const tl = gsap.timeline();
     if (!isMenuOpen && window.innerWidth > 1020) {
-        gsap.to(nav, { duration: 0.3, ease: "power3.inOut", x: "0%" });
-        gsap.to(side, { duration: 0.3, ease: 'power3.inOut', width: `85%` });
-        gsap.to(side_b, { duration: 0.3, ease: 'power2.inOut', width: '100%' });
-        gsap.to(side_btn, { duration: 0.3, ease: 'power2.inOut', width: '100%' });
-        gsap.to(recents, { duration: 0.3, ease: 'power2.inOut', width: '50%' });
+        tl.to(nav, { duration: 0.3, ease: "power3.inOut", x: "0%" })
+        .to(side, { duration: 0.3, ease: 'power3.inOut', width: `85%` })
+        .to(side_b, { duration: 0.3, ease: 'power2.inOut', width: '100%' })
+        .to(side_btn, { duration: 0.3, ease: 'power2.inOut', width: '100%' })
+        .to(recents, { duration: 0.3, ease: 'power2.inOut', width: '0%' })
     } else if (isMenuOpen == true && window.innerWidth > 1020) {
-        gsap.to(nav, { duration: 0.3, ease: "power3.inOut", width: "50%" });
-        gsap.to(side_b, { duration: 0.4, ease: 'Power3.inOut', width: '25px' });
-        gsap.to(side, { duration: 0.3, ease: 'power3.inOut',width:'0%' });
-        gsap.to(recents, { duration: 0.3, ease: 'power2.inOut', width: '25%',display: 'none' });
+        tl.to(nav, { duration: 0.3, ease: "power3.inOut", width: "50%" })
+        .to(side_b, { duration: 0.4, ease: 'Power3.inOut', width: '25px' })
+        .to(side, { duration: 0.3, ease: 'power3.inOut',width:'0%' })
+        .to(recents, { duration: 0.3, ease: 'power2.inOut', width: '100%',display: 'none' })
     } else if (window.innerWidth <= 965 && isMenuOpen == true) {
-        gsap.to(side_btn, { duration: 0.4, ease: 'power2.inOut', width: '0%', display: 'none' });
-        gsap.to(side, { duration: 0.2, width: '0%' });
-        gsap.to(nav, { duration: 0.3, ease: "power3.inOut", width: "0%" });
-        gsap.to(recents, { duration: 0.05, ease: 'power2.inOut', width: '0%' });
+        tl.to(side_btn, { duration: 0.4, ease: 'power2.inOut', width: '0%', display: 'none' })
+        .to(side, { duration: 0.2, width: '0%' })
+        .to(nav, { duration: 0.3, ease: "power3.inOut", width: "0%" })
+        .to(recents, { duration: 0.05, ease: 'power2.inOut', width: '0%' })
     } else if (window.innerWidth <= 965 && isMenuOpen == false) {
-        gsap.to(nav, { duration: 0.3, ease: "power3.inOut", width: "70%" });
-        gsap.to(side, { duration: 0.3, ease: 'power3.inOut', width: `25%` });
-        gsap.to(side_btn, { duration: 0.4, ease: 'power2.inOut', width: '100%', display: 'grid' });
-        gsap.to(recents, { duration: 0.3, ease: 'power2.inOut', width: '100%',display: 'block' });
+        tl.to(nav, { duration: 0.3, ease: "power3.inOut", width: "70%" })
+        .to(side, { duration: 0.3, ease: 'power3.inOut', width: `25%` })
+        .to(side_btn, { duration: 0.4, ease: 'power2.inOut', width: '100%', display: 'grid' })
+        .to(recents, { duration: 0.3, ease: 'power2.inOut', width: '100%',display: 'block' })
     }
     isMenuOpen = !isMenuOpen;
 }
