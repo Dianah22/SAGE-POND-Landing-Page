@@ -279,7 +279,7 @@ function toggleMenu() {
     const tl = gsap.timeline();
     if (!isMenuOpen && window.innerWidth > 1020) {
         tl.to(nav, { duration: 0.3, ease: "power3.inOut", x: "0%" })
-        .to(side, { duration: 0.3, ease: 'power3.inOut', width: `85%` })
+        .to(side, { duration: 0.3, ease: 'power3.inOut', width: `50%` })
         .to(side_b, { duration: 0.3, ease: 'power2.inOut', width: '100%' })
         .to(side_btn, { duration: 0.3, ease: 'power2.inOut', width: '100%' })
         .to(recents, { duration: 0.3, ease: 'power2.inOut', width: '0%' })
