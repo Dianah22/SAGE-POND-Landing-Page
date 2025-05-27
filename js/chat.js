@@ -275,30 +275,30 @@ editor.addEventListener('input', (e) => {
 menuBtn.addEventListener('click', toggleMenu);
 
 function toggleMenu() {
-    const isMobile = window.innerWidth <= 965;
-    if (!isMenuOpen && !isMobile) {
-        // Open menu on desktop
-        gsap.to(nav, { duration: 0.3, ease: "power3.inOut", x: "0%", width: "25%" });
-        gsap.to(content, { duration: 0.3, ease: 'power3.inOut', left: "25%", width: "75%" });
+    const calc = 100 - 25;
+    if (!isMenuOpen && window.innerWidth > 965) {
+        gsap.to(nav, { duration: 0.3, ease: "power3.inOut", x: "0%" });
+        gsap.to(content, { duration: 0.3, ease: 'power3.inOut', left: "25%", width: `${calc}%` });
         gsap.to(side_b, { duration: 0.3, ease: 'power2.inOut', width: '100%' });
         gsap.to(side_btn, { duration: 0.3, ease: 'power2.inOut', width: '100%' });
         gsap.to(recents, { duration: 0.3, ease: 'power2.inOut', width: '50%' });
-        nav.style.display = 'block';
-    } else if (isMenuOpen && !isMobile) {
-        // Close menu on desktop
+    } else if (isMenuOpen == true && window.innerWidth > 965) {
         gsap.to(nav, { duration: 0.3, ease: "power3.inOut", width: "50%" });
         gsap.to(side_b, { duration: 0.4, ease: 'Power3.inOut', width: '45px' });
         gsap.to(content, { duration: 0.3, ease: 'power3.inOut', left: "5%", width: '95%' });
         gsap.to(recents, { duration: 0.3, ease: 'power2.inOut', width: '25%' });
-    } else if (isMobile) {
-        // Always hide menu on mobile
-        gsap.to(nav, { duration: 0.3, ease: "power3.inOut", width: "0%", x: "-100%" });
-        gsap.to(content, { duration: 0.2, left: "0%", width: '100%' });
+    } else if (window.innerWidth <= 965 && isMenuOpen == true) {
         gsap.to(side_btn, { duration: 0.4, ease: 'power2.inOut', width: '0%', display: 'none', opacity: '0' });
-        gsap.to(recents, { duration: 0.05, ease: 'power2.inOut', width: '0%', display: 'none' });
-        //nav.style.display = 'none';
+        gsap.to(content, { duration: 0.2, left: "0%", width: '100%' });
+        gsap.to(nav, { duration: 0.3, ease: "power3.inOut", width: "0%" });
+        gsap.to(recents, { duration: 0.05, ease: 'power2.inOut', width: '0%' });
+    } else if (window.innerWidth <= 965 && isMenuOpen == false) {
+        gsap.to(nav, { duration: 0.3, ease: "power3.inOut", width: "70%" });
+        gsap.to(content, { duration: 0.3, ease: 'power3.inOut', left: "0%", width: `100%` });
+        gsap.to(side_btn, { duration: 0.4, ease: 'power2.inOut', width: '100%', display: 'grid', opacity: '1' });
+        gsap.to(recents, { duration: 0.3, ease: 'power2.inOut', width: '100%' });
     }
-    isMenuOpen = !isMenuOpen && !isMobile;
+    isMenuOpen = !isMenuOpen;
 }
 window.addEventListener('resize',toggleMenu)
 function sanitizeInput(userInput) {
