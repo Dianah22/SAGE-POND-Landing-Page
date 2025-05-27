@@ -271,36 +271,36 @@ editor.addEventListener('input', (e) => {
     const content = editor.textContent.trim();
     send.disabled = content.length === 0;
 });
+window.addEventListener('resize',toggleMenu)
 
 menuBtn.addEventListener('click', toggleMenu);
-
+const side = document.querySelector('.side');
 function toggleMenu() {
     const calc = 100 - 25;
-    if (!isMenuOpen && window.innerWidth > 965) {
+    if (!isMenuOpen && window.innerWidth > 1020) {
         gsap.to(nav, { duration: 0.3, ease: "power3.inOut", x: "0%" });
-        gsap.to(content, { duration: 0.3, ease: 'power3.inOut', left: "25%", width: `${calc}%` });
+        gsap.to(side, { duration: 0.3, ease: 'power3.inOut', width: `85%` });
         gsap.to(side_b, { duration: 0.3, ease: 'power2.inOut', width: '100%' });
         gsap.to(side_btn, { duration: 0.3, ease: 'power2.inOut', width: '100%' });
         gsap.to(recents, { duration: 0.3, ease: 'power2.inOut', width: '50%' });
-    } else if (isMenuOpen == true && window.innerWidth > 965) {
+    } else if (isMenuOpen == true && window.innerWidth > 1020) {
         gsap.to(nav, { duration: 0.3, ease: "power3.inOut", width: "50%" });
-        gsap.to(side_b, { duration: 0.4, ease: 'Power3.inOut', width: '45px' });
-        gsap.to(content, { duration: 0.3, ease: 'power3.inOut', left: "5%", width: '95%' });
-        gsap.to(recents, { duration: 0.3, ease: 'power2.inOut', width: '25%' });
+        gsap.to(side_b, { duration: 0.4, ease: 'Power3.inOut', width: '25px' });
+        gsap.to(side, { duration: 0.3, ease: 'power3.inOut',width:'0%' });
+        gsap.to(recents, { duration: 0.3, ease: 'power2.inOut', width: '25%',display: 'none' });
     } else if (window.innerWidth <= 965 && isMenuOpen == true) {
-        gsap.to(side_btn, { duration: 0.4, ease: 'power2.inOut', width: '0%', display: 'none', opacity: '0' });
-        gsap.to(content, { duration: 0.2, left: "0%", width: '100%' });
+        gsap.to(side_btn, { duration: 0.4, ease: 'power2.inOut', width: '0%', display: 'none' });
+        gsap.to(side, { duration: 0.2, width: '0%' });
         gsap.to(nav, { duration: 0.3, ease: "power3.inOut", width: "0%" });
         gsap.to(recents, { duration: 0.05, ease: 'power2.inOut', width: '0%' });
     } else if (window.innerWidth <= 965 && isMenuOpen == false) {
         gsap.to(nav, { duration: 0.3, ease: "power3.inOut", width: "70%" });
-        gsap.to(content, { duration: 0.3, ease: 'power3.inOut', left: "0%", width: `100%` });
-        gsap.to(side_btn, { duration: 0.4, ease: 'power2.inOut', width: '100%', display: 'grid', opacity: '1' });
-        gsap.to(recents, { duration: 0.3, ease: 'power2.inOut', width: '100%' });
+        gsap.to(side, { duration: 0.3, ease: 'power3.inOut', width: `25%` });
+        gsap.to(side_btn, { duration: 0.4, ease: 'power2.inOut', width: '100%', display: 'grid' });
+        gsap.to(recents, { duration: 0.3, ease: 'power2.inOut', width: '100%',display: 'block' });
     }
     isMenuOpen = !isMenuOpen;
 }
-window.addEventListener('resize',toggleMenu)
 function sanitizeInput(userInput) {
     const allowedTags = ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'b', 'em', 'i'];
     const allowedAttributes = ['class', 'style'];
