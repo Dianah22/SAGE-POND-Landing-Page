@@ -3209,7 +3209,10 @@ html,body{
   outline: 0px solid transparent;
 }
 
-@media (min-width:768){
+@media (max-width:965px){
+  .side{
+    z-index: 1;
+  }
 }
 
 :is(.dark .dark\:prose-invert) {
@@ -4131,10 +4134,6 @@ html,body{
 
   .md\:inset-0 {
     inset: 0px;
-  }
-
-  .md\:z-0 {
-    z-index: 0;
   }
 
   .md\:mb-0 {

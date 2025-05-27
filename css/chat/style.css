@@ -40,6 +40,8 @@ html,body{
  [contenteditable] {
     outline: 0px solid transparent;
   }
-@media (min-width:768){
- 
+@media (max-width:965px){
+ .side{
+    z-index: 1;
+ }
 }

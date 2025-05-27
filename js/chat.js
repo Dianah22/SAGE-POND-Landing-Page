@@ -5,7 +5,6 @@ import { getFirestore, collection, getDocs, doc, setDoc, updateDoc, arrayUnion, 
 // DOM Elements
 const chatbtn = document.getElementById('new_chat');
 const recent = document.getElementById('recent');
-const recent_title = document.getElementById('recent_title');
 const chat_window = document.getElementById('chat_window');
 const editor = document.getElementById('editor');
 const send = document.getElementById('send');
@@ -313,18 +312,22 @@ function sanitizeInput(userInput) {
 
     return DOMPurify.sanitize(userInput, config);
 }
-
-    if (window.innerWidth > 768) {
+window.addEventListener('resize', function () {
+    if (window.innerWidth > 1000) {
         isMenuOpen = true;
     }
-
-    if (window.innerWidth <= 768) {
+    if (window.innerWidth > 965 && isMenuOpen == false) {
+    
+    }
+    if (window.innerWidth <= 965) {
         isMenuOpen = false;
+        menuBtn.style.display='block'
         nav.style.width = '0%';
         content.style.width = '100%';
         content.style.left = '0%';
         side_btn.style.display = 'none';
     }
+});
 
 editor.addEventListener('keydown', function (event) {
     if (event.key === 'Enter') {
