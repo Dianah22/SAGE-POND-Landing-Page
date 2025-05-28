@@ -20,7 +20,7 @@ const history = document.querySelector('.chat_history');
 const welcome_screen = document.querySelector('.welcome_screen');
 
 let clickCount = 0;
-let isMenuOpen = false;
+let isMenuOpen = true;
 
 // Ensure token is available before making any requests
 async function ensureToken(auth) {
@@ -274,32 +274,38 @@ editor.addEventListener('input', (e) => {
 window.addEventListener('resize',toggleMenu)
 
 menuBtn.addEventListener('click', toggleMenu);
-const side = document.querySelector('.side');
+
 function toggleMenu() {
-    const tl = gsap.timeline();
-    if (!isMenuOpen && window.innerWidth > 1020) {
-        tl.to(nav, { duration: 0.3, ease: "power3.inOut", x: "0%" })
-        .to(side, { duration: 0.3, ease: 'power3.inOut', width: `50%` })
-        .to(side_b, { duration: 0.3, ease: 'power2.inOut', width: '100%' })
-        .to(side_btn, { duration: 0.3, ease: 'power2.inOut', width: '100%' })
-        .to(recents, { duration: 0.3, ease: 'power2.inOut', width: '0%' })
-    } else if (isMenuOpen == true && window.innerWidth > 1020) {
-        tl.to(nav, { duration: 0.3, ease: "power3.inOut", width: "50%" })
-        .to(side_b, { duration: 0.4, ease: 'Power3.inOut', width: '25px' })
-        .to(side, { duration: 0.3, ease: 'power3.inOut',width:'0%' })
-        .to(recents, { duration: 0.3, ease: 'power2.inOut', width: '100%',display: 'none' })
-    } else if (window.innerWidth <= 965 && isMenuOpen == true) {
-        tl.to(side_btn, { duration: 0.4, ease: 'power2.inOut', width: '0%', display: 'none' })
-        .to(side, { duration: 0.2, width: '0%' })
-        .to(nav, { duration: 0.3, ease: "power3.inOut", width: "0%" })
-        .to(recents, { duration: 0.05, ease: 'power2.inOut', width: '0%' })
-    } else if (window.innerWidth <= 965 && isMenuOpen == false) {
-        tl.to(nav, { duration: 0.3, ease: "power3.inOut", width: "70%" })
-        .to(side, { duration: 0.3, ease: 'power3.inOut', width: `25%` })
-        .to(side_btn, { duration: 0.4, ease: 'power2.inOut', width: '100%', display: 'grid' })
-        .to(recents, { duration: 0.3, ease: 'power2.inOut', width: '100%',display: 'block' })
-    }
+    const calc = 100 - 25;
     isMenuOpen = !isMenuOpen;
+    console.log(isMenuOpen)
+    if (window.innerWidth>1000){isMenuOpen = true;}
+    if(window.innerWidth<1000) {isMenuOpen = false;}
+    if (!isMenuOpen && window.innerWidth > 1000) {
+         console.log(isMenuOpen)
+        gsap.to(nav, { duration: 0.3, ease: "power3.inOut", x: "0%" });
+        gsap.to(content, { duration: 0.3, ease: 'power3.inOut', left: "25%", width: `${calc}%` });
+        gsap.to(side_b, { duration: 0.3, ease: 'power2.inOut', width: '100%' });
+        gsap.to(side_btn, { duration: 0.3, ease: 'power2.inOut', width: '100%' });
+        gsap.to(recents, { duration: 0.3, ease: 'power2.inOut', width: '100%' });
+        
+    } else if (isMenuOpen == true && window.innerWidth > 1000) {
+        gsap.to(nav, { duration: 0.3, ease: "power3.inOut", width: "50%" });
+        gsap.to(side_b, { duration: 0.4, ease: 'Power3.inOut', width: '25px' });
+        gsap.to(content, { duration: 0.3, ease: 'power3.inOut',width:'95%',left:'5%'});
+        gsap.to(recents, { duration: 0.3, ease: 'power2.inOut', width: '100%' });
+    } else if (window.innerWidth <= 965 && isMenuOpen == true) {
+        gsap.to(side_btn, { duration: 0.4, ease: 'power2.inOut', width: '0%', display: 'none' });
+        gsap.to(content, { duration: 0.2, left: "0%", width: '100%' });
+        gsap.to(nav, { duration: 0.3, ease: "power3.inOut", width: "0%" });
+        gsap.to(recents, { duration: 0.05, ease: 'power2.inOut', width: '0%' });
+    } else if (window.innerWidth <= 965 && isMenuOpen == false) {
+        gsap.to(nav, { duration: 0.3, ease: "power3.inOut", width: "70%" });
+        gsap.to(content, { duration: 0.3, ease: 'power3.inOut', width: `85%` });
+        gsap.to(side_btn, { duration: 0.4, ease: 'power2.inOut', width: '100%', display: 'grid' });
+        gsap.to(recents, { duration: 0.3, ease: 'power2.inOut', width: '100%',display: 'block' });
+    }
+ 
 }
 function sanitizeInput(userInput) {
     const allowedTags = ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'b', 'em', 'i'];
