@@ -272,13 +272,12 @@ editor.addEventListener('input', (e) => {
     send.disabled = content.length === 0;
 });
 window.addEventListener('resize',toggleMenu)
-
+window.addEventListener('load',toggleMenu)
 menuBtn.addEventListener('click', toggleMenu);
 
 function toggleMenu() {
     const calc = 100 - 25;
-    isMenuOpen = !isMenuOpen;
-    console.log(isMenuOpen)
+
     if (window.innerWidth>1000){isMenuOpen = true;}
     if(window.innerWidth<1000) {isMenuOpen = false;}
     if (!isMenuOpen && window.innerWidth > 1000) {
@@ -300,12 +299,12 @@ function toggleMenu() {
         gsap.to(nav, { duration: 0.3, ease: "power3.inOut", width: "0%" });
         gsap.to(recents, { duration: 0.05, ease: 'power2.inOut', width: '0%' });
     } else if (window.innerWidth <= 965 && isMenuOpen == false) {
-        gsap.to(nav, { duration: 0.3, ease: "power3.inOut", width: "70%" });
-        gsap.to(content, { duration: 0.3, ease: 'power3.inOut', width: `85%` });
+        gsap.to(nav, { duration: 0.3, ease: "power3.inOut", width: "0%" });
+        gsap.to(content, { duration: 0.3, ease: 'power3.inOut', width: `100%` ,left:'0'});
         gsap.to(side_btn, { duration: 0.4, ease: 'power2.inOut', width: '100%', display: 'grid' });
         gsap.to(recents, { duration: 0.3, ease: 'power2.inOut', width: '100%',display: 'block' });
     }
- 
+     isMenuOpen = !isMenuOpen;
 }
 function sanitizeInput(userInput) {
     const allowedTags = ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'b', 'em', 'i'];
@@ -318,23 +317,6 @@ function sanitizeInput(userInput) {
 
     return DOMPurify.sanitize(userInput, config);
 }
-window.addEventListener('resize', function () {
-    if (window.innerWidth > 1000) {
-        isMenuOpen = true;
-    }
-    if (window.innerWidth > 965 && isMenuOpen == false) {
-    
-    }
-    if (window.innerWidth <= 965) {
-        isMenuOpen = false;
-        menuBtn.style.display='block'
-        nav.style.width = '0%';
-        content.style.width = '100%';
-        content.style.left = '0%';
-        side_btn.style.display = 'none';
-    }
-});
-
 editor.addEventListener('keydown', function (event) {
     if (event.key === 'Enter') {
         event.preventDefault();
