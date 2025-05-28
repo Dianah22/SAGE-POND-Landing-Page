@@ -272,14 +272,15 @@ editor.addEventListener('input', (e) => {
     send.disabled = content.length === 0;
 });
 window.addEventListener('resize',toggleMenu)
-window.addEventListener('load',toggleMenu)
 menuBtn.addEventListener('click', toggleMenu);
+window.addEventListener('load',toggleMenu)
 
 function toggleMenu() {
     const calc = 100 - 25;
 
     if (window.innerWidth>1000){isMenuOpen = true;}
     if(window.innerWidth<1000) {isMenuOpen = false;}
+    console.log('Menu state:', isMenuOpen, 'Window width:', window.innerWidth);
     if (!isMenuOpen && window.innerWidth > 1000) {
          console.log(isMenuOpen)
         gsap.to(nav, { duration: 0.3, ease: "power3.inOut", x: "0%" });
@@ -288,17 +289,17 @@ function toggleMenu() {
         gsap.to(side_btn, { duration: 0.3, ease: 'power2.inOut', width: '100%' });
         gsap.to(recents, { duration: 0.3, ease: 'power2.inOut', width: '100%' });
         
-    } else if (isMenuOpen == true && window.innerWidth > 1000) {
+    } else if (!isMenuOpen&& window.innerWidth > 1000) {
         gsap.to(nav, { duration: 0.3, ease: "power3.inOut", width: "50%" });
         gsap.to(side_b, { duration: 0.4, ease: 'Power3.inOut', width: '25px' });
         gsap.to(content, { duration: 0.3, ease: 'power3.inOut',width:'95%',left:'5%'});
         gsap.to(recents, { duration: 0.3, ease: 'power2.inOut', width: '100%' });
-    } else if (window.innerWidth <= 965 && isMenuOpen == true) {
+    } else if (window.innerWidth <= 1000 && isMenuOpen == true) {
         gsap.to(side_btn, { duration: 0.4, ease: 'power2.inOut', width: '0%', display: 'none' });
         gsap.to(content, { duration: 0.2, left: "0%", width: '100%' });
         gsap.to(nav, { duration: 0.3, ease: "power3.inOut", width: "0%" });
         gsap.to(recents, { duration: 0.05, ease: 'power2.inOut', width: '0%' });
-    } else if (window.innerWidth <= 965 && isMenuOpen == false) {
+    } else if (window.innerWidth <= 1000 && isMenuOpen == false) {
         gsap.to(nav, { duration: 0.3, ease: "power3.inOut", width: "0%" });
         gsap.to(content, { duration: 0.3, ease: 'power3.inOut', width: `100%` ,left:'0'});
         gsap.to(side_btn, { duration: 0.4, ease: 'power2.inOut', width: '100%', display: 'grid' });
