@@ -8,6 +8,7 @@ const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const validator = require('validator');
 const admin = require('firebase-admin');
+const nodemailer = require('nodemailer');
 
 const serviceAccount = require('./sage-pond-gen-ai-firebase-adminsdk-9u1h2-7a16893d3f.json');
 
@@ -163,6 +164,83 @@ app.all('/api/firebase-config', (req, res) => {
     }
 
     res.json({ success: true, config: firebaseConfig });
+});
+
+// Email transporter setup
+const transporter = nodemailer.createTransport({
+    host: 'smtppro.zoho.com',
+    port: 587,
+    secure: false,
+    auth: {
+        user: 'matovucaleb2@sagepond.com',
+        pass: 'YOUR_APP_SPECIFIC_PASSWORD' // Replace with your Zoho app-specific password
+    }
+});
+
+// Beta signup route
+app.get('/beta', (req, res) => {
+    res.sendFile(path.join(initial_path, 'beta.html'));
+});
+
+app.get('/privacy-policy', (req, res) => {
+    res.sendFile(path.join(initial_path, 'privacy-policy.html'));
+});
+
+app.post('/beta-signup', async (req, res) => {
+    const { email } = req.body;
+
+    try {
+        // Send welcome email
+        await transporter.sendMail({
+            from: '"SAGE POND" <matovucaleb2@sagepond.com>',
+            to: email,
+            subject: 'Welcome to SAGE POND Beta Program',
+            html: `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                    <img src="https://sagepond.com/images/logo.svg" alt="SAGE POND Logo" style="max-width: 150px; margin: 20px auto; display: block;">
+                    
+                    <div style="background-color: #f8f9fa; padding: 20px; border-radius: 10px;">
+                        <h1 style="color: #333; text-align: center;">Welcome to the SAGE POND Beta Program!</h1>
+                        
+                        <p style="color: #666; line-height: 1.6;">
+                            Thank you for joining our beta program! We're excited to have you on board as we work to revolutionize 
+                            the future of technology solutions.
+                        </p>
+
+                        <p style="color: #666; line-height: 1.6;">
+                            You'll be among the first to experience our cutting-edge products and services. We'll keep you updated 
+                            with our latest developments and would love to hear your feedback.
+                        </p>
+
+                        <p style="color: #666; line-height: 1.6;">
+                            Stay tuned for more updates and exclusive beta access information.
+                        </p>
+
+                        <div style="text-align: center; margin-top: 30px;">
+                            <a href="https://sagepond.com" 
+                               style="background-color: #4F46E5; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
+                                Visit Our Website
+                            </a>
+                        </div>
+
+                        <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #ddd;">
+                            <p style="color: #666; text-align: center;">
+                                Best regards,<br>
+                                <strong>Caleb Matovu</strong><br>
+                                CEO and Founder<br>
+                                SAGE POND
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            `
+        });
+
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error sending email:', error);
+        res.status(500).json({ success: false, message: 'Error sending welcome email' });
+    }
 });
 
 // 404 handler
