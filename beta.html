@@ -6,12 +6,14 @@
     <title>Join Beta - SAGE POND</title>
     <link rel="stylesheet" href="css/main.css">
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+   
 </head>
+
 <body class="bg-gray-100">
     <div class="min-h-screen flex items-center justify-center">
         <div class="max-w-md w-full p-6 bg-white rounded-lg shadow-lg">
             <div class="text-center mb-8">
-                <img src="images/logo.svg" alt="SAGE POND Logo" class="mx-auto h-20 mb-4">
+                 <img src="images/logo.svg" alt="SAGE POND Logo" class="mx-auto h-20 mb-4">
                 <h2 class="text-2xl font-bold text-gray-900">Join Our Beta Program</h2>
                 <p class="mt-2 text-gray-600">Be the first to experience our innovative solutions</p>
             </div>
@@ -32,7 +34,7 @@
                     </label>
                 </div>
 
-                <button type="submit"
+                <button  id="sub"
                     class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                     Join Beta Program
                 </button>
@@ -40,32 +42,20 @@
         </div>
     </div>
 
-    <script>
-        document.getElementById('betaForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const email = document.getElementById('email').value;
-            
-            try {
-                const response = await fetch('/beta-signup', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ email })
-                });
+    <!-- Custom Popup -->
+    <div id="popupOverlay" class="popup-overlay"></div>
+    <div id="popup" class="popup">
+        <div class="text-center">
+            <div id="popupIcon" class="mx-auto mb-4"></div>
+            <h3 id="popupTitle" class="text-lg font-semibold mb-2"></h3>
+            <p id="popupMessage" class="text-gray-600 mb-4"></p>
+            <button onclick="closePopup()" 
+                class="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                Close
+            </button>
+        </div>
+    </div>
 
-                const data = await response.json();
-                
-                if (data.success) {
-                    alert('Thank you for joining our beta program! Please check your email for confirmation.');
-                } else {
-                    alert('Something went wrong. Please try again.');
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                alert('An error occurred. Please try again.');
-            }
-        });
-    </script>
+    <script src="b.js"></script>
 </body>
 </html>

@@ -1,3 +1,4 @@
+require('dotenv').config();
 const {uid} = require('uid')
 const express = require('express')
 const path = require('path') 
@@ -19,6 +20,9 @@ if (!admin.apps.length) {
         databaseURL: "https://sage-pond-gen-ai-default-rtdb.firebaseio.com"
     });
 }
+
+// Initialize Firestore
+const db = admin.firestore();
 
 let initial_path = __dirname 
 const port = process.env.PORT || 4000
@@ -48,12 +52,12 @@ app.use(
             defaultSrc: ["'self'"],
             scriptSrc: [
                 "'self'",
-                "https://www.google.com/recaptcha/api.js",
                 "https://cdn.jsdelivr.net/npm/dompurify@3.1.0/dist/purify.min.js",
             ],
             styleSrc: [
                 "'self'",
-                "https://fonts.googleapis.com/",
+                "https://cdn.jsdelivr.net/npm/dompurify@3.1.0/dist/purify.min.js",
+                "https://fonts.googleapis.com",
                 "https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css",
             ],
             imgSrc: ["'self'", "data:"],
@@ -166,81 +170,102 @@ app.all('/api/firebase-config', (req, res) => {
     res.json({ success: true, config: firebaseConfig });
 });
 
-// Email transporter setup
+// Configure Nodemailer with Zoho SMTP
 const transporter = nodemailer.createTransport({
-    host: 'smtppro.zoho.com',
-    port: 587,
-    secure: false,
+    host: 'smtp.zoho.com',
+    port: 465,
+    secure: true,
     auth: {
-        user: 'matovucaleb2@sagepond.com',
-        pass: 'YOUR_APP_SPECIFIC_PASSWORD' // Replace with your Zoho app-specific password
+        user: process.env.ZOHO_EMAIL,
+        pass: process.env.ZOHO_PASSWORD
     }
 });
-
-// Beta signup route
 app.get('/beta', (req, res) => {
     res.sendFile(path.join(initial_path, 'beta.html'));
 });
-
-app.get('/privacy-policy', (req, res) => {
-    res.sendFile(path.join(initial_path, 'privacy-policy.html'));
-});
-
+// Beta signup route
 app.post('/beta-signup', async (req, res) => {
     const { email } = req.body;
+    console.log('Beta signup request:', email);
+    // Validate email
+    if (!email || !validator.isEmail(email)) {
+        return res.status(400).json({
+            success: false,
+            message: 'Please provide a valid email address.'
+        });
+    }
 
     try {
-        // Send welcome email
-        await transporter.sendMail({
-            from: '"SAGE POND" <matovucaleb2@sagepond.com>',
+        // Check if email already exists
+        const emailDoc = await db.collection('beta-signups')
+            .where('email', '==', email)
+            .get();
+
+        if (!emailDoc.empty) {
+            return res.status(400).json({
+                success: false,
+                message: 'This email is already registered for the beta program.'
+            });
+        }
+
+        // Store email in Firestore with timestamp
+        await db.collection('beta-signups').add({
+            email,
+            timestamp: admin.firestore.FieldValue.serverTimestamp(),
+            status: 'pending'
+        });
+
+        // Send confirmation email
+        const mailOptions = {
+            from: process.env.ZOHO_EMAIL,
             to: email,
             subject: 'Welcome to SAGE POND Beta Program',
             html: `
                 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                    <img src="https://sagepond.com/images/logo.svg" alt="SAGE POND Logo" style="max-width: 150px; margin: 20px auto; display: block;">
-                    
-                    <div style="background-color: #f8f9fa; padding: 20px; border-radius: 10px;">
-                        <h1 style="color: #333; text-align: center;">Welcome to the SAGE POND Beta Program!</h1>
-                        
-                        <p style="color: #666; line-height: 1.6;">
-                            Thank you for joining our beta program! We're excited to have you on board as we work to revolutionize 
-                            the future of technology solutions.
-                        </p>
-
-                        <p style="color: #666; line-height: 1.6;">
-                            You'll be among the first to experience our cutting-edge products and services. We'll keep you updated 
-                            with our latest developments and would love to hear your feedback.
-                        </p>
-
-                        <p style="color: #666; line-height: 1.6;">
-                            Stay tuned for more updates and exclusive beta access information.
-                        </p>
-
-                        <div style="text-align: center; margin-top: 30px;">
-                            <a href="https://sagepond.com" 
-                               style="background-color: #4F46E5; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
-                                Visit Our Website
-                            </a>
-                        </div>
-
-                        <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #ddd;">
-                            <p style="color: #666; text-align: center;">
-                                Best regards,<br>
-                                <strong>Caleb Matovu</strong><br>
-                                CEO and Founder<br>
-                                SAGE POND
-                            </p>
-                        </div>
-                    </div>
+                    <img src="cid:logo" alt="SAGE POND Logo" style="display: block; margin: 20px auto; width: 150px;">
+                    <h1 style="color: #4F46E5; text-align: center;">Welcome to SAGE POND Beta!</h1>
+                    <p>Thank you for joining our beta program. We're excited to have you on board!</p>
+                    <p>We'll keep you updated about:</p>
+                    <ul>
+                        <li>Early access to new features</li>
+                        <li>Exclusive beta tester feedback sessions</li>
+                        <li>Official launch updates</li>
+                    </ul>
+                    <p>Stay tuned for more information coming your way soon.</p>
+                    <p style="color: #666;">Best regards,<br>The SAGE POND Team</p>
                 </div>
             `
+        };
+
+        await transporter.sendMail(mailOptions);
+
+        // Update status in Firestore
+        await db.collection('beta-signups')
+            .where('email', '==', email)
+            .get()
+            .then((querySnapshot) => {
+                querySnapshot.forEach((doc) => {
+                    doc.ref.update({ status: 'confirmed' });
+                });
+            });
+
+        res.json({
+            success: true,
+            message: 'Successfully registered for beta program.'
         });
 
-        res.json({ success: true });
     } catch (error) {
-        console.error('Error sending email:', error);
-        res.status(500).json({ success: false, message: 'Error sending welcome email' });
+        console.error('Beta signup error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'An error occurred while processing your request.'
+        });
     }
+});
+
+// Privacy policy route
+app.get('/privacy-policy', (req, res) => {
+    res.sendFile(path.join(initial_path, 'privacy-policy.html'));
 });
 
 // 404 handler
