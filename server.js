@@ -24,11 +24,11 @@ if (!admin.apps.length) {
 // Initialize Firestore
 const db = admin.firestore();
 
-let initial_path = __dirname 
+let initial_path = __dirname + '/client';
 const port = process.env.PORT || 4000
 
 // Middleware setup
-app.use(express.static(initial_path))
+app.use(express.static(initial_path));
 app.use(helmet());
 app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 100 }))
 
