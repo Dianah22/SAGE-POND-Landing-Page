@@ -219,11 +219,11 @@ app.post('/beta-signup', async (req, res) => {
         const mailOptions = {
             from: process.env.ZOHO_EMAIL,
             to: email,
-            subject: 'Welcome to SAGE POND Beta Program',
+            subject: 'Welcome to Unveyl Beta Program',
             html: `
                 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
                     <img src="cid:logo" alt="SAGE POND Logo" style="display: block; margin: 20px auto; width: 150px;">
-                    <h1 style="color: #4F46E5; text-align: center;">Welcome to SAGE POND Beta!</h1>
+                    <h1 style="color: black; text-align: center;">Welcome to SAGE POND Beta!</h1>
                     <p>Thank you for joining our beta program. We're excited to have you on board!</p>
                     <p>We'll keep you updated about:</p>
                     <ul>
@@ -232,7 +232,7 @@ app.post('/beta-signup', async (req, res) => {
                         <li>Official launch updates</li>
                     </ul>
                     <p>Stay tuned for more information coming your way soon.</p>
-                    <p style="color: #666;">Best regards,<br>The SAGE POND Team</p>
+                    <p style="color: #666;">Best regards,<br>Caleb,CEO & FOUNDER,SAGE POND</p>
                 </div>
             `
         };
