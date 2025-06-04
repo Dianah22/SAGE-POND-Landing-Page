@@ -222,7 +222,7 @@ app.post('/beta-signup', async (req, res) => {
             subject: 'Welcome to Unveyl Beta Program',
             html: `
                 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                    <img src="cid:logo" alt="SAGE POND Logo" style="display: block; margin: 20px auto; width: 150px;">
+                    <img src="/client/images/logo.svg" alt="SAGE POND Logo" style="display: block; margin: 20px auto; width: 50px;">
                     <h1 style="color: black; text-align: center;">Welcome to SAGE POND Beta!</h1>
                     <p>Thank you for joining our beta program. We're excited to have you on board!</p>
                     <p>We'll keep you updated about:</p>
