@@ -8,34 +8,161 @@ from torch.nn.parallel import DistributedDataParallel as DDP
 #import sentencepiece as spm
 import os
 from datasets import load_dataset,concatenate_datasets
+from typing import Optional
+from typing import Tuple
 torch.backends.cuda.matmul.allow_tf32 = True  
 torch.set_float32_matmul_precision('high')
 def set_seed(seed):
     torch.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
 set_seed(42)
-data = load_dataset('sagepond/instructions_dataset_v2')['train']
-def format_wizard_example(example):
-    messages = example["conversations"]
-    for i in range(len(messages) - 1):
-        if messages[i]["from"] == "human" and messages[i+1]["from"] == "gpt":
-            return {"input":messages[i]["value"], "target": messages[i+1]["value"]}
-    return None
-def preprocess(dataset, input_col, target_col):
-    return dataset.map(lambda x: {
-        "input": x[input_col],
-        "target": x[target_col]
-    }, remove_columns=dataset.column_names)
-def preprocess_dolly(dataset):
-   return dataset.map(lambda x: {
-        "input": x['instruction']+' '+x['context'],
-        "target": x['response']
-    }, remove_columns=dataset.column_names)
-def preprocess_llms(dataset):
-   return dataset.map(lambda x: {
-        "input": x['instruction']+' '+x['input'],
-        "target": x['output']
-    }, remove_columns=dataset.column_names)
+class DPOLoss(nn.Module):
+
+    def __init__(
+        self,
+        beta: float = 0.1,
+        label_smoothing: float = 0.0,
+    ):
+        super().__init__()
+        self.beta = beta
+        self.label_smoothing = label_smoothing
+
+    def forward(
+        self,
+        policy_chosen_logps: torch.Tensor,
+        policy_rejected_logps: torch.Tensor,
+        reference_chosen_logps: torch.Tensor,
+        reference_rejected_logps: torch.Tensor,
+    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+        """
+        Compute the DPO loss for a batch of policy and reference model log probabilities.
+
+        Args:
+            policy_chosen_logps (torch.Tensor): Log probabilities of the policy model
+                for the chosen responses. Shape: (batch_size)
+            policy_rejected_logps (torch.Tensor): Log probabilities of the policy model
+                for the rejected responses. Shape: (batch_size)
+            reference_chosen_logps (torch.Tensor): Log probabilities of the reference model
+                for the chosen responses. Shape: (batch_size)
+            reference_rejected_logps (torch.Tensor): Log probabilities of the reference model
+                for the rejected responses. Shape: (batch_size)
+                """
+        pi_logratios = policy_chosen_logps - policy_rejected_logps
+        ref_logratios = reference_chosen_logps - reference_rejected_logps
+
+        logits = pi_logratios - ref_logratios
+
+        # The beta is a temperature parameter for the DPO loss, typically something in the range of 0.1 to 0.5.
+        # We ignore the reference model as beta -> 0. The label_smoothing parameter encodes our uncertainty about the labels and
+        # calculates a conservative DPO loss.
+        losses = (
+            -F.logsigmoid(self.beta * logits) * (1 - self.label_smoothing)
+            - F.logsigmoid(-self.beta * logits) * self.label_smoothing
+        )
+
+        chosen_rewards = (
+            self.beta * (policy_chosen_logps - reference_chosen_logps).detach()
+        )
+        rejected_rewards = (
+            self.beta * (policy_rejected_logps - reference_rejected_logps).detach()
+        )
+
+        return losses, chosen_rewards, rejected_rewards
+def truncate_sequence_at_first_stop_token(
+    sequences: torch.Tensor, stop_tokens: torch.Tensor, fill_value: int = 0
+) -> Tuple[torch.Tensor, torch.Tensor]:
+    eos_mask = torch.isin(sequences, stop_tokens)
+    seq_lens = torch.cumsum(eos_mask, dim=1)
+    padding_mask = (seq_lens > 1) | ((seq_lens == 1) & ~eos_mask)
+    sequences[padding_mask] = fill_value
+    return padding_mask, sequences
+
+
+
+def logits_to_logprobs(
+    logits: torch.Tensor, sequences: torch.Tensor, temperature: float = 1.0
+) -> torch.Tensor:
+    """
+    Converts logits corresponding to a generated sequence to logprobs over the generated tokens.
+
+    Args:
+        logits (torch.Tensor): The logits tensor of shape [b, response_length, vocab_size].
+        sequences (torch.Tensor): The corresponding tokens of shape [b, response_length].
+        temperature (float): The temperature to scale the logits. Default 1.0
+    Returns:
+        torch.Tensor: The log probabilities corresponding to each token in ``sequences``. Shape [b, response_length].
+    """
+    return torch.gather(
+        F.log_softmax(logits / temperature, dim=-1),
+        2,
+        sequences.unsqueeze(-1),
+    ).squeeze(-1)
+
+def masked_mean(
+    x: torch.Tensor, mask: torch.Tensor, dim: Optional[int] = None
+) -> torch.Tensor:
+    """
+    Compute mean of tensor with masked values. Taken from https://github.com/huggingface/trl/blob/main/trl/core.py
+
+    Args:
+        x (torch.Tensor): The input tensor.
+        mask (torch.Tensor): The bool mask tensor, where True indicates the corresponding value in ``x``
+            should participate in the mean calculation.
+        dim (Optional[int]): The axis to calculate the mean over. Default None.
+
+    Returns:
+        torch.Tensor: The mean tensor.
+    """
+    return (x * mask).sum(dim=dim) / mask.sum(dim=dim)
+
+def get_batch_log_probs(
+    logits: torch.FloatTensor,
+    labels: torch.LongTensor,
+    label_pad_token_id: int = -100,
+    return_average_logprobs: bool = False,
+) -> torch.FloatTensor:
+    """
+    Calculate log probabilities based on provided logits and labels.
+
+    Args:
+        logits (torch.FloatTensor): direct logits output of the model of shape (b, s, v)
+        labels (torch.LongTensor): ground-truth labels to compute log probs with, shape (b, s).
+            Label tokens with a value of label_pad_token_id are ignored.
+    Returns:
+        Calculated log probs of shape (b, )
+    """
+    if logits.shape[:-1] != labels.shape:
+        raise ValueError(
+            "Logits (batch and sequence length dim) and labels must have the same shape."
+        )
+
+    labels = labels[:, 1:].clone()
+    logits = logits[:, :-1, :]
+    loss_mask = labels != label_pad_token_id
+
+    labels[labels == label_pad_token_id] = 0
+    # take log-likelihood of the labels given our model
+    per_token_log_probs = logits_to_logprobs(logits, labels, temperature=1.0)
+
+    if return_average_logprobs:
+        return masked_mean(per_token_log_probs, loss_mask, dim=-1)
+    else:
+        return (per_token_log_probs * loss_mask).sum(-1)
+
+
+def truncate_sequence_for_logprobs(
+    query_response_logits: torch.Tensor, context_length: int
+) -> torch.Tensor:
+    """
+    Truncates logits generated over a sequence for estimating logprobs over the tokens in the sequence.
+    This assumes the sequence is of the (query, response) format with length (context_length + response_length)
+    Args:
+        query_response_logits (torch.Tensor): The logits tensor of shape [b, context_length + response_length, vocab_size].
+        context_length (int): The length of the context.
+
+    Returns:
+        torch.Tensor: The truncated logits for the response with shape [b, response_length, vocab_size]."""
+    return query_response_logits[:, context_length - 1 : -1]
 source_weights = {
     "dolly": 1.0,
     "general": 1.0,

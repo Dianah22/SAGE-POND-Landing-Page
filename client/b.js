@@ -1,4 +1,5 @@
-   function showPopup(type, title, message) {
+
+function showPopup(type, title, message) {
             const popup = document.getElementById('popup');
             const overlay = document.getElementById('popupOverlay');
             const iconDiv = document.getElementById('popupIcon');
