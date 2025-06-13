@@ -10,6 +10,10 @@ const rateLimit = require('express-rate-limit');
 const validator = require('validator');
 const admin = require('firebase-admin');
 const nodemailer = require('nodemailer');
+const { default: makeWASocket, DisconnectReason, useMultiFileAuthState, fetchLatestBaileysVersion } = require('@whiskeysockets/baileys');
+const { Boom } = require('@hapi/boom');
+const fs = require('fs').promises;
+const jwt = require('jsonwebtoken');
 
 const serviceAccount = require('./sage-pond-gen-ai-firebase-adminsdk-9u1h2-7a16893d3f.json');
 
@@ -271,6 +275,248 @@ app.get('/privacy-policy', (req, res) => {
 // 404 handler
 app.use((req, res) => {
     res.sendFile(path.join(initial_path, '404.html'));
+});
+
+// WhatsApp connection management
+let wa = null;
+let isConnected = false;
+
+// WhatsApp connection function
+async function connectToWhatsApp() {
+    const { state, saveCreds } = await useMultiFileAuthState('auth_info_baileys');
+    const { version } = await fetchLatestBaileysVersion();
+
+    wa = makeWASocket({
+        version,
+        auth: state,
+        printQRInTerminal: true,
+        defaultQueryTimeoutMs: undefined
+    });
+
+    // Handle connection events
+    wa.ev.on('connection.update', async (update) => {
+        const { connection, lastDisconnect } = update;
+
+        if (connection === 'close') {
+            const shouldReconnect = (lastDisconnect?.error instanceof Boom)
+                ? lastDisconnect.error?.output?.statusCode !== DisconnectReason.loggedOut
+                : true;
+
+            console.log('WhatsApp connection closed due to:', lastDisconnect?.error?.output?.payload?.message);
+
+            if (shouldReconnect) {
+                console.log('Reconnecting to WhatsApp...');
+                connectToWhatsApp();
+            }
+        } else if (connection === 'open') {
+            console.log('WhatsApp connection established!');
+            isConnected = true;
+        }
+    });
+
+    // Save credentials on change
+    wa.ev.on('creds.update', saveCreds);
+
+    // Handle incoming messages
+    wa.ev.on('messages.upsert', async ({ messages }) => {
+        for (const message of messages) {
+            if (message.key.fromMe || !message.message) continue;
+
+            const chat = {
+                id: message.key.remoteJid,
+                pushName: message.pushName,
+                message: message.message?.conversation || 
+                         message.message?.extendedTextMessage?.text ||
+                         message.message?.buttonsResponseMessage?.selectedDisplayText
+            };
+
+            try {
+                // Get user context from Firestore
+                const userRef = db.collection('whatsapp-users').doc(chat.id);
+                const userDoc = await userRef.get();
+                
+                let context = {};
+                if (userDoc.exists) {
+                    context = userDoc.data();
+                } else {
+                    // Create new user context
+                    await userRef.set({
+                        phoneNumber: chat.id,
+                        pushName: chat.pushName,
+                        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+                        lastInteraction: admin.firestore.FieldValue.serverTimestamp(),
+                        conversationState: 'initial'
+                    });
+                }
+
+                // Process message
+                await processMessage(chat, context, userRef, wa);
+
+            } catch (error) {
+                console.error('Error processing message:', error);
+                await wa.sendMessage(chat.id, { text: 'Sorry, I encountered an error. Please try again later.' });
+            }
+        }
+    });
+}
+
+// Message processing function
+async function processMessage(chat, context, userRef, wa) {
+    const text = chat.message.toLowerCase();
+    
+    // Update last interaction time
+    await userRef.update({
+        lastInteraction: admin.firestore.FieldValue.serverTimestamp()
+    });
+
+    // Basic conversation flow with buttons
+    switch(context.conversationState) {
+        case 'initial':
+            await wa.sendMessage(chat.id, {
+                text: '👋 Welcome to SAGE POND! How can I help you today?',
+                buttons: [
+                    { buttonId: 'services', buttonText: { displayText: '1. Our Services' } },
+                    { buttonId: 'beta', buttonText: { displayText: '2. Join Beta' } },
+                    { buttonId: 'support', buttonText: { displayText: '3. Contact Support' } }
+                ]
+            });
+            await userRef.update({ conversationState: 'menu' });
+            break;
+
+        case 'menu':
+            if (text.includes('1') || text.includes('services')) {
+                await wa.sendMessage(chat.id, {
+                    text: '🌟 SAGE POND offers innovative AI solutions for businesses:\n\n• Custom AI Models\n• Data Analytics\n• Process Automation\n\nWould you like to know more about any specific service?',
+                    buttons: [
+                        { buttonId: 'ai_models', buttonText: { displayText: 'AI Models' } },
+                        { buttonId: 'analytics', buttonText: { displayText: 'Analytics' } },
+                        { buttonId: 'automation', buttonText: { displayText: 'Automation' } }
+                    ]
+                });
+                await userRef.update({ conversationState: 'services' });
+            } else if (text.includes('2') || text.includes('beta')) {
+                await wa.sendMessage(chat.id, { 
+                    text: '🚀 To join our beta program, please share your email address.' 
+                });
+                await userRef.update({ conversationState: 'beta_email' });
+            } else if (text.includes('3') || text.includes('support')) {
+                await wa.sendMessage(chat.id, { 
+                    text: '🤝 Our support team will be with you shortly. In the meantime, please describe your issue.' 
+                });
+                await userRef.update({ conversationState: 'support' });
+            }
+            break;
+
+        // Add more states as needed
+        default:
+            await wa.sendMessage(chat.id, {
+                text: '👋 Welcome back! How can I help you today?',
+                buttons: [
+                    { buttonId: 'services', buttonText: { displayText: '1. Our Services' } },
+                    { buttonId: 'beta', buttonText: { displayText: '2. Join Beta' } },
+                    { buttonId: 'support', buttonText: { displayText: '3. Contact Support' } }
+                ]
+            });
+            await userRef.update({ conversationState: 'menu' });
+    }
+}
+
+// Start WhatsApp connection
+connectToWhatsApp().catch(err => console.log('WhatsApp connection error:', err));
+
+// Middleware for API authentication
+const authenticateAPI = async (req, res, next) => {
+    try {
+        const authHeader = req.headers.authorization;
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            return res.status(401).json({ error: 'No token provided' });
+        }
+
+        const token = authHeader.split(' ')[1];
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        
+        // Check if API key exists in Firestore
+        const apiKeyDoc = await db.collection('api-keys').doc(decoded.keyId).get();
+        if (!apiKeyDoc.exists) {
+            return res.status(401).json({ error: 'Invalid API key' });
+        }
+
+        req.apiKey = apiKeyDoc.data();
+        next();
+    } catch (error) {
+        res.status(401).json({ error: 'Invalid token' });
+    }
+};
+
+// API Routes for WhatsApp bot
+app.post('/api/whatsapp/send', authenticateAPI, async (req, res) => {
+    try {
+        const { to, message, buttons } = req.body;
+
+        if (!to || !message) {
+            return res.status(400).json({ error: 'Phone number and message are required' });
+        }
+
+        if (!isConnected || !wa) {
+            return res.status(503).json({ error: 'WhatsApp service not connected' });
+        }
+
+        // Validate phone number format
+        const phoneNumber = to.replace(/\D/g, '');
+        if (!validator.isMobilePhone(phoneNumber)) {
+            return res.status(400).json({ error: 'Invalid phone number' });
+        }
+
+        const jid = `${phoneNumber}@s.whatsapp.net`;
+        
+        // Send message with optional buttons
+        let messageContent = { text: message };
+        if (buttons && Array.isArray(buttons) && buttons.length > 0) {
+            messageContent.buttons = buttons.map((btn, idx) => ({
+                buttonId: `btn_${idx}`,
+                buttonText: { displayText: btn.text },
+                type: 1
+            }));
+        }
+
+        await wa.sendMessage(jid, messageContent);
+
+        // Log message in Firestore
+        await db.collection('whatsapp-messages').add({
+            to: jid,
+            message,
+            buttons: buttons || [],
+            timestamp: admin.firestore.FieldValue.serverTimestamp(),
+            apiKeyId: req.apiKey.id,
+            status: 'sent'
+        });
+
+        res.json({ success: true, message: 'Message sent successfully' });
+    } catch (error) {
+        console.error('Error sending WhatsApp message:', error);
+        res.status(500).json({ error: 'Failed to send message' });
+    }
+});
+
+// Generate API key endpoint
+app.post('/api/keys/generate', verifySession, async (req, res) => {
+    try {
+        const keyId = uid(16);
+        const apiKey = jwt.sign({ keyId }, process.env.JWT_SECRET, { expiresIn: '1y' });
+
+        // Store API key info in Firestore
+        await db.collection('api-keys').doc(keyId).set({
+            id: keyId,
+            createdAt: admin.firestore.FieldValue.serverTimestamp(),
+            createdBy: req.user.uid,
+            lastUsed: null
+        });
+
+        res.json({ apiKey });
+    } catch (error) {
+        console.error('Error generating API key:', error);
+        res.status(500).json({ error: 'Failed to generate API key' });
+    }
 });
 
 app.listen(port, () => {
