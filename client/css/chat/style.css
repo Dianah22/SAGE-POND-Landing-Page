@@ -42,7 +42,7 @@ html,body{
   }
 @media (max-width:965px){
  .side{
-    z-index: 15;
+    z-index: 35;
  }
 }
 @media (min-width:1000px){

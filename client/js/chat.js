@@ -2,22 +2,16 @@ import { json } from 'body-parser';
 import { initializeApp } from 'firebase/app';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { getFirestore, collection, getDocs, doc, setDoc, updateDoc, arrayUnion, Timestamp, getDoc } from 'firebase/firestore';
-
-// DOM Elements
-const chatbtn = document.getElementById('new_chat');
 const recent = document.getElementById('recent');
 const chat_window = document.getElementById('chat_window');
 const editor = document.getElementById('editor');
 const send = document.getElementById('send');
-const query_div = document.querySelector('.query');
 const menuBtn = document.querySelector('.menuButton');
 const content = document.querySelector('.chatarea');
 const nav = document.querySelector('.nav');
 const side_btn = document.querySelector('.side-button');
 const side_b = document.querySelector('.side-b');
-const chat_history = document.querySelector('.chat_history');
 const recents = document.querySelector('.recent');
-const history = document.querySelector('.chat_history');
 const welcome_screen = document.querySelector('.welcome_screen');
 let clickCount = 0;
 let isMenuOpen = true;
@@ -359,7 +353,7 @@ function applyMenuState(open) {
     const contentLeft = open ? "25%" : "0%";
     const contentWidth = open ? "75%" : "100%";
     const sideButtonDisplay = open ? "grid" : "none"; // Or "flex" or "block" depending on original styling
-    const sideBWidth = open ? "100%" : "25px"; // Example, adjust as needed
+    const sideBWidth = open ? "100%" : "25px";
 
     gsap.to(nav, { duration: 0.3, ease: "power3.inOut", width: navWidth });
     gsap.to(content, { duration: 0.3, ease: 'power3.inOut', left: contentLeft, width: contentWidth });
@@ -386,7 +380,7 @@ function toggleMenu() {
 
 function handleResize() {
     if (window.innerWidth > 1000) {
-        // Desktop: respect menuShouldBeOpen (e.g. if user explicitly closed it)
+        
         applyMenuState(menuShouldBeOpen);
     } else {
         // Mobile: always close the menu on resize to mobile view, or respect current visual state
