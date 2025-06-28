@@ -2,13 +2,13 @@ const path = require('path');
 const terserPlugin = require('terser-webpack-plugin')
 module.exports = {
   mode: 'development',
-  entry: './js/chat.js',
+  entry: './client/js/chat.js',
   optimization:{
     minimizer:[new terserPlugin()],
     minimize:true,
   },
   output: {
-    path: path.resolve(__dirname, 'js/chat'),
+    path: path.resolve(__dirname, './client/js/chat'),
     filename: 'bundle.chat.js',
     clean:true,
   },

@@ -10,12 +10,9 @@ const rateLimit = require('express-rate-limit');
 const validator = require('validator');
 const admin = require('firebase-admin');
 const nodemailer = require('nodemailer');
-const axios = require('axios');
 const fs = require('fs').promises;
 const jwt = require('jsonwebtoken');
-
 const serviceAccount = require('./sage-pond-gen-ai-firebase-adminsdk-9u1h2-7a16893d3f.json');
-
 // Initialize Firebase Admin
 if (!admin.apps.length) {
     admin.initializeApp({
@@ -66,6 +63,7 @@ app.use(
             imgSrc: ["'self'", "data:"],
             connectSrc: [
                 "'self'",
+                "https://sagepond--uvveyl-unveyl.modal.run",
                 "https://identitytoolkit.googleapis.com",
                 "https://securetoken.googleapis.com",
                 "https://firestore.googleapis.com",
@@ -112,13 +110,18 @@ app.post('/api/verify-token', async (req, res) => {
 app.get('/', (req, res) => {
     res.sendFile(path.join(initial_path, "index.html"));
 });
-
+app.get('/api/unveyl',(req,res)=>{
+prompt = req.body.prompt
+const modelUrl = `https://sagepond--uvveyl-unveyl.modal.run/?prompt=${prompt}&apiKey=${process.env.apiKey}`;
+res.json()
+res.send(modelUrl)
+})
 app.get('/login', (req, res) => {
-    res.sendFile(path.join(__dirname, 'login.html'));
+    res.sendFile(path.join(initial_path, 'login.html'));
 });
 
 app.get('/signup', (req, res) => {
-    res.sendFile(path.join(__dirname, 'signup.html'));
+    res.sendFile(path.join(initial_path, 'signup.html'));
 });
 // Chat routes
 app.post('/create-chat', verifySession, (req, res) => {
@@ -275,73 +278,6 @@ app.get('/privacy-policy', (req, res) => {
 app.use((req, res) => {
     res.sendFile(path.join(initial_path, '404.html'));
 });
-
-// WhatsApp Cloud API configuration
-const WHATSAPP_TOKEN = process.env.WHATSAPP_TOKEN; // Your WhatsApp Cloud API access token
-const WHATSAPP_PHONE_NUMBER_ID = process.env.WHATSAPP_PHONE_NUMBER_ID; // Your WhatsApp phone number ID
-const WHATSAPP_API_URL = `https://graph.facebook.com/v19.0/${WHATSAPP_PHONE_NUMBER_ID}/messages`;
-
-// API endpoint to send WhatsApp messages via official Cloud API
-app.post('/api/whatsapp/send', authenticateAPI, async (req, res) => {
-    try {
-        const { to, message, buttons } = req.body;
-        if (!to || !message) {
-            return res.status(400).json({ error: 'Phone number and message are required' });
-        }
-        // Format phone number to E.164 (WhatsApp requires country code, no +)
-        const phoneNumber = to.replace(/\D/g, '');
-        // Build message payload
-        let data = {
-            messaging_product: 'whatsapp',
-            to: phoneNumber,
-            type: 'text',
-            text: { body: message }
-        };
-        // If buttons are provided, use interactive message
-        if (buttons && Array.isArray(buttons) && buttons.length > 0) {
-            data = {
-                messaging_product: 'whatsapp',
-                to: phoneNumber,
-                type: 'interactive',
-                interactive: {
-                    type: 'button',
-                    body: { text: message },
-                    action: {
-                        buttons: buttons.map((btn, idx) => ({
-                            type: 'reply',
-                            reply: {
-                                id: `btn_${idx + 1}`,
-                                title: btn.text
-                            }
-                        }))
-                    }
-                }
-            };
-        }
-        // Send message via WhatsApp Cloud API
-        const response = await axios.post(WHATSAPP_API_URL, data, {
-            headers: {
-                'Authorization': `Bearer ${WHATSAPP_TOKEN}`,
-                'Content-Type': 'application/json'
-            }
-        });
-        // Log message in Firestore
-        await db.collection('whatsapp-messages').add({
-            to: phoneNumber,
-            message,
-            buttons: buttons || [],
-            timestamp: admin.firestore.FieldValue.serverTimestamp(),
-            apiKeyId: req.apiKey.id,
-            status: 'sent',
-            whatsappResponse: response.data
-        });
-        res.json({ success: true, message: 'Message sent successfully', whatsapp: response.data });
-    } catch (error) {
-        console.error('Error sending WhatsApp message:', error?.response?.data || error);
-        res.status(500).json({ error: 'Failed to send message', details: error?.response?.data || error.message });
-    }
-});
-
 // Generate API key endpoint
 app.post('/api/keys/generate', verifySession, async (req, res) => {
     try {

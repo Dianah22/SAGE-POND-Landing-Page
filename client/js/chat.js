@@ -1,3 +1,4 @@
+import { json } from 'body-parser';
 import { initializeApp } from 'firebase/app';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { getFirestore, collection, getDocs, doc, setDoc, updateDoc, arrayUnion, Timestamp, getDoc } from 'firebase/firestore';
@@ -18,10 +19,8 @@ const chat_history = document.querySelector('.chat_history');
 const recents = document.querySelector('.recent');
 const history = document.querySelector('.chat_history');
 const welcome_screen = document.querySelector('.welcome_screen');
-
 let clickCount = 0;
 let isMenuOpen = true;
-
 // Ensure token is available before making any requests
 async function ensureToken(auth) {
     if (!auth.currentUser) {
@@ -119,6 +118,22 @@ const firebaseReady = new Promise((resolve) => { firebaseReadyResolve = resolve;
                     })
                 });
 
+                // Send message to the model endpoint
+                const modelUrl = `/api/unveyl`;
+
+                try {
+                    const modelResponse = await fetch(modelUrl);
+                    await updateDoc(docRef, {
+                        messages: arrayUnion({
+                            content: modelResponse,
+                            sender: "assistant", // Assuming "assistant" as sender
+                            timestamp: Timestamp.now()
+                        })
+                    });
+                } catch (error) {
+                    console.error('Error sending message to model or saving assistant message:', error)
+                }
+
                 return true;
             } catch (error) {
                 console.error('Error sending message:', error);
@@ -159,31 +174,90 @@ const firebaseReady = new Promise((resolve) => { firebaseReadyResolve = resolve;
 
         // Event Handlers
         send.addEventListener('click', async (e) => {
-            const message = sanitizeInput(editor.textContent);
-            if (clickCount === 0) {
-                const chatId = await createNewChat(message);
-                window.history.pushState({}, 'conversation', `/app/${chatId}`);
-                await sendMessage(chatId, message);
-                // Hide welcome screen and show chat window
-                welcome_screen.style.display = 'none';
-                chat_window.style.display = '';
-                // Load chat history for new chat
-                const messages = await loadChatHistory(chatId);
-                renderChatMessages(messages);
-            } else {
-                const chatId = window.location.pathname.split('/')[2];
-                await sendMessage(chatId, message);
-                // Hide welcome screen and show chat window
-                welcome_screen.style.display = 'none';
-                chat_window.style.display = '';
-                // Load chat history for existing chat
-                const messages = await loadChatHistory(chatId);
-                renderChatMessages(messages);
-            }
-            clickCount++;
+            const messageContent = sanitizeInput(editor.textContent);
+            if (messageContent.length === 0) return;
             editor.innerHTML = '';
             send.disabled = true;
+            let chatId = window.location.pathname.split('/')[2];
+            let isNewChat = !chatId || clickCount === 0;
+            if (isNewChat) {
+                chatId = await createNewChat(messageContent);
+                window.history.pushState({}, 'conversation', `/app/${chatId}`);
+                clickCount = 1; // Indicate that a chat is now active
+                welcome_screen.style.display = 'none';
+                chat_window.style.display = ''; // Ensure chat window is visible
+            } else {
+                // Save the new user message to Firestore for an existing chat
+                const user = auth.currentUser; // Ensure auth is available
+                if (!user) {
+                    console.error("User not authenticated");
+                    // Optionally, redirect to login or show an error
+                    return; 
+                }
+                const docRef = doc(db, 'chats', chatId);
+                await updateDoc(docRef, {
+                    messages: arrayUnion({
+                        content: messageContent,
+                        sender: user.uid, // Make sure this is correctly set
+                        timestamp: Timestamp.now()
+                    })
+                });
+            }
+
+            // Render current messages (including the one just sent by the user)
+            let messages = await loadChatHistory(chatId);
+            renderChatMessages(messages);
+            scrollToBottom(); 
+            const prompt = messageContent;
+            const modelUrl = `/api/unveyl/`;
+
+            try {
+                const modelResponse = await fetch(modelUrl,{
+                    method:'GET',
+                    body:json.stringify(prompt)
+                });
+                if (!modelResponse.ok) {
+                    // Handle HTTP errors from the model endpoint
+                    const errorData = await modelResponse.text(); // Or .json() if it returns JSON errors
+                    console.error('Model API request failed:', modelResponse.status, errorData);
+                    renderChatMessages([...messages, {content: `Error: Model request failed (${modelResponse.status}).`, sender: "system"}]);
+                    scrollToBottom();
+                    return;
+                }
+                const modelData = await modelResponse.json(); 
+                
+                // Assuming modelData directly contains the response, or adjust as per actual structure
+                // e.g., if response is in modelData.text or modelData.choices[0].text
+                const assistantMessageContent = modelData.response || modelData.text || (modelData.choices && modelData.choices[0].text);
+
+                if (assistantMessageContent) {
+                    const docRef = doc(db, 'chats', chatId);
+                    await updateDoc(docRef, {
+                        messages: arrayUnion({
+                            content: assistantMessageContent,
+                            sender: "assistant",
+                            timestamp: Timestamp.now()
+                        })
+                    });
+                    // Reload and render messages to include the assistant's response
+                    messages = await loadChatHistory(chatId);
+                    renderChatMessages(messages);
+                    scrollToBottom();
+                } else {
+                    console.warn("Model did not return a message.");
+                     renderChatMessages([...messages, {content: "Model did not return a message.", sender: "system"}]);
+                    scrollToBottom();
+                }
+            } catch (error) {
+                console.error('Error fetching from model or saving assistant message:', error);
+                renderChatMessages([...messages, {content: "Error communicating with the model.", sender: "system"}]);
+                scrollToBottom();
+            }
         });
+
+        function scrollToBottom() {
+            chat_window.scrollTop = chat_window.scrollHeight;
+        }
        side_btn.addEventListener('click',  (e) => {
         if (window.location.pathname != '/app') {
 
@@ -238,16 +312,18 @@ window.addEventListener('DOMContentLoaded', async () => {
 // UI Functions
 function renderChatMessages(messages) {
     chat_window.innerHTML = messages.map(message => {
-        const isUser =  true
+        const isUser = message.sender !== "assistant"; // Check if sender is not assistant
         return `
-            <div class="flex w-full mb-4 ${isUser ? 'justify-end pr-20' : 'justify-start'}">
-                <div class="max-w-[70%] px-4 py-2 rounded-2xl shadow-md text-base ${isUser ? 'bg-blue-600 text-white ml-auto' : 'bg-gray-200 text-gray-900 mr-auto'}">
+            <div class="flex w-full mb-4 ${isUser ? 'justify-end pr-20' : 'justify-start pl-4'}">
+                <div class="max-w-[70%] px-4 py-2 rounded-2xl shadow-md text-base ${isUser ? 'bg-blue-600 text-white ml-auto' : 'bg-gray-700 text-gray-200 mr-auto'}">
                     <div class="flex items-center gap-2">
                         ${isUser
                             ? ''
-                            : '<img src="images/caleb.jpg" class="w-8 h-8 rounded-full">'}
+                            // TODO: Replace with a generic assistant avatar or remove if not needed
+                            : '<img src="images/logo.svg" class="w-8 h-8 rounded-full bg-white p-1">'} 
                         <span>${message.content}</span>
                         ${isUser
+                            // TODO: Replace with actual user avatar if available, or remove
                             ? '<img src="images/caleb.jpg" class="w-8 h-8 rounded-full">'
                             : ''}
                     </div>
@@ -271,42 +347,54 @@ editor.addEventListener('input', (e) => {
     const content = editor.textContent.trim();
     send.disabled = content.length === 0;
 });
-window.addEventListener('resize',toggleMenu)
+window.addEventListener('resize', handleResize);
 menuBtn.addEventListener('click', toggleMenu);
-window.addEventListener('load',toggleMenu)
+window.addEventListener('load', handleResize); // Initialize menu state on load based on window size
+
+// Refactored menu logic
+let menuShouldBeOpen = window.innerWidth > 1000; // Default state based on initial width
+
+function applyMenuState(open) {
+    const navWidth = open ? "25%" : "0%";
+    const contentLeft = open ? "25%" : "0%";
+    const contentWidth = open ? "75%" : "100%";
+    const sideButtonDisplay = open ? "grid" : "none"; // Or "flex" or "block" depending on original styling
+    const sideBWidth = open ? "100%" : "25px"; // Example, adjust as needed
+
+    gsap.to(nav, { duration: 0.3, ease: "power3.inOut", width: navWidth });
+    gsap.to(content, { duration: 0.3, ease: 'power3.inOut', left: contentLeft, width: contentWidth });
+    
+    // Adjust visibility and width of sidebar elements
+    gsap.to(side_btn, { duration: 0.3, ease: 'power2.inOut', display: sideButtonDisplay, width: open ? '100%' : '0%' });
+    gsap.to(recents, { duration: 0.3, ease: 'power2.inOut', display: open ? 'block' : 'none', width: open ? '100%' : '0%' }); // Assuming recents should also hide
+    gsap.to(side_b, { duration: 0.3, ease: 'power2.inOut', width: sideBWidth });
+
+
+    isMenuOpen = open; // Update the global state if still needed elsewhere
+}
 
 function toggleMenu() {
-    const calc = 100 - 25;
-
-    if (window.innerWidth>1000){isMenuOpen = true;}
-    if(window.innerWidth<1000) {isMenuOpen = false;}
-    console.log('Menu state:', isMenuOpen, 'Window width:', window.innerWidth);
-    if (!isMenuOpen && window.innerWidth > 1000) {
-         console.log(isMenuOpen)
-        gsap.to(nav, { duration: 0.3, ease: "power3.inOut", x: "0%" });
-        gsap.to(content, { duration: 0.3, ease: 'power3.inOut', left: "25%", width: `${calc}%` });
-        gsap.to(side_b, { duration: 0.3, ease: 'power2.inOut', width: '100%' });
-        gsap.to(side_btn, { duration: 0.3, ease: 'power2.inOut', width: '100%' });
-        gsap.to(recents, { duration: 0.3, ease: 'power2.inOut', width: '100%' });
-        
-    } else if (!isMenuOpen&& window.innerWidth > 1000) {
-        gsap.to(nav, { duration: 0.3, ease: "power3.inOut", width: "50%" });
-        gsap.to(side_b, { duration: 0.4, ease: 'Power3.inOut', width: '25px' });
-        gsap.to(content, { duration: 0.3, ease: 'power3.inOut',width:'95%',left:'5%'});
-        gsap.to(recents, { duration: 0.3, ease: 'power2.inOut', width: '100%' });
-    } else if (window.innerWidth <= 1000 && isMenuOpen == true) {
-        gsap.to(side_btn, { duration: 0.4, ease: 'power2.inOut', width: '0%', display: 'none' });
-        gsap.to(content, { duration: 0.2, left: "0%", width: '100%' });
-        gsap.to(nav, { duration: 0.3, ease: "power3.inOut", width: "0%" });
-        gsap.to(recents, { duration: 0.05, ease: 'power2.inOut', width: '0%' });
-    } else if (window.innerWidth <= 1000 && isMenuOpen == false) {
-        gsap.to(nav, { duration: 0.3, ease: "power3.inOut", width: "0%" });
-        gsap.to(content, { duration: 0.3, ease: 'power3.inOut', width: `100%` ,left:'0'});
-        gsap.to(side_btn, { duration: 0.4, ease: 'power2.inOut', width: '100%', display: 'grid' });
-        gsap.to(recents, { duration: 0.3, ease: 'power2.inOut', width: '100%',display: 'block' });
+    if (window.innerWidth > 1000) {
+        // Desktop: Toggle normally
+        menuShouldBeOpen = !menuShouldBeOpen;
+    } else {
+        // Mobile: Always toggle, effectively opening if closed, closing if open
+        menuShouldBeOpen = !isMenuOpen; // Use current visual state for toggle decision
     }
-     isMenuOpen = !isMenuOpen;
+    applyMenuState(menuShouldBeOpen);
 }
+
+function handleResize() {
+    if (window.innerWidth > 1000) {
+        // Desktop: respect menuShouldBeOpen (e.g. if user explicitly closed it)
+        applyMenuState(menuShouldBeOpen);
+    } else {
+        // Mobile: always close the menu on resize to mobile view, or respect current visual state
+        applyMenuState(false); // Or applyMenuState(isMenuOpen) if you want it to stay open if already open on mobile
+        menuShouldBeOpen = false; // Reset the "intended" state for mobile
+    }
+}
+
 function sanitizeInput(userInput) {
     const allowedTags = ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'b', 'em', 'i'];
     const allowedAttributes = ['class', 'style'];
@@ -319,7 +407,7 @@ function sanitizeInput(userInput) {
     return DOMPurify.sanitize(userInput, config);
 }
 editor.addEventListener('keydown', function (event) {
-    if (event.key === 'Enter') {
+    if (event.key === 'Enter' && !event.shiftKey) { // Added !event.shiftKey to allow Shift+Enter for new lines
         event.preventDefault();
         if (!send.disabled) {
             send.click();
@@ -328,7 +416,11 @@ editor.addEventListener('keydown', function (event) {
 });
 
 const placeholder = editor.dataset.placeholder;
-editor.textContent = placeholder;
+// Set placeholder only if editor is empty, to avoid clearing user input on reload or script re-execution
+if (editor.textContent.trim() === '' || editor.textContent === placeholder) {
+    editor.textContent = placeholder;
+}
+
 
 editor.addEventListener('focus', function () {
     if (editor.textContent === placeholder) {
@@ -337,7 +429,7 @@ editor.addEventListener('focus', function () {
 });
 
 editor.addEventListener('blur', function () {
-    if (editor.textContent === '') {
+    if (editor.textContent.trim() === '') { // Check trim to ensure empty spaces don't prevent placeholder
         editor.textContent = placeholder;
     }
 });
