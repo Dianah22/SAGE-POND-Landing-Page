@@ -349,7 +349,13 @@ window.addEventListener('load', handleResize); // Initialize menu state on load 
 let menuShouldBeOpen = window.innerWidth > 1000; // Default state based on initial width
 
 function applyMenuState(open) {
-    const navWidth = open ? "25%" : "0%";
+    let navWidth;
+    if(window.innerWidth>1000){
+      navWidth = open ? '25%' : "0%"
+    }else{
+       navWidth = open ? '65%':"0%"
+    }
+    console.log(navWidth)
     const contentLeft = open ? "25%" : "0%";
     const contentWidth = open ? "75%" : "100%";
     const sideButtonDisplay = open ? "grid" : "none"; // Or "flex" or "block" depending on original styling

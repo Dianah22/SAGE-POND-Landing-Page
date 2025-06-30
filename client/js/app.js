@@ -134,7 +134,7 @@ Promise.all([
 // Remove Lenis smooth scroll setup
 // Add GSAP ScrollSmoother smooth scroll setup
 
-gsap.registerPlugin(ScrollTrigger, ScrollSmoother,Observer);
+gsap.registerPlugin(ScrollTrigger,Observer);
 const unveyl = document.getElementById('unveyl')
 const lenis = new Lenis({
   duration: 1.5,        // smoothness factor (higher = smoother)
