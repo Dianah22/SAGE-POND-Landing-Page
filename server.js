@@ -110,8 +110,9 @@ app.post('/api/verify-token', async (req, res) => {
 app.get('/', (req, res) => {
     res.sendFile(path.join(initial_path, "index.html"));
 });
-app.get('/api/unveyl',(req,res)=>{
-prompt = req.body.prompt
+app.post('/api/unveyl',(req,res)=>{
+const prompt = req.body.prompt
+console.log(prompt)
 const modelUrl = `https://sagepond--uvveyl-unveyl.modal.run/?prompt=${prompt}&apiKey=${process.env.apiKey}`;
 res.json()
 res.send(modelUrl)

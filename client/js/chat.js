@@ -116,7 +116,11 @@ const firebaseReady = new Promise((resolve) => { firebaseReadyResolve = resolve;
                 const modelUrl = `/api/unveyl`;
 
                 try {
-                    const modelResponse = await fetch(modelUrl);
+                    const modelResponse = await fetch(modelUrl,{
+                        method: 'POST',
+                        body: JSON.stringify({ prompt: message }),
+                    });
+                    console.log(modelResponse);
                     await updateDoc(docRef, {
                         messages: arrayUnion({
                             content: modelResponse,
@@ -207,7 +211,7 @@ const firebaseReady = new Promise((resolve) => { firebaseReadyResolve = resolve;
 
             try {
                 const modelResponse = await fetch(modelUrl,{
-                    method:'GET',
+                    method:'POST',
                     body:json.stringify(prompt)
                 });
                 if (!modelResponse.ok) {
