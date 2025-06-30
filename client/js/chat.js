@@ -118,18 +118,37 @@ const firebaseReady = new Promise((resolve) => { firebaseReadyResolve = resolve;
                 try {
                     const modelResponse = await fetch(modelUrl,{
                         method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${await auth.currentUser.getIdToken()}` // Assuming you might want to protect this too
+                        },
                         body: JSON.stringify({ prompt: message }),
                     });
-                    console.log(modelResponse);
+                    
+                    if (!modelResponse.ok) {
+                        const errorText = await modelResponse.text();
+                        throw new Error(`Model API request failed with status ${modelResponse.status}: ${errorText}`);
+                    }
+
+                    const modelData = await modelResponse.json();
+                    
                     await updateDoc(docRef, {
                         messages: arrayUnion({
-                            content: modelResponse,
-                            sender: "assistant", // Assuming "assistant" as sender
+                            content: modelData.response, // Assuming server sends { response: "..." }
+                            sender: "assistant", 
                             timestamp: Timestamp.now()
                         })
                     });
                 } catch (error) {
-                    console.error('Error sending message to model or saving assistant message:', error)
+                    console.error('Error sending message to model or saving assistant message:', error);
+                    // Optionally, save an error message to Firestore to display in chat
+                     await updateDoc(docRef, {
+                        messages: arrayUnion({
+                            content: "Error: Could not get response from assistant.",
+                            sender: "system", 
+                            timestamp: Timestamp.now()
+                        })
+                    });
                 }
 
                 return true;
@@ -207,26 +226,40 @@ const firebaseReady = new Promise((resolve) => { firebaseReadyResolve = resolve;
             renderChatMessages(messages);
             scrollToBottom(); 
             const prompt = messageContent;
-            const modelUrl = `/api/unveyl/`;
+            const modelUrl = `/api/unveyl`; // Corrected: remove trailing slash if not intended
 
             try {
-                const modelResponse = await fetch(modelUrl,{
-                    method:'POST',
-                    body:json.stringify(prompt)
+                const token = await auth.currentUser.getIdToken(); // Ensure token is fresh
+                const modelResponse = await fetch(modelUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}` // Add Authorization header
+                    },
+                    body: JSON.stringify({ prompt: prompt }) // Send as JSON object
                 });
+
                 if (!modelResponse.ok) {
-                    // Handle HTTP errors from the model endpoint
-                    const errorData = await modelResponse.text(); // Or .json() if it returns JSON errors
+                    const errorData = await modelResponse.text(); 
                     console.error('Model API request failed:', modelResponse.status, errorData);
-                    renderChatMessages([...messages, {content: `Error: Model request failed (${modelResponse.status}).`, sender: "system"}]);
+                    // Save an error message to Firestore to display in chat
+                    const docRef = doc(db, 'chats', chatId);
+                    await updateDoc(docRef, {
+                        messages: arrayUnion({
+                            content: `Error: Model request failed (${modelResponse.status}). ${errorData}`,
+                            sender: "system",
+                            timestamp: Timestamp.now()
+                        })
+                    });
+                    messages = await loadChatHistory(chatId); // Reload messages
+                    renderChatMessages(messages);
                     scrollToBottom();
+                    send.disabled = false; // Re-enable send button
                     return;
                 }
-                const modelData = await modelResponse.json(); 
-                
-                // Assuming modelData directly contains the response, or adjust as per actual structure
-                // e.g., if response is in modelData.text or modelData.choices[0].text
-                const assistantMessageContent = modelData.response || modelData.text || (modelData.choices && modelData.choices[0].text);
+
+                const modelData = await modelResponse.json();
+                const assistantMessageContent = modelData.response; // Assuming server sends { response: "..." }
 
                 if (assistantMessageContent) {
                     const docRef = doc(db, 'chats', chatId);
@@ -237,19 +270,38 @@ const firebaseReady = new Promise((resolve) => { firebaseReadyResolve = resolve;
                             timestamp: Timestamp.now()
                         })
                     });
-                    // Reload and render messages to include the assistant's response
-                    messages = await loadChatHistory(chatId);
+                    messages = await loadChatHistory(chatId); // Reload messages
                     renderChatMessages(messages);
                     scrollToBottom();
                 } else {
-                    console.warn("Model did not return a message.");
-                     renderChatMessages([...messages, {content: "Model did not return a message.", sender: "system"}]);
+                    console.warn("Model did not return a message or 'response' field is missing.");
+                    const docRef = doc(db, 'chats', chatId);
+                    await updateDoc(docRef, {
+                        messages: arrayUnion({
+                            content: "Model did not return a valid message.",
+                            sender: "system",
+                            timestamp: Timestamp.now()
+                        })
+                    });
+                    messages = await loadChatHistory(chatId); // Reload messages
+                    renderChatMessages(messages);
                     scrollToBottom();
                 }
             } catch (error) {
                 console.error('Error fetching from model or saving assistant message:', error);
-                renderChatMessages([...messages, {content: "Error communicating with the model.", sender: "system"}]);
+                const docRef = doc(db, 'chats', chatId);
+                await updateDoc(docRef, {
+                    messages: arrayUnion({
+                        content: "Error communicating with the model.",
+                        sender: "system",
+                        timestamp: Timestamp.now()
+                    })
+                });
+                messages = await loadChatHistory(chatId); // Reload messages
+                renderChatMessages(messages);
                 scrollToBottom();
+            } finally {
+                send.disabled = false; // Re-enable send button in all cases
             }
         });
 

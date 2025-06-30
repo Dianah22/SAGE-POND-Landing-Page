@@ -30,7 +30,52 @@ const port = process.env.PORT || 4000
 // Middleware setup
 app.use(express.static(initial_path));
 app.use(helmet());
-app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 100 }))
+app.use(cookieParser()); // Ensure cookie parser runs first
+
+// Middleware to parse session and attach user, but not enforce authentication
+const parseSession = async (req, res, next) => {
+    const sessionCookie = req.cookies.session || '';
+    if (sessionCookie) {
+        try {
+            const decodedClaims = await admin.auth().verifySessionCookie(sessionCookie, true); // true checks for revocation
+            req.user = decodedClaims;
+        } catch (error) {
+            // Invalid or revoked cookie, treat as unauthenticated
+            // console.warn('Session cookie verification failed for parseSession:', error.code);
+            req.user = null; 
+            // Optionally clear the invalid cookie from the client
+            // res.clearCookie('session'); 
+        }
+    } else {
+        req.user = null;
+    }
+    next();
+};
+app.use(parseSession); // This will populate req.user if a valid session cookie exists
+
+// General rate limiter - now uses req.user.uid if available, otherwise req.ip
+const generalRateLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100, // limit each key (user ID or IP) to 100 requests per windowMs
+    standardHeaders: true,
+    legacyHeaders: false,
+    keyGenerator: (req) => {
+        if (req.user && req.user.uid) {
+            return req.user.uid; // Use Firebase UID if user is authenticated
+        }
+        return req.ip; // Fallback to IP address for unauthenticated users
+    },
+    skip: (req, res) => {
+        // Example: don't rate limit static assets (though express.static usually handles these first)
+        if (req.path.startsWith('/css') || req.path.startsWith('/js') || req.path.startsWith('/images') || req.path.startsWith('/gsap-public')) {
+            return true;
+        }
+        return false;
+    }
+});
+app.use(generalRateLimiter); // Apply the rate limiter
+
+// The verifySession middleware (which enforces authentication) is applied to specific routes later.
 
 app.use(helmet.frameguard({ action: 'deny' }))
 app.use(helmet.referrerPolicy({ policy: 'no-referrer' }))
@@ -106,17 +151,84 @@ app.post('/api/verify-token', async (req, res) => {
     }
   };
  
+const fetch = require('node-fetch'); // Add node-fetch
+const { Client, LocalAuth } = require('whatsapp-web.js');
+const qrcode = require('qrcode-terminal');
+
+// Initialize WhatsApp Client
+const whatsappClient = new Client({
+    authStrategy: new LocalAuth(), // Use LocalAuth to save session and avoid re-scanning QR code often
+    puppeteer: {
+        headless: true,
+        args: ['--no-sandbox', '--disable-setuid-sandbox'] // Args for running in restricted environments
+    }
+});
+
+whatsappClient.on('qr', qr => {
+    qrcode.generate(qr, { small: true });
+    console.log('QR RECEIVED, scan it with your phone.');
+});
+
+whatsappClient.on('ready', () => {
+    console.log('WhatsApp Client is ready!');
+});
+
+whatsappClient.on('auth_failure', msg => {
+    console.error('WHATSAPP AUTHENTICATION FAILURE', msg);
+});
+
+whatsappClient.on('disconnected', (reason) => {
+    console.log('WhatsApp Client was logged out', reason);
+    // Optionally, attempt to re-initialize or handle re-login
+});
+
+whatsappClient.initialize().catch(err => console.error('WhatsApp Client Initialization Error:', err));
+
+
 // Routes
 app.get('/', (req, res) => {
     res.sendFile(path.join(initial_path, "index.html"));
 });
-app.post('/api/unveyl',(req,res)=>{
-const prompt = req.body.prompt
-console.log(prompt)
-const modelUrl = `https://sagepond--uvveyl-unveyl.modal.run/?prompt=${prompt}&apiKey=${process.env.apiKey}`;
-res.json()
-res.send(modelUrl)
-})
+
+// Apply verifySession middleware to the /api/unveyl route
+app.post('/api/unveyl', verifySession, async (req, res) => {
+    const userPrompt = req.body.prompt;
+
+    if (!userPrompt) {
+        return res.status(400).json({ error: 'Prompt is required' });
+    }
+
+    // Use the API key from environment variables for the external API call
+    const apiKey = process.env.apiKey;
+    if (!apiKey) {
+        console.error('External API key is not configured in .env');
+        return res.status(500).json({ error: 'Internal server error: API key not configured.' });
+    }
+
+    const externalModelUrl = `https://sagepond--uvveyl-unveyl.modal.run/?prompt=${encodeURIComponent(userPrompt)}&apiKey=${apiKey}`;
+
+    try {
+        const modelResponse = await fetch(externalModelUrl);
+        if (!modelResponse.ok) {
+            const errorText = await modelResponse.text();
+            console.error(`External API call failed: ${modelResponse.status} ${errorText}`);
+            // Avoid sending detailed external errors to the client for security.
+            return res.status(502).json({ error: 'Failed to get response from model' });
+        }
+        const modelData = await modelResponse.json(); 
+        // Assuming the external API sends back JSON like { "response": "...", ... }
+        // or if it sends the text directly, you might need modelResponse.text()
+        // For now, let's assume it's JSON and has a field we want to send back.
+        // If the external API's response IS the text you want, you might do:
+        // res.json({ response: modelData }); or res.send(textData) if it's not JSON.
+        // Based on client-side expectation of modelData.response
+        res.json({ response: modelData.response || modelData }); 
+    } catch (error) {
+        console.error('Error calling external model API:', error);
+        res.status(500).json({ error: 'Internal server error while contacting model' });
+    }
+});
+
 app.get('/login', (req, res) => {
     res.sendFile(path.join(initial_path, 'login.html'));
 });
@@ -279,6 +391,40 @@ app.get('/privacy-policy', (req, res) => {
 app.use((req, res) => {
     res.sendFile(path.join(initial_path, '404.html'));
 });
+
+// WhatsApp Send Message Endpoint
+app.post('/api/whatsapp/send', verifySession, async (req, res) => {
+    if (!whatsappClient || typeof whatsappClient.getState !== 'function') {
+        return res.status(503).json({ success: false, message: 'WhatsApp client is not initialized yet.' });
+    }
+
+    const clientState = await whatsappClient.getState();
+    if (clientState !== 'CONNECTED') {
+         // Log detailed state for debugging
+        console.log(`WhatsApp client not ready. Current state: ${clientState}`);
+        return res.status(503).json({ success: false, message: `WhatsApp client not ready. State: ${clientState}` });
+    }
+
+    const { number, message } = req.body; // number should be like '1234567890@c.us'
+
+    if (!number || !message) {
+        return res.status(400).json({ success: false, message: 'Number and message are required.' });
+    }
+
+    // Validate number format (simple check, can be improved)
+    if (!/^\d+@c\.us$/.test(number)) {
+        return res.status(400).json({ success: false, message: 'Invalid number format. Expected: 1234567890@c.us' });
+    }
+
+    try {
+        const msg = await whatsappClient.sendMessage(number, message);
+        res.json({ success: true, message: 'Message sent successfully.', messageId: msg.id.id });
+    } catch (error) {
+        console.error('Error sending WhatsApp message:', error);
+        res.status(500).json({ success: false, message: 'Failed to send WhatsApp message.', error: error.message });
+    }
+});
+
 // Generate API key endpoint
 app.post('/api/keys/generate', verifySession, async (req, res) => {
     try {
