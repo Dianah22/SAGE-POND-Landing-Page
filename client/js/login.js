@@ -120,7 +120,7 @@ function waitForCookie(cookieName, timeout) {
                 alert('Login failed! Please try again.');
             }
         }
-        async function waitForSessionCookie(maxAttempts = 5, initialDelay = 300) {
+        async function waitForSessionCookie(maxAttempts = 2, initialDelay = 300) {
             for (let attempt = 1; attempt <= maxAttempts; attempt++) {
                 const ping = await fetch('/api/ping-session', {
                     method: 'GET',

@@ -152,37 +152,37 @@ app.post('/api/verify-token', async (req, res) => {
   };
  
 const fetch = require('node-fetch'); // Add node-fetch
-const { Client, LocalAuth } = require('whatsapp-web.js');
-const qrcode = require('qrcode-terminal');
+//const { Client, LocalAuth } = require('whatsapp-web.js');
+//const qrcode = require('qrcode-terminal');
 
-// Initialize WhatsApp Client
-const whatsappClient = new Client({
-    authStrategy: new LocalAuth(), // Use LocalAuth to save session and avoid re-scanning QR code often
-    puppeteer: {
-        headless: true,
-        args: ['--no-sandbox', '--disable-setuid-sandbox'] // Args for running in restricted environments
-    }
-});
+// // Initialize WhatsApp Client
+// const whatsappClient = new Client({
+//     authStrategy: new LocalAuth(), // Use LocalAuth to save session and avoid re-scanning QR code often
+//     puppeteer: {
+//         headless: true,
+//         args: ['--no-sandbox', '--disable-setuid-sandbox'] // Args for running in restricted environments
+//     }
+// });
 
-whatsappClient.on('qr', qr => {
-    qrcode.generate(qr, { small: true });
-    console.log('QR RECEIVED, scan it with your phone.');
-});
+// whatsappClient.on('qr', qr => {
+//     qrcode.generate(qr, { small: true });
+//     console.log('QR RECEIVED, scan it with your phone.');
+// });
 
-whatsappClient.on('ready', () => {
-    console.log('WhatsApp Client is ready!');
-});
+// whatsappClient.on('ready', () => {
+//     console.log('WhatsApp Client is ready!');
+// });
 
-whatsappClient.on('auth_failure', msg => {
-    console.error('WHATSAPP AUTHENTICATION FAILURE', msg);
-});
+// whatsappClient.on('auth_failure', msg => {
+//     console.error('WHATSAPP AUTHENTICATION FAILURE', msg);
+// });
 
-whatsappClient.on('disconnected', (reason) => {
-    console.log('WhatsApp Client was logged out', reason);
-    // Optionally, attempt to re-initialize or handle re-login
-});
+// whatsappClient.on('disconnected', (reason) => {
+//     console.log('WhatsApp Client was logged out', reason);
+//     // Optionally, attempt to re-initialize or handle re-login
+// });
 
-whatsappClient.initialize().catch(err => console.error('WhatsApp Client Initialization Error:', err));
+// whatsappClient.initialize().catch(err => console.error('WhatsApp Client Initialization Error:', err));
 
 
 // Routes

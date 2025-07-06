@@ -405,20 +405,14 @@ window.addEventListener('load', handleResize); // Initialize menu state on load 
 let menuShouldBeOpen = window.innerWidth > 1000; // Default state based on initial width
 
 function applyMenuState(open) {
-    let navWidth;
-    if(window.innerWidth>1000){
-      navWidth = open ? '25%' : "0%"
-    }else{
-       navWidth = open ? '65%':"0%"
-    }
-    console.log(navWidth)
+    
     const contentLeft = open ? "25%" : "0%";
     const contentWidth = open ? "75%" : "100%";
     const sideButtonDisplay = open ? "grid" : "none"; // Or "flex" or "block" depending on original styling
     const sideBWidth = open ? "100%" : "25px";
-
-    gsap.to(nav, { duration: 0.3, ease: "power3.inOut", width: navWidth });
-    gsap.to(content, { duration: 0.3, ease: 'power3.inOut', left: contentLeft, width: contentWidth });
+    
+    window.innerWidth>1000?gsap.to(nav, { duration: 0.3, ease: "power3.inOut", width: '25%' }):gsap.to(nav, { duration: 0.3, ease: "power3.inOut", width: '50%' })
+    window.innerWidth>1000?gsap.to(content, { duration: 0.3, ease: 'power3.inOut', left: contentLeft, width: contentWidth }):gsap.to(content, { duration: 0.3, ease: 'power3.inOut', left: contentLeft, width: '100%' })
     
     // Adjust visibility and width of sidebar elements
     gsap.to(side_btn, { duration: 0.3, ease: 'power2.inOut', display: sideButtonDisplay, width: open ? '100%' : '0%' });
@@ -434,12 +428,13 @@ function toggleMenu() {
         // Desktop: Toggle normally
         menuShouldBeOpen = !menuShouldBeOpen;
     } else {
+        
         // Mobile: Always toggle, effectively opening if closed, closing if open
         menuShouldBeOpen = !isMenuOpen; // Use current visual state for toggle decision
     }
     applyMenuState(menuShouldBeOpen);
 }
-
+applyMenuState(menuShouldBeOpen);
 function handleResize() {
     if (window.innerWidth > 1000) {
         
