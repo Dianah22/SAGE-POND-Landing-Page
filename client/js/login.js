@@ -22,27 +22,6 @@ async function fetchFirebaseConfig() {
         throw error;
     }
 }
-
-// Helper function to wait for cookie
-function waitForCookie(cookieName, timeout) {
-    const startTime = Date.now();
-    
-    return new Promise((resolve, reject) => {
-        const checkCookie = setInterval(() => {
-            const cookies = document.cookie.split(';');
-            const found = cookies.some(cookie => cookie.trim().startsWith(`${cookieName}=`));
-            
-            if (found) {
-                clearInterval(checkCookie);
-                resolve(true);
-            } else if (Date.now() - startTime > timeout) {
-                clearInterval(checkCookie);
-                reject(new Error('Cookie wait timeout'));
-            }
-        }, 100);
-    });
-}
-
 // Initialize Firebase on the client side
 (async () => {
     try {

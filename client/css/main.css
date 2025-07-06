@@ -1654,6 +1654,10 @@ video {
   height: 100vh;
 }
 
+.h-96 {
+  height: 24rem;
+}
+
 .max-h-\[100px\] {
   max-height: 100px;
 }
@@ -1804,6 +1808,10 @@ video {
 
 .w-screen {
   width: 100vw;
+}
+
+.w-96 {
+  width: 24rem;
 }
 
 .min-w-0 {
@@ -4624,6 +4632,10 @@ html.lenis {
     margin-top: 0px;
   }
 
+  .md\:mr-4 {
+    margin-right: 1rem;
+  }
+
   .md\:block {
     display: block;
   }
@@ -4662,6 +4674,10 @@ html.lenis {
 
   .md\:max-w-md {
     max-width: 28rem;
+  }
+
+  .md\:flex-1 {
+    flex: 1 1 0%;
   }
 
   .md\:flex-row {
