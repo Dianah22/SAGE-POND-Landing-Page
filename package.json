@@ -6,9 +6,9 @@
   "scripts": {
     "dev": "webpack",
     "start": "nodemon server.js",
-    "build": "tailwindcss -i client/css/chat/style.css -o client/css/chat/main.css",
+    "build": "tailwindcss -i client/style.css -o client/css/main.css",
     "be": "webpack --mode production",
-    "watch": "tailwindcss -i client/css/chat/style.css -o client/css/chat/main.css --watch"
+    "watch": "tailwindcss -i client/style.css -o client/css/main.css --watch"
   },
   "author": "",
   "license": "ISC",
