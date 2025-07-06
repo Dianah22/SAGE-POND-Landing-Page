@@ -2789,6 +2789,14 @@ video {
   padding-top: 1px;
 }
 
+.pl-1 {
+  padding-left: 0.25rem;
+}
+
+.pr-1 {
+  padding-right: 0.25rem;
+}
+
 .text-left {
   text-align: left;
 }
@@ -2889,6 +2897,10 @@ video {
 
 .lowercase {
   text-transform: lowercase;
+}
+
+.capitalize {
+  text-transform: capitalize;
 }
 
 .leading-5 {
