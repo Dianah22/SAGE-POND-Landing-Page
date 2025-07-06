@@ -171,5 +171,4 @@ gsap.to(unveyl, {
   duration: 2
 });
 
-gsap.registerPlugin(SplitText)
 requestAnimationFrame(raf);
