@@ -216,12 +216,6 @@ app.post('/api/unveyl', verifySession, async (req, res) => {
             return res.status(502).json({ error: 'Failed to get response from model' });
         }
         const modelData = await modelResponse.json(); 
-        // Assuming the external API sends back JSON like { "response": "...", ... }
-        // or if it sends the text directly, you might need modelResponse.text()
-        // For now, let's assume it's JSON and has a field we want to send back.
-        // If the external API's response IS the text you want, you might do:
-        // res.json({ response: modelData }); or res.send(textData) if it's not JSON.
-        // Based on client-side expectation of modelData.response
         res.json({ response: modelData.response || modelData }); 
     } catch (error) {
         console.error('Error calling external model API:', error);
