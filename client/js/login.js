@@ -22,6 +22,27 @@ async function fetchFirebaseConfig() {
         throw error;
     }
 }
+
+// Helper function to wait for cookie
+function waitForCookie(cookieName, timeout) {
+    const startTime = Date.now();
+    
+    return new Promise((resolve, reject) => {
+        const checkCookie = setInterval(() => {
+            const cookies = document.cookie.split(';');
+            const found = cookies.some(cookie => cookie.trim().startsWith(`${cookieName}=`));
+            
+            if (found) {
+                clearInterval(checkCookie);
+                resolve(true);
+            } else if (Date.now() - startTime > timeout) {
+                clearInterval(checkCookie);
+                reject(new Error('Cookie wait timeout'));
+            }
+        }, 100);
+    });
+}
+
 // Initialize Firebase on the client side
 (async () => {
     try {
@@ -70,55 +91,53 @@ async function fetchFirebaseConfig() {
 
                 // Get the ID token
                 const token = await userCredential.user.getIdToken();  
-                // Send the token to the backend for verification
-                const response = await fetch('/api/verify-token', {
+                
+                // Attempt to authenticate as admin
+                const adminAuthResponse = await fetch('/api/admin-auth', { // New endpoint for admin check
                     method: 'POST',
-                    credentials: 'include',
+                    credentials: 'include', // Important for cookies
                     headers: {
                         'Content-Type': 'application/json',
+                        // 'Authorization': 'Bearer ' + token // Sending token in body for this example
                     },
                     body: JSON.stringify({ token })
                 });
 
-                const data = await response.json();
-                if (data.success) {
-                    try {
-                        // Wait for session cookie to be set
-                        await waitForSessionCookie();
-                        console.log('Token verified and session cookie set');
-                    } catch (cookieError) {
-                        console.error('Session cookie not set:', cookieError);
-                        alert('Login failed! Session could not be established.');
-                    }
+                const adminAuthData = await adminAuthResponse.json();
+
+                if (adminAuthResponse.ok && adminAuthData.success && adminAuthData.isAdmin) {
+                    // Wait for session cookie to be set by the /api/admin-auth endpoint
+                    // The server should set the session cookie if admin check is successful
+                    // Then redirect to the admin panel
+                    console.log('Admin login successful, session cookie should be set.');
+                    window.location.href = '/admin'; // Or the path to admin.html if served directly by a protected route
+                } else if (adminAuthResponse.ok && adminAuthData.success && !adminAuthData.isAdmin) {
+                    // If the user is valid but not an admin, redirect to the regular app or show message
+                    alert('Login successful, but you do not have admin privileges. Redirecting to the main app.');
+                    // Optionally, still create a regular session via /api/verify-token if that's desired
+                    // For now, just redirecting to /app after an alert.
+                     window.location.href = '/app';
                 } else {
-                    console.error('Token verification failed:', data.message);
-                    alert('Login failed! Please try again.');
+                    // Handle other errors (e.g., token verification failed, user not found, etc.)
+                    console.error('Admin authentication failed:', adminAuthData.message);
+                    alert(adminAuthData.message || 'Admin login failed. Please try again.');
+                    // Optionally, sign out the user if login was partially successful but admin check failed
+                    // await auth.signOut(); 
                 }
+
             } catch (error) {
+                // This catches errors from signInWithEmailAndPassword or network errors for fetch
                 console.error('Error during login:', error);
-                alert('Login failed! Please try again.');
-            }
-        }
-        async function waitForSessionCookie(maxAttempts = 2, initialDelay = 300) {
-            for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-                const ping = await fetch('/api/ping-session', {
-                    method: 'GET',
-                    credentials: 'include',
-                });
-        
-                if (ping.status === 200) {
-                    window.location.href = '/app'; // Redirect to /app if session cookie is set
-                    console.log(`Session cookie detected on attempt ${attempt}`);
-                    return;
+                let errorMessage = 'Login failed! Please check your credentials and try again.';
+                if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
+                    errorMessage = 'Invalid email or password.';
+                } else if (error.message.includes('Failed to fetch')) {
+                    errorMessage = 'Network error. Please check your connection.';
                 }
-        
-                const delay = initialDelay * Math.pow(2, attempt - 1); // exponential backoff
-                console.log(`Session not yet available (attempt ${attempt}). Retrying in ${delay}ms...`);
-                await new Promise(resolve => setTimeout(resolve, delay));
+                alert(errorMessage);
             }
-        
-            throw new Error('Session cookie setup timeout.');
         }
+        // Removed waitForSessionCookie as session cookie setting is now handled by the backend auth endpoint
 
         loginButton.addEventListener('click', (e) => {
             e.preventDefault();

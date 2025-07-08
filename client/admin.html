@@ -7,6 +7,56 @@
 <link rel="stylesheet" href="./admin.css">
 <link rel="stylesheet" href="./css/apexcharts.min.css">
 <link rel="stylesheet" href="css/rte_theme_default.css">
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+
+<script>
+  // Your web app's Firebase configuration
+  // This should be replaced with your actual Firebase project configuration
+  const firebaseConfig = {
+    apiKey: "AIzaSyDyXWSxpBqk7lgomflc_Sl3BCXp8Dvffbg",
+    authDomain: "sage-pond-gen-ai.firebaseapp.com",
+    projectId: "sage-pond-gen-ai",
+    storageBucket: "sage-pond-gen-ai.appspot.com",
+    messagingSenderId: "369426724601",
+    appId: "1:369426724601:web:698e582d4e10ff710c5428",
+    measurementId: "G-XY1Y3VW550"
+  };
+
+  // Initialize Firebase
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore(); // Initialize Firestore
+  const auth = firebase.auth();   // Initialize Firebase Auth
+
+  // Client-side admin access check
+  auth.onAuthStateChanged(async (user) => {
+    if (user) {
+      try {
+        const token = await user.getIdTokenResult(true); // Force refresh to get latest claims
+        if (token.claims.admin === true) {
+          console.log('Admin access confirmed client-side.');
+          // Allow page to load
+        } else {
+          console.log('User is not an admin. Redirecting to login.');
+          window.location.href = '/login?error=forbidden_client';
+        }
+      } catch (error) {
+        console.error('Error checking admin status client-side:', error);
+        window.location.href = '/login?error=auth_error_client';
+      }
+    } else {
+      console.log('No user logged in. Redirecting to login.');
+      window.location.href = '/login?error=unauthorized_client';
+    }
+  });
+</script>
+
+<!-- TinyMCE -->
+<script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+
 </head>
 <body class="bg-gray-50 dark:bg-gray-900">
 <nav class="fixed z-30 w-full bg-white border-b border-gray-200 dark:bg-gray-800 dark:border-gray-700">
@@ -454,6 +504,30 @@
               </button>
             </li>
             <li>
+              <a href="#" id="write-research-post-link" class="flex items-center p-2 text-base text-gray-900 rounded-lg hover:bg-gray-100 group dark:text-gray-200 dark:hover:bg-gray-700">
+                <svg class="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 group-hover:text-gray-900 dark:text-gray-400 dark:group-hover:text-white" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828zM5 12V7.172l9.414-9.414a1 1 0 111.414 1.414L5 12z"></path></svg>
+                <span class="ml-3" sidebar-toggle-item>Write Research Post</span>
+              </a>
+            </li>
+            <li>
+              <a href="#" id="write-blog-post-link" class="flex items-center p-2 text-base text-gray-900 rounded-lg hover:bg-gray-100 group dark:text-gray-200 dark:hover:bg-gray-700">
+                <svg class="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 group-hover:text-gray-900 dark:text-gray-400 dark:group-hover:text-white" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"></path></svg>
+                <span class="ml-3" sidebar-toggle-item>Write Blog Post</span>
+              </a>
+            </li>
+            <li>
+              <a href="#" id="manage-blog-posts-link" class="flex items-center p-2 text-base text-gray-900 rounded-lg hover:bg-gray-100 group dark:text-gray-200 dark:hover:bg-gray-700">
+                <svg class="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 group-hover:text-gray-900 dark:text-gray-400 dark:group-hover:text-white" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M10 12.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5z"></path><path fill-rule="evenodd" d="M.5 10a10 10 0 1120 0 10 10 0 01-20 0zM5 10a5 5 0 1010 0 5 5 0 00-10 0z" clip-rule="evenodd"></path></svg>
+                <span class="ml-3" sidebar-toggle-item>Manage Blog Posts</span>
+              </a>
+            </li>
+            <li>
+              <a href="#" id="manage-research-posts-link" class="flex items-center p-2 text-base text-gray-900 rounded-lg hover:bg-gray-100 group dark:text-gray-200 dark:hover:bg-gray-700">
+                <svg class="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 group-hover:text-gray-900 dark:text-gray-400 dark:group-hover:text-white" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M4 2a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2V4a2 2 0 00-2-2H4zm2.25 4.5a.75.75 0 01.75-.75h8.5a.75.75 0 010 1.5h-8.5a.75.75 0 01-.75-.75zm0 3a.75.75 0 01.75-.75h8.5a.75.75 0 010 1.5h-8.5a.75.75 0 01-.75-.75zm0 3a.75.75 0 01.75-.75h4.5a.75.75 0 010 1.5h-4.5a.75.75 0 01-.75-.75z" clip-rule="evenodd"></path></svg>
+                <span class="ml-3" sidebar-toggle-item>Manage Research Posts</span>
+              </a>
+            </li>
+            <li>
               <button type="button" class="flex items-center w-full p-2 text-base text-gray-900 transition duration-75 rounded-lg group hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700" aria-controls="dropdown-auth" data-collapse-toggle="dropdown-auth">
                   <svg class="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 group-hover:text-gray-900 dark:text-gray-400 dark:group-hover:text-white" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"></path></svg>
                   <span class="flex-1 ml-3 text-left whitespace-nowrap" sidebar-toggle-item>Authentication</span>
@@ -571,6 +645,61 @@
   
   <div id="main-content" class="relative w-full h-full overflow-y-auto bg-gray-50 lg:ml-64 dark:bg-gray-900">
 <main class="bg-gray-50 dark:bg-gray-900">
+  
+  <!-- Write Research Post Section -->
+  <div id="write-research-post-section" class="hidden p-4 space-y-4">
+    <div id="research-post-feedback" class="mb-4"></div> <!-- Feedback Div -->
+    <h2 class="text-2xl font-semibold text-gray-900 dark:text-white">Write Research Post</h2>
+    <div>
+      <label for="research-post-title" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Title</label>
+      <input type="text" id="research-post-title" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="Enter research post title">
+    </div>
+    <div>
+      <label for="research-post-content" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Content</label>
+      <textarea id="research-post-content"></textarea>
+    </div>
+    <button id="publish-research-post-btn" class="px-5 py-2.5 text-sm font-medium text-center text-white bg-primary-700 rounded-lg hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800">
+      Publish Research Post
+    </button>
+  </div>
+
+  <!-- Write Blog Post Section -->
+  <div id="write-blog-post-section" class="hidden p-4 space-y-4">
+    <div id="blog-post-feedback" class="mb-4"></div> <!-- Feedback Div -->
+    <h2 class="text-2xl font-semibold text-gray-900 dark:text-white">Write Blog Post</h2>
+    <div>
+      <label for="blog-post-title" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Title</label>
+      <input type="text" id="blog-post-title" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="Enter blog post title">
+    </div>
+    <div>
+      <label for="blog-post-content" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Content</label>
+      <textarea id="blog-post-content"></textarea>
+    </div>
+    <button id="publish-blog-post-btn" class="px-5 py-2.5 text-sm font-medium text-center text-white bg-primary-700 rounded-lg hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800">
+      Publish Blog Post
+    </button>
+  </div>
+
+  <!-- Manage Blog Posts Section -->
+  <div id="manage-blog-posts-section" class="hidden p-4 space-y-4">
+    <div id="manage-blog-feedback" class="mb-4"></div> <!-- Feedback Div -->
+    <h2 class="text-2xl font-semibold text-gray-900 dark:text-white">Manage Blog Posts</h2>
+    <div id="blog-posts-list" class="space-y-4">
+      <!-- Blog posts will be listed here by JavaScript -->
+      <p class="text-gray-500 dark:text-gray-400">Loading blog posts...</p> 
+    </div>
+  </div>
+
+  <!-- Manage Research Posts Section -->
+  <div id="manage-research-posts-section" class="hidden p-4 space-y-4">
+    <div id="manage-research-feedback" class="mb-4"></div> <!-- Feedback Div -->
+    <h2 class="text-2xl font-semibold text-gray-900 dark:text-white">Manage Research Posts</h2>
+    <div id="research-posts-list" class="space-y-4">
+      <!-- Research posts will be listed here by JavaScript -->
+      <p class="text-gray-500 dark:text-gray-400">Loading research posts...</p> 
+    </div>
+  </div>
+
   <div id = 'eidt' class="hidden">
     <div id="editor" class="hidden"></div>
   </div>
