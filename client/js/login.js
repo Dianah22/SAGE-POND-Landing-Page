@@ -113,9 +113,7 @@ function waitForCookie(cookieName, timeout) {
                     window.location.href = '/admin'; // Or the path to admin.html if served directly by a protected route
                 } else if (adminAuthResponse.ok && adminAuthData.success && !adminAuthData.isAdmin) {
                     // If the user is valid but not an admin, redirect to the regular app or show message
-                    alert('Login successful, but you do not have admin privileges. Redirecting to the main app.');
-                    // Optionally, still create a regular session via /api/verify-token if that's desired
-                    // For now, just redirecting to /app after an alert.
+                    
                      window.location.href = '/app';
                 } else {
                     // Handle other errors (e.g., token verification failed, user not found, etc.)

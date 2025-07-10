@@ -151,10 +151,6 @@ app.post('/api/verify-token', async (req, res) => {
     }
   };
  
-const fetch = require('node-fetch'); // Add node-fetch
-//const { Client, LocalAuth } = require('whatsapp-web.js');
-const qrcode = require('qrcode-terminal');
-
 
 // Routes
 app.get('/', (req, res) => {
