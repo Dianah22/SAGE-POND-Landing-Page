@@ -1,3 +1,4 @@
 2025/07/18-15:31:14.054 2f8c Reusing MANIFEST C:\Users\DELL\Desktop\sage\.wwebjs_auth\session\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/MANIFEST-000001
 2025/07/18-15:31:14.055 2f8c Recovering log #77
 2025/07/18-15:31:14.164 2f8c Reusing old log C:\Users\DELL\Desktop\sage\.wwebjs_auth\session\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/000077.log 
+2025/07/18-15:31:17.983 4e1c Manual compaction at level-0 from '\x00&\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00'\x00\x00\x00' @ 0 : 0; will stop at (end)
