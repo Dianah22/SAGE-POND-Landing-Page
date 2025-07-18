@@ -24,6 +24,8 @@ if (!admin.apps.length) {
 // Initialize Firestore
 const db = admin.firestore();
 
+const feedbackData = {};
+
 let initial_path = __dirname + '/client';
 const port = process.env.PORT || 4000
 
@@ -152,7 +154,7 @@ app.post('/api/verify-token', async (req, res) => {
   };
  
 const fetch = require('node-fetch'); // Add node-fetch
-const { Client, LocalAuth } = require('whatsapp-web.js');
+const { Client, LocalAuth, Buttons, List } = require('whatsapp-web.js');
 const qrcode = require('qrcode-terminal');
 
 // Initialize WhatsApp Client
@@ -283,54 +285,106 @@ app.use((req, res, next) => {
     next();
 });
 
-whatsappClient.on('message', async message => {
+async function handleMessage(message) {
     if (message.from !== '256777040263@c.us') {
-        const userPrompt = message.body;
+        if (message.type === 'list_response') {
+            const selection = message.body;
+            if (selection === '👍' || selection === '👎') {
+                if (feedbackData[message.from]) {
+                    feedbackData[message.from].selection = selection;
+                }
+                message.reply('Thanks for your feedback! Please provide a reason for your selection.');
+            }
+        } else if (feedbackData[message.from] && !feedbackData[message.from].reason) {
+            // This is the reason for the feedback
+            feedbackData[message.from].reason = message.body;
+            
+            // Store feedback in Firestore
+            try {
+                await db.collection('feedback').add({
+                    from: message.from,
+                    message: feedbackData[message.from].message,
+                    selection: feedbackData[message.from].selection,
+                    reason: feedbackData[message.from].reason,
+                    timestamp: feedbackData[message.from].timestamp
+                });
+                message.reply('Thank you for the feedback!');
+            } catch (error) {
+                console.error('Error saving feedback to Firestore:', error);
+                message.reply('Sorry, there was an error saving your feedback.');
+            } finally {
+                delete feedbackData[message.from];
+            }
+        } else {
+            const userPrompt = message.body;
 
-        if (!userPrompt) {
-            return;
-        }
-
-        if (!sessionCookie) {
-            message.reply('You are not authenticated. Please log in to use the bot.');
-            return;
-        }
-
-        const externalModelUrl = `https://sagepond--uvveyl-unveyl.modal.run/?prompt=${encodeURIComponent(userPrompt)}&apiKey=${sessionCookie}`;
-
-        try {
-            const modelResponse = await fetch(externalModelUrl);
-            if (!modelResponse.ok) {
-                const errorText = await modelResponse.text();
-                console.error(`External API call failed: ${modelResponse.status} ${errorText}`);
-                message.reply('Failed to get response from model');
+            if (!userPrompt) {
                 return;
             }
-            const modelData = await modelResponse.json();
-            const reply = modelData.response || modelData || 'yooo';
 
-            if (reply.includes('<calendar>')) {
-                const authUrl = oAuth2Client.generateAuthUrl({
-                    access_type: 'offline',
-                    scope: ['https://www.googleapis.com/auth/calendar.events'],
-                });
-                message.reply(`Please visit this URL to authorize access to your Google Calendar: ${authUrl}`);
-            } else if (reply.includes('<post_linkedin>')) {
-                const postContent = reply.split('<post_linkedin>')[1].split('</post_linkedin>')[0];
-                await postOnLinkedIn(postContent);
-                message.reply('I have posted on LinkedIn for you.');
-            } else if (reply.includes('<remember_message>')) {
-                const reminderContent = reply.split('<remember_message>')[1].split('</remember_message>')[0];
-                sendReminder(message.from, reminderContent);
-                message.reply('I have set a reminder for you.');
-            } else {
-                message.reply(reply);
+            if (!sessionCookie) {
+                message.reply('You are not authenticated. Please log in to use the bot.');
+                return;
             }
-        } catch (error) {
-            console.error('Error calling external model API:', error);
-            message.reply('Internal server error while contacting model');
+
+            const externalModelUrl = `https://sagepond--uvveyl-unveyl.modal.run/?prompt=${encodeURIComponent(userPrompt)}&apiKey=${sessionCookie}`;
+
+            try {
+                const modelResponse = await fetch(externalModelUrl);
+                if (!modelResponse.ok) {
+                    const errorText = await modelResponse.text();
+                    console.error(`External API call failed: ${modelResponse.status} ${errorText}`);
+                    message.reply('Failed to get response from model');
+                    return;
+                }
+                const modelData = await modelResponse.json();
+                const reply = modelData.response || modelData || 'yooo';
+
+                if (reply.includes('<calendar>')) {
+                    const authUrl = oAuth2Client.generateAuthUrl({
+                        access_type: 'offline',
+                        scope: ['https://www.googleapis.com/auth/calendar.events'],
+                    });
+                    message.reply(`Please visit this URL to authorize access to your Google Calendar: ${authUrl}`);
+                } else if (reply.includes('<post_linkedin>')) {
+                    const postContent = reply.split('<post_linkedin>')[1].split('</post_linkedin>')[0];
+                    await postOnLinkedIn(postContent);
+                    message.reply('I have posted on LinkedIn for you.');
+                } else if (reply.includes('<remember_message>')) {
+                    const reminderContent = reply.split('<remember_message>')[1].split('</remember_message>')[0];
+                    sendReminder(message.from, reminderContent);
+                    message.reply('I have set a reminder for you.');
+                } else {
+                    message.reply(reply).then(() => {
+                    feedbackData[message.from] = {
+                        message: reply,
+                        timestamp: new Date()
+                    };
+                        const feedbackList = new List(
+                            'Did you find this helpful?',
+                            'Feedback',
+                            [{
+                                title: 'Feedback',
+                                rows: [
+                                    { id: 'thumbs_up', title: '👍' },
+                                    { id: 'thumbs_down', title: '👎' },
+                                ],
+                            }],
+                            'Rate your experience'
+                        );
+                        whatsappClient.sendMessage(message.from, feedbackList);
+                    });
+                }
+            } catch (error) {
+                console.error('Error calling external model API:', error);
+                message.reply('Internal server error while contacting model');
+            }
         }
     }
+}
+
+whatsappClient.on('message', async message => {
+    await handleMessage(message);
 });
 
 whatsappClient.on('auth_failure', msg => {
