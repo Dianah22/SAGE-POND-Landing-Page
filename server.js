@@ -151,6 +151,201 @@ app.post('/api/verify-token', async (req, res) => {
     }
   };
  
+const fetch = require('node-fetch'); // Add node-fetch
+const { Client, LocalAuth } = require('whatsapp-web.js');
+const qrcode = require('qrcode-terminal');
+
+// Initialize WhatsApp Client
+const whatsappClient = new Client({
+    authStrategy: new LocalAuth(), // Use LocalAuth to save session and avoid re-scanning QR code often
+    puppeteer: {
+        headless: true,
+        args: ['--no-sandbox', '--disable-setuid-sandbox'] // Args for running in restricted environments
+    }
+});
+
+whatsappClient.on('qr', qr => {
+    qrcode.generate(qr, { small: true });
+    console.log('QR RECEIVED, scan it with your phone.');
+    require('fs').writeFileSync('/app/qr.txt', qr);
+});
+
+whatsappClient.on('ready', () => {
+    console.log('WhatsApp Client is ready!');
+});
+
+const { google } = require('googleapis');
+
+const oAuth2Client = new google.auth.OAuth2(
+    "YOUR_GOOGLE_CLIENT_ID",
+    "YOUR_GOOGLE_CLIENT_SECRET",
+    "http://localhost:4000/auth/google/callback"
+);
+
+// Helper function to create a Google Calendar event
+function createCalendarEvent(auth, event) {
+    const calendar = google.calendar({ version: 'v3', auth });
+    calendar.events.insert(
+        {
+            auth: auth,
+            calendarId: 'primary',
+            resource: event,
+        },
+        function (err, event) {
+            if (err) {
+                console.log('There was an error contacting the Calendar service: ' + err);
+                return;
+            }
+            console.log('Event created: %s', event.htmlLink);
+        }
+    );
+}
+
+app.get('/auth/google', (req, res) => {
+    const authUrl = oAuth2Client.generateAuthUrl({
+        access_type: 'offline',
+        scope: ['https://www.googleapis.com/auth/calendar.events'],
+    });
+    res.redirect(authUrl);
+});
+
+app.get('/auth/google/callback', async (req, res) => {
+    const code = req.query.code;
+    const { tokens } = await oAuth2Client.getToken(code);
+    oAuth2Client.setCredentials(tokens);
+    // Store the tokens in the user's session or database
+    // For now, I will just log them to the console
+    console.log(tokens);
+    res.send('Authentication successful! You can now close this tab.');
+});
+
+const axios = require('axios');
+
+// Helper function to post on LinkedIn
+async function postOnLinkedIn(message) {
+    const accessToken = 'YOUR_LINKEDIN_ACCESS_TOKEN';
+    const response = await axios.post(
+        'https://api.linkedin.com/v2/ugcPosts',
+        {
+            author: 'urn:li:person:YOUR_PERSON_ID',
+            lifecycleState: 'PUBLISHED',
+            specificContent: {
+                'com.linkedin.ugc.ShareContent': {
+                    shareCommentary: {
+                        text: message,
+                    },
+                    shareMediaCategory: 'NONE',
+                },
+            },
+            visibility: {
+                'com.linkedin.ugc.MemberNetworkVisibility': 'CONNECTIONS',
+            },
+        },
+        {
+            headers: {
+                Authorization: `Bearer ${accessToken}`,
+                'Content-Type': 'application/json',
+            },
+        }
+    );
+    console.log(response.data);
+}
+
+// Helper function to send a reminder
+function sendReminder(user, message) {
+    // The user's WhatsApp number is not a valid email address.
+    // This is just a placeholder implementation.
+    const mailOptions = {
+        from: process.env.ZOHO_EMAIL,
+        to: `${user}@example.com`,
+        subject: 'Reminder from your WhatsApp Bot',
+        html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                <h1 style="color: black; text-align: center;">Reminder</h1>
+                <p>${message}</p>
+            </div>
+        `
+    };
+
+    transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+            console.error('Error sending reminder email:', error);
+        } else {
+            console.log('Reminder email sent:', info.response);
+        }
+    });
+}
+
+whatsappClient.on('message', async message => {
+    if (message.from !== '256777040263@c.us') {
+        const userPrompt = message.body;
+
+        if (!userPrompt) {
+            return;
+        }
+
+        const apiKey = process.env.apiKey;
+        if (!apiKey) {
+            console.error('External API key is not configured in .env');
+            message.reply('Internal server error: API key not configured.');
+            return;
+        }
+
+        const externalModelUrl = `https://sagepond--uvveyl-unveyl.modal.run/?prompt=${encodeURIComponent(userPrompt)}&apiKey=${apiKey}`;
+
+        try {
+            const modelResponse = await fetch(externalModelUrl);
+            if (!modelResponse.ok) {
+                const errorText = await modelResponse.text();
+                console.error(`External API call failed: ${modelResponse.status} ${errorText}`);
+                message.reply('Failed to get response from model');
+                return;
+            }
+            const modelData = await modelResponse.json();
+            const reply = modelData.response || modelData;
+
+            if (reply.includes('<calendar>')) {
+                const authUrl = oAuth2Client.generateAuthUrl({
+                    access_type: 'offline',
+                    scope: ['https://www.googleapis.com/auth/calendar.events'],
+                });
+                message.reply(`Please visit this URL to authorize access to your Google Calendar: ${authUrl}`);
+            } else if (reply.includes('<post_linkedin>')) {
+                const postContent = reply.split('<post_linkedin>')[1].split('</post_linkedin>')[0];
+                await postOnLinkedIn(postContent);
+                message.reply('I have posted on LinkedIn for you.');
+            } else if (reply.includes('<remember_message>')) {
+                const reminderContent = reply.split('<remember_message>')[1].split('</remember_message>')[0];
+                sendReminder(message.from, reminderContent);
+                message.reply('I have set a reminder for you.');
+            } else {
+                message.reply(reply);
+            }
+        } catch (error) {
+            console.error('Error calling external model API:', error);
+            message.reply('Internal server error while contacting model');
+        }
+    }
+});
+
+whatsappClient.on('auth_failure', msg => {
+    console.error('WHATSAPP AUTHENTICATION FAILURE', msg);
+});
+
+whatsappClient.on('disconnected', (reason) => {
+    console.log('WhatsApp Client was logged out', reason);
+});
+
+whatsappClient.on('loading_screen', (percent, message) => {
+    console.log('LOADING SCREEN', percent, message);
+});
+
+whatsappClient.on('authenticated', () => {
+    console.log('AUTHENTICATED');
+});
+
+whatsappClient.initialize().catch(err => console.error('WhatsApp Client Initialization Error:', err));
+
 
 // Routes
 app.get('/', (req, res) => {
@@ -183,7 +378,6 @@ app.post('/api/unveyl', verifySession, async (req, res) => {
             return res.status(502).json({ error: 'Failed to get response from model' });
         }
         const modelData = await modelResponse.json(); 
-       
         res.json({ response: modelData.response || modelData }); 
     } catch (error) {
         console.error('Error calling external model API:', error);
@@ -230,27 +424,6 @@ app.get('/app/:chatId', verifySession, (req, res) => {
 app.get('/api/ping-session', verifySession, (req, res) => {
     res.status(200).json({ success: true, user: req.user });
   });
-
-// Middleware to verify admin status from session cookie
-const verifyAdmin = async (req, res, next) => {
-    const sessionCookie = req.cookies.session || '';
-    try {
-        const decodedClaims = await admin.auth().verifySessionCookie(sessionCookie, true); // true checks for revocation
-        if (decodedClaims.admin === true) {
-            req.user = decodedClaims; // Add user info to request object
-            return next();
-        } else {
-            // Valid session, but user is not an admin
-            // console.log('User is not an admin, redirecting to login.');
-            // For API routes, might send 403. For HTML routes, redirect.
-            return res.status(403).redirect('/login?error=forbidden'); 
-        }
-    } catch (error) {
-        // Session cookie is invalid, expired, or revoked
-        // console.log('Invalid session cookie or not admin, redirecting to login.');
-        return res.status(401).redirect('/login?error=unauthorized');
-    }
-};
 
 // Firebase config route
 app.all('/api/firebase-config', (req, res) => {
@@ -324,7 +497,7 @@ app.post('/beta-signup', async (req, res) => {
             subject: 'Welcome to Unveyl Beta Program',
             html: `
                 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                    <img src="/client/images/logo.svg" alt="SAGE POND Logo" style="display: block; margin: 20px auto; width: 50px;">
+                    <img src="../images/logo.svg" alt="SAGE POND Logo" style="display: block; margin: 20px auto; width: 50px;">
                     <h1 style="color: black; text-align: center;">Welcome to SAGE POND Beta!</h1>
                     <p>Thank you for joining our beta program. We're excited to have you on board!</p>
                     <p>We'll keep you updated about:</p>
@@ -369,51 +542,6 @@ app.post('/beta-signup', async (req, res) => {
 app.get('/privacy-policy', (req, res) => {
     res.sendFile(path.join(initial_path, 'privacy-policy.html'));
 });
-
-// Endpoint for admin authentication and session cookie creation
-app.post('/api/admin-auth', async (req, res) => {
-    const idToken = req.body.token;
-    if (!idToken) {
-        return res.status(400).json({ success: false, message: 'ID token is required.' });
-    }
-
-    const expiresIn = 60 * 60 * 24 * 5 * 1000; // 5 days
-
-    try {
-        const decodedClaims = await admin.auth().verifyIdToken(idToken);
-        
-        if (decodedClaims.admin === true) { // Check for admin custom claim
-            const sessionCookie = await admin.auth().createSessionCookie(idToken, { expiresIn });
-            const options = { 
-                maxAge: expiresIn, 
-                httpOnly: true, 
-                secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
-                sameSite: 'Lax',
-            };
-            res.cookie('session', sessionCookie, options);
-            res.status(200).json({ success: true, isAdmin: true, message: 'Admin authenticated successfully.' });
-        } else {
-            // User is authenticated but not an admin
-            // For non-admin users who might still need a session for the main app,
-            // we can optionally create a session cookie here without admin privileges,
-            // or let the client handle redirection to /app and normal login flow.
-            // For this case, let's assume if they hit /api/admin-auth, they are trying to be admin.
-            // If not admin, don't set admin session. Client will redirect to /app or show message.
-             // For now, we won't create a session here if not admin, client-side will handle next steps
-            res.status(200).json({ success: true, isAdmin: false, message: 'User authenticated but not an admin.' });
-        }
-    } catch (error) {
-        console.error('Error verifying ID token or creating session cookie for admin:', error);
-        res.status(401).json({ success: false, message: 'Authentication failed: ' + error.message });
-    }
-});
-
-// Protected Admin Route
-app.get('/admin', verifyAdmin, (req, res) => { 
-    // If verifyAdmin passes, user is authenticated admin
-    res.sendFile(path.join(initial_path, 'admin.html'));
-});
-
 
 // 404 handler
 app.use((req, res) => {
