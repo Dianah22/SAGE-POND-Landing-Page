@@ -276,6 +276,13 @@ function sendReminder(user, message) {
     });
 }
 
+let sessionCookie = '';
+
+app.use((req, res, next) => {
+    sessionCookie = req.cookies.session || '';
+    next();
+});
+
 whatsappClient.on('message', async message => {
     if (message.from !== '256777040263@c.us') {
         const userPrompt = message.body;
@@ -284,14 +291,12 @@ whatsappClient.on('message', async message => {
             return;
         }
 
-        const apiKey = process.env.apiKey;
-        if (!apiKey) {
-            console.error('External API key is not configured in .env');
-            message.reply('Internal server error: API key not configured.');
+        if (!sessionCookie) {
+            message.reply('You are not authenticated. Please log in to use the bot.');
             return;
         }
 
-        const externalModelUrl = `https://sagepond--uvveyl-unveyl.modal.run/?prompt=${encodeURIComponent(userPrompt)}&apiKey=${apiKey}`;
+        const externalModelUrl = `https://sagepond--uvveyl-unveyl.modal.run/?prompt=${encodeURIComponent(userPrompt)}&apiKey=${sessionCookie}`;
 
         try {
             const modelResponse = await fetch(externalModelUrl);
@@ -367,7 +372,7 @@ app.post('/api/unveyl', verifySession, async (req, res) => {
         return res.status(500).json({ error: 'Internal server error: API key not configured.' });
     }
 
-    const externalModelUrl = `https://sagepond--uvveyl-unveyl.modal.run/?prompt=${encodeURIComponent(userPrompt)}&apiKey=${apiKey}`;
+    const externalModelUrl = `https://sagepond--uvveyl-unveyl.modal.run/?prompt=${encodeURIComponent(userPrompt)}&apiKey=${sessionCookie}`;
 
     try {
         const modelResponse = await fetch(externalModelUrl);

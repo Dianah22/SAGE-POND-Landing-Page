@@ -410,33 +410,6 @@ const sidebar = document.getElementById('sidebar');
     const sidebarBackdrop = document.getElementById('sidebarBackdrop');
     const toggleSidebarMobileHamburger = document.getElementById('toggleSidebarMobileHamburger');
     const toggleSidebarMobileClose = document.getElementById('toggleSidebarMobileClose');
-    const toggleSidebarMobileSearch = document.getElementById('toggleSidebarMobileSearch');
-    
-let opened = false
-if (!opened){
- const toggleSidebarMobile = (sidebar, sidebarBackdrop, toggleSidebarMobileHamburger, toggleSidebarMobileClose) => {
-        sidebar.classList.toggle('hidden');
-        sidebarBackdrop.classList.toggle('hidden');
-        toggleSidebarMobileHamburger.classList.toggle('hidden');
-        toggleSidebarMobileClose.classList.toggle('hidden');
- 
-}
-}
-  
-    toggleSidebarMobileSearch.addEventListener('click', () => {
-		alert('side bar')
-        toggleSidebarMobile(sidebar, sidebarBackdrop, toggleSidebarMobileHamburger, toggleSidebarMobileClose);
-    });
-    
-    toggleSidebarMobileEl.addEventListener('click', () => {
-		alert('g')
-        toggleSidebarMobile(sidebar, sidebarBackdrop, toggleSidebarMobileHamburger, toggleSidebarMobileClose);
-	});
-    
-    sidebarBackdrop.addEventListener('click', () => {
-		alert('f')
-        toggleSidebarMobile(sidebar, sidebarBackdrop, toggleSidebarMobileHamburger, toggleSidebarMobileClose);
-    });
 const getMainChartOptions = () => {
 	let mainChartColors = {}
 
