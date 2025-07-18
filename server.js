@@ -307,7 +307,7 @@ whatsappClient.on('message', async message => {
                 return;
             }
             const modelData = await modelResponse.json();
-            const reply = modelData.response || modelData;
+            const reply = modelData.response || modelData || 'yooo';
 
             if (reply.includes('<calendar>')) {
                 const authUrl = oAuth2Client.generateAuthUrl({
