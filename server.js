@@ -168,8 +168,8 @@ const whatsappClient = new Client({
 
 whatsappClient.on('qr', qr => {
     qrcode.generate(qr, { small: true });
-    console.log('QR RECEIVED, scan it with your phone.');
-    require('fs').writeFileSync('/app/qr.txt', qr);
+    // console.log('QR RECEIVED, scan it with your phone.');
+    // require('fs').writeFileSync('/app/qr.txt', qr); // Disabled to prevent multiple files
 });
 
 whatsappClient.on('ready', () => {
