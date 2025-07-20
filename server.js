@@ -618,6 +618,10 @@ app.get('/voice-chat', (req, res) => {
     res.sendFile(path.join(initial_path, 'voice-chat.html'));
 });
 
+app.get('/dashboard', verifySession, (req, res) => {
+    res.sendFile(path.join(initial_path, 'open_source_dash.html'));
+});
+
 app.get('/api/leaderboard', async (req, res) => {
     try {
         const snapshot = await db.collection('feedback').get();
@@ -640,6 +644,30 @@ app.get('/api/leaderboard', async (req, res) => {
     } catch (error) {
         console.error('Error fetching leaderboard data:', error);
         res.status(500).json({ error: 'Failed to fetch leaderboard data' });
+    }
+});
+
+app.post('/api/login', async (req, res) => {
+    const { email, password } = req.body;
+
+    try {
+        const userCredential = await firebase.auth().signInWithEmailAndPassword(email, password);
+        const idToken = await userCredential.user.getIdToken();
+        const expiresIn = 60 * 60 * 24 * 5 * 1000; // 5 days
+
+        const sessionCookie = await admin.auth().createSessionCookie(idToken, { expiresIn });
+
+        const options = {
+            maxAge: expiresIn,
+            httpOnly: true,
+            secure: false,
+            sameSite: 'Lax',
+        };
+
+        res.cookie('session', sessionCookie, options);
+        res.status(200).json({ success: true });
+    } catch (error) {
+        res.status(401).json({ success: false, message: error.message });
     }
 });
 

@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unveyl - Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+    <!-- Header -->
+    <header class="bg-white shadow-md">
+        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="text-2xl font-bold text-gray-800">Unveyl</div>
+            <div>
+                <a href="/dashboard" class="text-gray-600 hover:text-gray-800 px-3 py-2">Dashboard</a>
+                <a href="/logout" class="text-gray-600 hover:text-gray-800 px-3 py-2">Logout</a>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container mx-auto px-6 py-12">
+        <!-- Leaderboard Section -->
+        <section id="leaderboard" class="mb-12">
+            <h2 class="text-3xl font-bold text-gray-800 mb-6">Leaderboard</h2>
+            <div class="bg-white shadow-md rounded-lg p-8">
+                <table class="w-full text-left">
+                    <thead>
+                        <tr>
+                            <th class="py-2 px-4 border-b">Rank</th>
+                            <th class="py-2 px-4 border-b">User</th>
+                            <th class="py-2 px-4 border-b">Contributions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leaderboard-body">
+                        <!-- Leaderboard data will be inserted here -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Questions Section -->
+        <section id="questions" class="mb-12">
+            <h2 class="text-3xl font-bold text-gray-800 mb-6">Answer a Question</h2>
+            <div id="question-container" class="bg-white shadow-md rounded-lg p-8">
+                <!-- Question will be loaded here -->
+            </div>
+        </section>
+
+        <!-- Voice Chat Section -->
+        <section id="voice-chat">
+            <h2 class="text-3xl font-bold text-gray-800 mb-6">Voice Chat</h2>
+            <div class="bg-white shadow-md rounded-lg p-8">
+                <audio id="local-audio" autoplay muted></audio>
+                <audio id="remote-audio" autoplay></audio>
+                <div class="mt-8">
+                    <button id="start-btn" class="bg-blue-600 text-white font-bold rounded-full py-2 px-4 hover:bg-blue-700">Start</button>
+                    <button id="stop-btn" class="bg-red-600 text-white font-bold rounded-full py-2 px-4 hover:bg-red-700">Stop</button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-10 mt-20">
+        <div class="container mx-auto px-6 text-center">
+            <p>&copy; 2024 Unveyl. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <script>
+        // Initialize Firebase
+        // ... (Firebase initialization code will go here)
+    </script>
+    <script>
+        // Firebase initialization
+        const firebaseConfig = {
+            apiKey: "AIzaSyDyXWSxpBqk7lgomflc_Sl3BCXp8Dvffbg",
+            authDomain: "sage-pond-gen-ai.firebaseapp.com",
+            projectId: "sage-pond-gen-ai",
+            storageBucket: "sage-pond-gen-ai.appspot.com",
+            messagingSenderId: "369426724601",
+            appId: "1:369426724601:web:698e582d4e10ff710c5428",
+            measurementId: "G-XY1Y3VW550"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const storage = firebase.storage();
+        const rtdb = firebase.database();
+
+        // Leaderboard logic
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const response = await fetch('/api/leaderboard');
+                const leaderboardData = await response.json();
+                const leaderboardBody = document.getElementById('leaderboard-body');
+
+                leaderboardBody.innerHTML = ''; // Clear existing data
+
+                leaderboardData.forEach((entry, index) => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td class="py-2 px-4 border-b">${index + 1}</td>
+                        <td class="py-2 px-4 border-b">${entry.user}</td>
+                        <td class="py-2 px-4 border-b">${entry.count}</td>
+                    `;
+                    leaderboardBody.appendChild(row);
+                });
+            } catch (error) {
+                console.error('Error fetching leaderboard data:', error);
+            }
+        });
+
+        // Questions logic
+        const questionContainer = document.getElementById('question-container');
+        async function fetchQuestion() {
+            try {
+                const response = await fetch('https://sagepond--uvveyl-unveyl.modal.run/');
+                const data = await response.json();
+                const question = data.response || data;
+                
+                questionContainer.innerHTML = `
+                    <p class="text-xl mb-4">${question}</p>
+                    <div class="flex space-x-4 mb-4">
+                        <button id="text-answer-btn" class="bg-blue-600 text-white font-bold rounded-full py-2 px-4 hover:bg-blue-700">Answer with Text</button>
+                        <button id="voice-answer-btn" class="bg-green-600 text-white font-bold rounded-full py-2 px-4 hover:bg-green-700">Answer with Voice</button>
+                    </div>
+                    <div id="text-answer-section">
+                        <textarea id="answer" class="w-full p-2 border rounded" rows="4" placeholder="Your answer..."></textarea>
+                        <button id="submit-text-answer" class="bg-blue-600 text-white font-bold rounded-full py-2 px-4 mt-4 hover:bg-blue-700">Submit Text Answer</button>
+                    </div>
+                    <div id="voice-answer-section" class="hidden">
+                        <button id="record-btn" class="bg-red-600 text-white font-bold rounded-full py-2 px-4 hover:bg-red-700">Record</button>
+                        <button id="stop-record-btn" class="bg-gray-600 text-white font-bold rounded-full py-2 px-4 hover:bg-gray-700" disabled>Stop</button>
+                        <audio id="audio-playback" controls class="mt-4"></audio>
+                        <button id="submit-voice-answer" class="bg-green-600 text-white font-bold rounded-full py-2 px-4 mt-4 hover:bg-green-700" disabled>Submit Voice Answer</button>
+                    </div>
+                `;
+            } catch (error) {
+                console.error('Error fetching question:', error);
+                questionContainer.innerHTML = '<p>Failed to load question. Please try again later.</p>';
+            }
+        }
+        fetchQuestion();
+
+        let mediaRecorder;
+        let audioChunks = [];
+
+        questionContainer.addEventListener('click', async (event) => {
+            if (event.target.id === 'text-answer-btn') {
+                document.getElementById('text-answer-section').classList.remove('hidden');
+                document.getElementById('voice-answer-section').classList.add('hidden');
+            } else if (event.target.id === 'voice-answer-btn') {
+                document.getElementById('text-answer-section').classList.add('hidden');
+                document.getElementById('voice-answer-section').classList.remove('hidden');
+            } else if (event.target.id === 'record-btn') {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+                mediaRecorder.start();
+                audioChunks = [];
+                document.getElementById('record-btn').disabled = true;
+                document.getElementById('stop-record-btn').disabled = false;
+                mediaRecorder.addEventListener('dataavailable', (event) => {
+                    audioChunks.push(event.data);
+                });
+            } else if (event.target.id === 'stop-record-btn') {
+                mediaRecorder.stop();
+                document.getElementById('record-btn').disabled = false;
+                document.getElementById('stop-record-btn').disabled = true;
+                mediaRecorder.addEventListener('stop', () => {
+                    const audioBlob = new Blob(audioChunks);
+                    const audioUrl = URL.createObjectURL(audioBlob);
+                    const audioPlayback = document.getElementById('audio-playback');
+                    audioPlayback.src = audioUrl;
+                    document.getElementById('submit-voice-answer').disabled = false;
+                });
+            } else if (event.target.id === 'submit-text-answer') {
+                const question = questionContainer.querySelector('p').textContent;
+                const answer = document.getElementById('answer').value;
+
+                if (answer) {
+                    submitAnswer({ question, answer });
+                }
+            } else if (event.target.id === 'submit-voice-answer') {
+                const question = questionContainer.querySelector('p').textContent;
+                const audioBlob = new Blob(audioChunks);
+                submitAnswer({ question, audioBlob });
+            }
+        });
+
+        async function submitAnswer(data) {
+            const { question, answer, audioBlob } = data;
+            let audioURL;
+
+            if (audioBlob) {
+                const storageRef = storage.ref();
+                const audioRef = storageRef.child(`audio/${new Date().getTime()}.wav`);
+                const snapshot = await audioRef.put(audioBlob);
+                audioURL = await snapshot.ref.getDownloadURL();
+            }
+
+            try {
+                const response = await fetch('/api/submit-answer', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        question,
+                        answer: answer || null,
+                        audioURL: audioURL || null,
+                    }),
+                });
+
+                if (response.ok) {
+                    fetchQuestion(); // Fetch a new question
+                } else {
+                    console.error('Failed to submit answer');
+                }
+            } catch (error) {
+                console.error('Error submitting answer:', error);
+            }
+        }
+
+        // Voice Chat logic
+        const startBtn = document.getElementById('start-btn');
+        const stopBtn = document.getElementById('stop-btn');
+        const localAudio = document.getElementById('local-audio');
+        const remoteAudio = document.getElementById('remote-audio');
+
+        let localStream;
+        let remoteStream;
+        let peerConnection;
+
+        const servers = {
+            iceServers: [
+                {
+                    urls: ['stun:stun1.l.google.com:19302', 'stun:stun2.l.google.com:19302'],
+                },
+            ],
+        };
+
+        startBtn.addEventListener('click', startChat);
+        stopBtn.addEventListener('click', stopChat);
+
+        async function startChat() {
+            localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            localAudio.srcObject = localStream;
+
+            const signaling = rtdb.ref('signaling');
+
+            signaling.on('child_added', (snapshot) => {
+                const message = snapshot.val();
+                handleSignalingMessage(message);
+            });
+
+            startBtn.disabled = true;
+            stopBtn.disabled = false;
+        }
+
+        function stopChat() {
+            localStream.getTracks().forEach(track => track.stop());
+            if (peerConnection) {
+                peerConnection.close();
+            }
+            localAudio.srcObject = null;
+            remoteAudio.srcObject = null;
+            startBtn.disabled = false;
+            stopBtn.disabled = true;
+        }
+
+        function handleSignalingMessage(message) {
+            if (message.type === 'offer') {
+                createPeerConnection();
+                peerConnection.setRemoteDescription(new RTCSessionDescription(message.offer));
+                createAnswer();
+            } else if (message.type === 'answer') {
+                peerConnection.setRemoteDescription(new RTCSessionDescription(message.answer));
+            } else if (message.type === 'candidate') {
+                peerConnection.addIceCandidate(new RTCIceCandidate(message.candidate));
+            }
+        }
+
+        function createPeerConnection() {
+            peerConnection = new RTCPeerConnection(servers);
+
+            remoteStream = new MediaStream();
+            remoteAudio.srcObject = remoteStream;
+
+            localStream.getTracks().forEach(track => {
+                peerConnection.addTrack(track, localStream);
+            });
+
+            peerConnection.ontrack = (event) => {
+                event.streams[0].getTracks().forEach(track => {
+                    remoteStream.addTrack(track);
+                });
+            };
+
+            peerConnection.onicecandidate = (event) => {
+                if (event.candidate) {
+                    sendMessage({ type: 'candidate', candidate: event.candidate });
+                }
+            };
+        }
+
+        async function createOffer() {
+            createPeerConnection();
+            const offer = await peerConnection.createOffer();
+            await peerConnection.setLocalDescription(offer);
+            sendMessage({ type: 'offer', offer });
+        }
+
+        async function createAnswer() {
+            const answer = await peerConnection.createAnswer();
+            await peerConnection.setLocalDescription(answer);
+            sendMessage({ type: 'answer', answer });
+        }
+
+        function sendMessage(message) {
+            const signaling = rtdb.ref('signaling');
+            signaling.push(message);
+        }
+    </script>
+</body>
+</html>
