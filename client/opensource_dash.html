@@ -94,9 +94,17 @@
             measurementId: "G-XY1Y3VW550"
         };
         firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
         const db = firebase.firestore();
         const storage = firebase.storage();
         const rtdb = firebase.database();
+
+        // Auth logic
+        auth.onAuthStateChanged((user) => {
+            if (!user) {
+                window.location.href = '/opensource.html';
+            }
+        });
 
         // Leaderboard logic
         document.addEventListener('DOMContentLoaded', async () => {

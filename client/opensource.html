@@ -30,7 +30,7 @@
         <div class="container mx-auto px-6 text-center">
             <h1 class="text-5xl font-bold text-gray-800 mb-4">Making AI Understand Our Languages</h1>
             <p class="text-xl text-gray-600 mb-8">There’s barely any usable data online in local African languages. Let's change that, together.</p>
-            <a href="#contribute" class="bg-blue-600 text-white font-bold rounded-full py-4 px-8 hover:bg-blue-700">Contribute Now</a>
+            <button id="contribute-now-btn" class="bg-blue-600 text-white font-bold rounded-full py-4 px-8 hover:bg-blue-700">Contribute Now</button>
         </div>
     </section>
 
@@ -82,9 +82,27 @@
         <div class="container mx-auto px-6 text-center">
             <h2 class="text-4xl font-bold text-gray-800 mb-4">Let's Build AI That Knows Where We Come From</h2>
             <p class="text-xl text-gray-600 mb-8">This is more than a tech project; it’s about making sure the next generation of AI speaks your language, understands your stories, and reflects your culture.</p>
-            <a href="#" class="bg-green-600 text-white font-bold rounded-full py-4 px-8 hover:bg-green-700">Start Contributing</a>
+            <button id="contribute-btn" class="bg-green-600 text-white font-bold rounded-full py-4 px-8 hover:bg-green-700">Start Contributing</button>
         </div>
     </section>
+
+    <!-- Login Modal -->
+    <div id="login-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden">
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div class="mt-3 text-center">
+                <h3 class="text-lg leading-6 font-medium text-gray-900">Login</h3>
+                <div class="mt-2 px-7 py-3">
+                    <input type="text" id="email" placeholder="Email" class="w-full px-3 py-2 text-gray-700 border rounded-lg focus:outline-none" />
+                    <input type="password" id="password" placeholder="Password" class="w-full mt-3 px-3 py-2 text-gray-700 border rounded-lg focus:outline-none" />
+                </div>
+                <div class="items-center px-4 py-3">
+                    <button id="login-btn" class="px-4 py-2 bg-blue-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300">
+                        Login
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Footer -->
     <footer id="contact" class="bg-gray-800 text-white py-10">
@@ -92,5 +110,43 @@
             <p>&copy; 2024 Unveyl. All rights reserved.</p>
         </div>
     </footer>
+
+    <script>
+        const contributeBtn = document.getElementById('contribute-btn');
+        const contributeNowBtn = document.getElementById('contribute-now-btn');
+        const loginModal = document.getElementById('login-modal');
+        const loginBtn = document.getElementById('login-btn');
+
+        contributeBtn.addEventListener('click', () => {
+            loginModal.classList.remove('hidden');
+        });
+
+        contributeNowBtn.addEventListener('click', () => {
+            loginModal.classList.remove('hidden');
+        });
+
+        loginBtn.addEventListener('click', async () => {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email, password }),
+                });
+
+                if (response.ok) {
+                    window.location.href = '/questions';
+                } else {
+                    console.error('Failed to login');
+                }
+            } catch (error) {
+                console.error('Error logging in:', error);
+            }
+        });
+    </script>
 </body>
 </html>

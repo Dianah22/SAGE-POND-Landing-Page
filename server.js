@@ -100,6 +100,7 @@ app.use(
             scriptSrc: [
                 "'self'",
                 "https://cdn.jsdelivr.net/npm/dompurify@3.1.0/dist/purify.min.js",
+                "https://cdn.tailwindcss.com"
             ],
             styleSrc: [
                 "'self'",
@@ -107,7 +108,7 @@ app.use(
                 "https://fonts.googleapis.com",
                 "https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css",
             ],
-            imgSrc: ["'self'", "data:"],
+            imgSrc: ["'self'", "data:",'https://images.unsplash.com'],
             connectSrc: [
                 "'self'",
                 "https://sagepond--uvveyl-unveyl.modal.run",
@@ -615,11 +616,11 @@ app.get('/questions', (req, res) => {
 });
 
 app.get('/voice-chat', (req, res) => {
-    res.sendFile(path.join(initial_path, 'voice-chat.html'));
+    res.sendFile(path.join(initial_path, 'voice_chat.html'));
 });
 
 app.get('/dashboard', verifySession, (req, res) => {
-    res.sendFile(path.join(initial_path, 'open_source_dash.html'));
+    res.sendFile(path.join(initial_path, 'opensource_dash.html'));
 });
 
 app.get('/api/leaderboard', async (req, res) => {
