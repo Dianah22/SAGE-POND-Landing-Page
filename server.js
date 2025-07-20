@@ -1,7 +1,7 @@
 require('dotenv').config();
 const {uid} = require('uid')
 const express = require('express')
-const path = require('path') 
+const path = require('path')
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const app = express()
@@ -600,6 +600,70 @@ app.post('/beta-signup', async (req, res) => {
 // Privacy policy route
 app.get('/privacy-policy', (req, res) => {
     res.sendFile(path.join(initial_path, 'privacy-policy.html'));
+});
+
+app.get('/opensource', (req, res) => {
+    res.sendFile(path.join(initial_path, 'opensource.html'));
+});
+
+app.get('/leaderboard', (req, res) => {
+    res.sendFile(path.join(initial_path, 'leaderboard.html'));
+});
+
+app.get('/questions', (req, res) => {
+    res.sendFile(path.join(initial_path, 'questions.html'));
+});
+
+app.get('/voice-chat', (req, res) => {
+    res.sendFile(path.join(initial_path, 'voice-chat.html'));
+});
+
+app.get('/api/leaderboard', async (req, res) => {
+    try {
+        const snapshot = await db.collection('feedback').get();
+        const contributions = {};
+        snapshot.forEach(doc => {
+            const data = doc.data();
+            if (contributions[data.from]) {
+                contributions[data.from]++;
+            } else {
+                contributions[data.from] = 1;
+            }
+        });
+
+        const leaderboard = Object.entries(contributions)
+            .map(([user, count]) => ({ user, count }))
+            .sort((a, b) => b.count - a.count)
+            .slice(0, 10);
+
+        res.json(leaderboard);
+    } catch (error) {
+        console.error('Error fetching leaderboard data:', error);
+        res.status(500).json({ error: 'Failed to fetch leaderboard data' });
+    }
+});
+
+app.post('/api/submit-answer', verifySession, async (req, res) => {
+    const { question, answer, audioURL } = req.body;
+    const userId = req.user.uid;
+
+    if (!question || (!answer && !audioURL)) {
+        return res.status(400).json({ error: 'Question and answer (text or voice) are required' });
+    }
+
+    try {
+        await db.collection('answers').add({
+            userId,
+            question,
+            answer,
+            audioURL,
+            timestamp: admin.firestore.FieldValue.serverTimestamp(),
+        });
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error submitting answer:', error);
+        res.status(500).json({ error: 'Failed to submit answer' });
+    }
 });
 
 // 404 handler

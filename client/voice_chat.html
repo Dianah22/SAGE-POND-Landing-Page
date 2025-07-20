@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unveyl - Voice Chat</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+    <!-- Header -->
+    <header class="bg-white shadow-md">
+        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="text-2xl font-bold text-gray-800">Unveyl</div>
+            <div>
+                <a href="/opensource" class="text-gray-600 hover:text-gray-800 px-3 py-2">Home</a>
+                <a href="/leaderboard" class="text-gray-600 hover:text-gray-800 px-3 py-2">Leaderboard</a>
+                <a href="/questions" class="text-gray-600 hover:text-gray-800 px-3 py-2">Answer Questions</a>
+                <a href="/voice-chat" class="text-gray-600 hover:text-gray-800 px-3 py-2">Voice Chat</a>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Voice Chat Section -->
+    <section class="py-20">
+        <div class="container mx-auto px-6 text-center">
+            <h1 class="text-4xl font-bold text-gray-800 mb-12">Voice Chat</h1>
+            <div class="bg-white shadow-md rounded-lg p-8">
+                <video id="local-video" autoplay muted class="w-full h-64 bg-black rounded-lg mb-4"></video>
+                <video id="remote-video" autoplay class="w-full h-64 bg-black rounded-lg"></video>
+                <div class="mt-8">
+                    <button id="start-btn" class="bg-blue-600 text-white font-bold rounded-full py-2 px-4 hover:bg-blue-700">Start</button>
+                    <button id="stop-btn" class="bg-red-600 text-white font-bold rounded-full py-2 px-4 hover:bg-red-700">Stop</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-10 mt-20">
+        <div class="container mx-auto px-6 text-center">
+            <p>&copy; 2024 Unveyl. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        const startBtn = document.getElementById('start-btn');
+        const stopBtn = document.getElementById('stop-btn');
+        const localVideo = document.getElementById('local-video');
+        const remoteVideo = document.getElementById('remote-video');
+
+        let localStream;
+        let remoteStream;
+        let peerConnection;
+        let websocket;
+
+        const servers = {
+            iceServers: [
+                {
+                    urls: ['stun:stun1.l.google.com:19302', 'stun:stun2.l.google.com:19302'],
+                },
+            ],
+        };
+
+        startBtn.addEventListener('click', startChat);
+        stopBtn.addEventListener('click', stopChat);
+
+        async function startChat() {
+            localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+            localVideo.srcObject = localStream;
+
+            const signaling = db.ref('signaling');
+
+            signaling.on('child_added', (snapshot) => {
+                const message = snapshot.val();
+                handleSignalingMessage(message);
+            });
+
+            startBtn.disabled = true;
+            stopBtn.disabled = false;
+        }
+
+        function stopChat() {
+            localStream.getTracks().forEach(track => track.stop());
+            if (peerConnection) {
+                peerConnection.close();
+            }
+            if (websocket) {
+                websocket.close();
+            }
+            localVideo.srcObject = null;
+            remoteVideo.srcObject = null;
+            startBtn.disabled = false;
+            stopBtn.disabled = true;
+        }
+
+        function handleSignalingMessage(message) {
+            if (message.type === 'offer') {
+                createPeerConnection();
+                peerConnection.setRemoteDescription(new RTCSessionDescription(message.offer));
+                createAnswer();
+            } else if (message.type === 'answer') {
+                peerConnection.setRemoteDescription(new RTCSessionDescription(message.answer));
+            } else if (message.type === 'candidate') {
+                peerConnection.addIceCandidate(new RTCIceCandidate(message.candidate));
+            }
+        }
+
+        function createPeerConnection() {
+            peerConnection = new RTCPeerConnection(servers);
+
+            remoteStream = new MediaStream();
+            remoteVideo.srcObject = remoteStream;
+
+            localStream.getTracks().forEach(track => {
+                peerConnection.addTrack(track, localStream);
+            });
+
+            peerConnection.ontrack = (event) => {
+                event.streams[0].getTracks().forEach(track => {
+                    remoteStream.addTrack(track);
+                });
+            };
+
+            peerConnection.onicecandidate = (event) => {
+                if (event.candidate) {
+                    sendMessage({ type: 'candidate', candidate: event.candidate });
+                }
+            };
+        }
+
+        async function createOffer() {
+            createPeerConnection();
+            const offer = await peerConnection.createOffer();
+            await peerConnection.setLocalDescription(offer);
+            sendMessage({ type: 'offer', offer });
+        }
+
+        async function createAnswer() {
+            const answer = await peerConnection.createAnswer();
+            await peerConnection.setLocalDescription(answer);
+            sendMessage({ type: 'answer', answer });
+        }
+
+        function sendMessage(message) {
+            const signaling = db.ref('signaling');
+            signaling.push(message);
+        }
+    </script>
+</body>
+</html>
