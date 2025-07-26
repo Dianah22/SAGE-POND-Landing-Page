@@ -296,9 +296,7 @@ app.use((req, res, next) => {
 
 async function handleMessage(message) {
     if (message.from !== '256777040263@c.us') {
-        if (feedbackData[message.from] && feedbackData[message.from].response && !feedbackData[message.from].selection) {
-            // This is the reason for the feedback
-            
+        if (feedbackData[message.from] && feedbackData[message.from].response && !feedbackData[message.from].selection ) {
             feedbackData[message.from].selection = message.body;
             
             // Store feedback in Firestore
@@ -317,7 +315,11 @@ async function handleMessage(message) {
             } finally {
                 delete feedbackData[message.from];
             }
-        } else {
+        } else if(feedbackData[message.from] && feedbackData[message.from].isProcessing){
+            // If the user is still waiting for a response
+            message.reply('Your previous prompt is still being processed, please wait...');
+        }
+        else {
             const userPrompt = message.body;
             feedbackData[message.from] = {
                 prompt: userPrompt,
