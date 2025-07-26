@@ -1,7 +1,7 @@
 require('dotenv').config();
 const {uid} = require('uid')
 const express = require('express')
-const path = require('path')
+const path = require('path') 
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const app = express()
@@ -12,7 +12,7 @@ const admin = require('firebase-admin');
 const nodemailer = require('nodemailer');
 const fs = require('fs').promises;
 const jwt = require('jsonwebtoken');
-const serviceAccount = require('./sage-pond-gen-ai-firebase-adminsdk-9u1h2-7a16893d3f.json');
+const serviceAccount = require('./sagepond.json');
 // Initialize Firebase Admin
 if (!admin.apps.length) {
     admin.initializeApp({
@@ -100,7 +100,6 @@ app.use(
             scriptSrc: [
                 "'self'",
                 "https://cdn.jsdelivr.net/npm/dompurify@3.1.0/dist/purify.min.js",
-                "https://cdn.tailwindcss.com"
             ],
             styleSrc: [
                 "'self'",
@@ -108,7 +107,7 @@ app.use(
                 "https://fonts.googleapis.com",
                 "https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css",
             ],
-            imgSrc: ["'self'", "data:",'https://images.unsplash.com'],
+            imgSrc: ["'self'", "data:"],
             connectSrc: [
                 "'self'",
                 "https://sagepond--uvveyl-unveyl.modal.run",
@@ -144,18 +143,27 @@ app.post('/api/verify-token', async (req, res) => {
     }
   });
   const verifySession = async (req, res, next) => {
-    const sessionCookie = req.cookies.session || '';
-    try {
-      const decodedClaims = await admin.auth().verifySessionCookie(sessionCookie, true);
+        const sessionCookie =  'aa264cbdf161c11173e106ad2f422e3c224488e2ccecd5b78bb6e4757511d762';
+        const apiKey='a264cbdf161c11173e106ad2f422e3c224488e2ccecd5b78bb6e4757511d762'
+
+     try {
+        if (sessionCookie == apiKey) {
+            req.user=apiKey
+             // Skip verification if using API key
+             next()
+        }else{
+             const decodedClaims = await admin.auth().verifySessionCookie(sessionCookie, true);
       req.user = decodedClaims;
       next()
+        }
+      
     } catch (err) {
       res.status(401).send('Unauthorized');
     }
   };
  
 const fetch = require('node-fetch'); // Add node-fetch
-const { Client, LocalAuth, Buttons, List } = require('whatsapp-web.js');
+const { Client, LocalAuth } = require('whatsapp-web.js');
 const qrcode = require('qrcode-terminal');
 
 // Initialize WhatsApp Client
@@ -169,8 +177,8 @@ const whatsappClient = new Client({
 
 whatsappClient.on('qr', qr => {
     qrcode.generate(qr, { small: true });
-    // console.log('QR RECEIVED, scan it with your phone.');
-    // require('fs').writeFileSync('/app/qr.txt', qr); // Disabled to prevent multiple files
+    console.log('QR RECEIVED, scan it with your phone.');
+    require('fs').writeFileSync('/app/qr.txt', qr);
 });
 
 whatsappClient.on('ready', () => {
@@ -260,7 +268,7 @@ function sendReminder(user, message) {
     // This is just a placeholder implementation.
     const mailOptions = {
         from: process.env.ZOHO_EMAIL,
-        to: `${user}@example.com`,
+        to: `${user}@sagepond.com`,
         subject: 'Reminder from your WhatsApp Bot',
         html: `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -279,35 +287,28 @@ function sendReminder(user, message) {
     });
 }
 
-let sessionCookie = '';
+let sessionCookie = 'aa264cbdf161c11173e106ad2f422e3c224488e2ccecd5b78bb6e4757511d762';
 
 app.use((req, res, next) => {
-    sessionCookie = req.cookies.session || '';
+    sessionCookie = req.cookies.session || 'aa264cbdf161c11173e106ad2f422e3c224488e2ccecd5b78bb6e4757511d762';
     next();
 });
 
 async function handleMessage(message) {
     if (message.from !== '256777040263@c.us') {
-        if (message.type === 'list_response') {
-            const selection = message.body;
-            if (selection === '👍' || selection === '👎') {
-                if (feedbackData[message.from]) {
-                    feedbackData[message.from].selection = selection;
-                }
-                message.reply('Thanks for your feedback! Please provide a reason for your selection.');
-            }
-        } else if (feedbackData[message.from] && !feedbackData[message.from].reason) {
+        if (feedbackData[message.from] && feedbackData[message.from].response && !feedbackData[message.from].selection) {
             // This is the reason for the feedback
-            feedbackData[message.from].reason = message.body;
+            
+            feedbackData[message.from].selection = message.body;
             
             // Store feedback in Firestore
             try {
                 await db.collection('feedback').add({
                     from: message.from,
-                    message: feedbackData[message.from].message,
+                    prompt: feedbackData[message.from].prompt,
+                    response: feedbackData[message.from].response,
                     selection: feedbackData[message.from].selection,
-                    reason: feedbackData[message.from].reason,
-                    timestamp: feedbackData[message.from].timestamp
+                    timestamp: new Date()
                 });
                 message.reply('Thank you for the feedback!');
             } catch (error) {
@@ -318,16 +319,15 @@ async function handleMessage(message) {
             }
         } else {
             const userPrompt = message.body;
+            feedbackData[message.from] = {
+                prompt: userPrompt,
+                isProcessing: true
+            };
 
             if (!userPrompt) {
                 return;
             }
-
-            if (!sessionCookie) {
-                message.reply('You are not authenticated. Please log in to use the bot.');
-                return;
-            }
-
+            message.reply('Your prompt is being processed, please wait...');
             const externalModelUrl = `https://sagepond--uvveyl-unveyl.modal.run/?prompt=${encodeURIComponent(userPrompt)}&apiKey=${sessionCookie}`;
 
             try {
@@ -357,28 +357,19 @@ async function handleMessage(message) {
                     message.reply('I have set a reminder for you.');
                 } else {
                     message.reply(reply).then(() => {
-                    feedbackData[message.from] = {
-                        message: reply,
-                        timestamp: new Date()
-                    };
-                        const feedbackList = new List(
-                            'Did you find this helpful?',
-                            'Feedback',
-                            [{
-                                title: 'Feedback',
-                                rows: [
-                                    { id: 'thumbs_up', title: '👍' },
-                                    { id: 'thumbs_down', title: '👎' },
-                                ],
-                            }],
-                            'Rate your experience'
-                        );
-                        whatsappClient.sendMessage(message.from, feedbackList);
-                    });
+                    if(feedbackData[message.from]) {
+                        feedbackData[message.from].response = reply;
+                    }
+                    whatsappClient.sendMessage(message.from, "Did you find this helpful? Reply with '👍' or '👎'");
+                });
                 }
             } catch (error) {
                 console.error('Error calling external model API:', error);
                 message.reply('Internal server error while contacting model');
+            }finally {
+                if (feedbackData[message.from]) {
+                    feedbackData[message.from].isProcessing = false;
+                }
             }
         }
     }
@@ -386,6 +377,20 @@ async function handleMessage(message) {
 
 whatsappClient.on('message', async message => {
     await handleMessage(message);
+});
+
+whatsappClient.on('message_reaction', async (reaction) => {
+    const message = await whatsappClient.getMessageById(reaction.msgId._serialized);
+    if (message.fromMe) {
+        if (reaction.reaction === '👍' || reaction.reaction === '👎') {
+            feedbackData[message.to] = {
+                message: message.body,
+                selection: reaction.reaction,
+                timestamp: new Date()
+            };
+            whatsappClient.sendMessage(message.to, 'Thanks for your feedback! Please provide a reason for your selection.');
+        }
+    }
 });
 
 whatsappClient.on('auth_failure', msg => {
@@ -601,98 +606,6 @@ app.post('/beta-signup', async (req, res) => {
 // Privacy policy route
 app.get('/privacy-policy', (req, res) => {
     res.sendFile(path.join(initial_path, 'privacy-policy.html'));
-});
-
-app.get('/opensource', (req, res) => {
-    res.sendFile(path.join(initial_path, 'opensource.html'));
-});
-
-app.get('/leaderboard', (req, res) => {
-    res.sendFile(path.join(initial_path, 'leaderboard.html'));
-});
-
-app.get('/questions', (req, res) => {
-    res.sendFile(path.join(initial_path, 'questions.html'));
-});
-
-app.get('/voice-chat', (req, res) => {
-    res.sendFile(path.join(initial_path, 'voice_chat.html'));
-});
-
-app.get('/dashboard', verifySession, (req, res) => {
-    res.sendFile(path.join(initial_path, 'opensource_dash.html'));
-});
-
-app.get('/api/leaderboard', async (req, res) => {
-    try {
-        const snapshot = await db.collection('feedback').get();
-        const contributions = {};
-        snapshot.forEach(doc => {
-            const data = doc.data();
-            if (contributions[data.from]) {
-                contributions[data.from]++;
-            } else {
-                contributions[data.from] = 1;
-            }
-        });
-
-        const leaderboard = Object.entries(contributions)
-            .map(([user, count]) => ({ user, count }))
-            .sort((a, b) => b.count - a.count)
-            .slice(0, 10);
-
-        res.json(leaderboard);
-    } catch (error) {
-        console.error('Error fetching leaderboard data:', error);
-        res.status(500).json({ error: 'Failed to fetch leaderboard data' });
-    }
-});
-
-app.post('/api/login', async (req, res) => {
-    const { email, password } = req.body;
-
-    try {
-        const userCredential = await firebase.auth().signInWithEmailAndPassword(email, password);
-        const idToken = await userCredential.user.getIdToken();
-        const expiresIn = 60 * 60 * 24 * 5 * 1000; // 5 days
-
-        const sessionCookie = await admin.auth().createSessionCookie(idToken, { expiresIn });
-
-        const options = {
-            maxAge: expiresIn,
-            httpOnly: true,
-            secure: false,
-            sameSite: 'Lax',
-        };
-
-        res.cookie('session', sessionCookie, options);
-        res.status(200).json({ success: true });
-    } catch (error) {
-        res.status(401).json({ success: false, message: error.message });
-    }
-});
-
-app.post('/api/submit-answer', verifySession, async (req, res) => {
-    const { question, answer, audioURL } = req.body;
-    const userId = req.user.uid;
-
-    if (!question || (!answer && !audioURL)) {
-        return res.status(400).json({ error: 'Question and answer (text or voice) are required' });
-    }
-
-    try {
-        await db.collection('answers').add({
-            userId,
-            question,
-            answer,
-            audioURL,
-            timestamp: admin.firestore.FieldValue.serverTimestamp(),
-        });
-        res.json({ success: true });
-    } catch (error) {
-        console.error('Error submitting answer:', error);
-        res.status(500).json({ error: 'Failed to submit answer' });
-    }
 });
 
 // 404 handler
