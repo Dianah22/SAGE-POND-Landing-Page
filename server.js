@@ -299,19 +299,15 @@ app.get('/', (req, res) => {
 
 app.post('/api/unveyl', async (req, res) => {
     const userPrompt = req.body.prompt;
-
+    console.log()
     if (!userPrompt) {
         return res.status(400).json({ error: 'Prompt is required' });
     }
 
     // Use the API key from environment variables for the external API call
     const apiKey = process.env.apiKey;
-    if (!apiKey) {
-        console.error('External API key is not configured in .env');
-        return res.status(500).json({ error: 'Internal server error: API key not configured.' });
-    }
-
-    const externalModelUrl = `https://sagepond--uvveyl-unveyl.modal.run/?prompt=${encodeURIComponent(userPrompt)}&apiKey=${sessionCookie}`;
+ 
+    const externalModelUrl = `https://sagepond--uvveyl-unveyl.modal.run/?prompt=${encodeURIComponent(userPrompt)}&apiKey=${req.cookies.session}`;
 
     try {
         const modelResponse = await fetch(externalModelUrl);

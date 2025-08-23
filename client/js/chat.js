@@ -1,4 +1,3 @@
-import { json } from 'body-parser';
 import { initializeApp } from 'firebase/app';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { getFirestore, collection, getDocs, doc, setDoc, updateDoc, arrayUnion, Timestamp, getDoc } from 'firebase/firestore';
@@ -141,7 +140,6 @@ const firebaseReady = new Promise((resolve) => { firebaseReadyResolve = resolve;
                     });
                 } catch (error) {
                     console.error('Error sending message to model or saving assistant message:', error);
-                    // Optionally, save an error message to Firestore to display in chat
                      await updateDoc(docRef, {
                         messages: arrayUnion({
                             content: "Error: Could not get response from assistant.",
@@ -259,6 +257,7 @@ const firebaseReady = new Promise((resolve) => { firebaseReadyResolve = resolve;
                 }
 
                 const modelData = await modelResponse.json();
+                console.log('Model response data:', modelData);
                 const assistantMessageContent = modelData.response; // Assuming server sends { response: "..." }
 
                 if (assistantMessageContent) {
@@ -365,17 +364,13 @@ function renderChatMessages(messages) {
         const isUser = message.sender !== "assistant"; // Check if sender is not assistant
         return `
             <div class="flex w-full mb-4 ${isUser ? 'justify-end pr-20' : 'justify-start pl-4'}">
-                <div class="max-w-[70%] px-4 py-2 rounded-2xl shadow-md text-base ${isUser ? 'bg-blue-600 text-white ml-auto' : 'bg-gray-700 text-gray-200 mr-auto'}">
+                <div class="max-w-[70%] px-4 py-2 rounded-2xl shadow-md text-base ${isUser ? 'bg-gray-900 text-white ml-auto' : 'bg-gray-700 text-gray-200 mr-auto'}">
                     <div class="flex items-center gap-2">
                         ${isUser
                             ? ''
                             // TODO: Replace with a generic assistant avatar or remove if not needed
-                            : '<img src="images/logo.svg" class="w-8 h-8 rounded-full bg-white p-1">'} 
+                            : ''} 
                         <span>${message.content}</span>
-                        ${isUser
-                            // TODO: Replace with actual user avatar if available, or remove
-                            ? '<img src="images/caleb.jpg" class="w-8 h-8 rounded-full">'
-                            : ''}
                     </div>
                 </div>
             </div>
