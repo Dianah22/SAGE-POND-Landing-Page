@@ -8,11 +8,11 @@ const send = document.getElementById('send');
 const menuBtn = document.querySelector('.menuButton');
 const content = document.querySelector('.chatarea');
 const nav = document.querySelector('.nav');
+const side_menu = document.querySelector('.side')
 const side_btn = document.querySelector('.side-button');
 const side_b = document.querySelector('.side-b');
 const recents = document.querySelector('.recent');
 const welcome_screen = document.querySelector('.welcome_screen');
-let clickCount = 0;
 let isMenuOpen = true;
 // Ensure token is available before making any requests
 async function ensureToken(auth) {
@@ -80,15 +80,28 @@ const firebaseReady = new Promise((resolve) => { firebaseReadyResolve = resolve;
                 const chatId = data.chatId;
                 const user = auth.currentUser;
 
-                await setDoc(doc(db, 'chats', chatId), {
-                    createdBy: user.uid,
-                    createdAt: Timestamp.now(),
-                    messages: [{
-                        content: message,
-                        sender: user.uid,
-                        timestamp: Timestamp.now()
-                    }]
-                });
+                const chatDocRef = doc(db, 'chats', chatId);
+                const existing = await getDoc(chatDocRef);
+                if (!existing.exists()) {
+                    await setDoc(chatDocRef, {
+                        createdBy: user.uid,
+                        createdAt: Timestamp.now(),
+                        messages: [{
+                            content: message,
+                            sender: user.uid,
+                            timestamp: Timestamp.now()
+                        }]
+                    });
+                } else {
+                    // If doc already exists, append the message instead of overwriting
+                    await updateDoc(chatDocRef, {
+                        messages: arrayUnion({
+                            content: message,
+                            sender: user.uid,
+                            timestamp: Timestamp.now()
+                        })
+                    });
+                }
 
                 return chatId;
             } catch (error) {
@@ -194,11 +207,11 @@ const firebaseReady = new Promise((resolve) => { firebaseReadyResolve = resolve;
             editor.innerHTML = '';
             send.disabled = true;
             let chatId = window.location.pathname.split('/')[2];
-            let isNewChat = !chatId || clickCount === 0;
+            // Only treat as new chat if there is no chatId in the URL.
+            const isNewChat = !chatId;
             if (isNewChat) {
                 chatId = await createNewChat(messageContent);
                 window.history.pushState({}, 'conversation', `/app/${chatId}`);
-                clickCount = 1; // Indicate that a chat is now active
                 welcome_screen.style.display = 'none';
                 chat_window.style.display = ''; // Ensure chat window is visible
             } else {
@@ -368,7 +381,6 @@ function renderChatMessages(messages) {
                     <div class="flex items-center gap-2">
                         ${isUser
                             ? ''
-                            // TODO: Replace with a generic assistant avatar or remove if not needed
                             : ''} 
                         <span>${message.content}</span>
                     </div>
@@ -400,44 +412,76 @@ window.addEventListener('load', handleResize); // Initialize menu state on load 
 let menuShouldBeOpen = window.innerWidth > 1000; // Default state based on initial width
 
 function applyMenuState(open) {
-    
-    const contentLeft = open ? "25%" : "0%";
-    const contentWidth = open ? "75%" : "100%";
-    const sideButtonDisplay = open ? "grid" : "none"; // Or "flex" or "block" depending on original styling
-    const sideBWidth = open ? "100%" : "25px";
-    
-    window.innerWidth>1000?gsap.to(nav, { duration: 0.3, ease: "power3.inOut", width: '25%' }):gsap.to(nav, { duration: 0.3, ease: "power3.inOut", width: '50%' })
-    window.innerWidth>1000?gsap.to(content, { duration: 0.3, ease: 'power3.inOut', left: contentLeft, width: contentWidth }):gsap.to(content, { duration: 0.3, ease: 'power3.inOut', left: contentLeft, width: '100%' })
-    
-    // Adjust visibility and width of sidebar elements
-    gsap.to(side_btn, { duration: 0.3, ease: 'power2.inOut', display: sideButtonDisplay, width: open ? '100%' : '0%' });
-    gsap.to(recents, { duration: 0.3, ease: 'power2.inOut', display: open ? 'block' : 'none', width: open ? '100%' : '0%' }); // Assuming recents should also hide
-    gsap.to(side_b, { duration: 0.3, ease: 'power2.inOut', width: sideBWidth });
+    // Guard: ensure required elements exist
+    if (!nav || !content || !side_btn || !side_b || !recents || !side_menu) {
+        return;
+    }
 
+    // Determine nav width depending on breakpoint
+    const isDesktop = window.innerWidth > 1000;
+    const navWidth = isDesktop ? (open ? '25%' : '0%') : (open ? '50%' : '0%');
+    const contentLeft = navWidth;
+    const contentWidth = open ? `calc(100% - ${navWidth})` : '100%';
 
-    isMenuOpen = open; // Update the global state if still needed elsewhere
+    // Apply display changes immediately (GSAP doesn't animate display)
+    side_btn.style.display = open ? '' : 'none';
+    recents.style.display = open ? '' : 'none';
+    if (side_menu) {
+        // On desktop show side_menu when open, hide on mobile
+        side_menu.style.display = (open && isDesktop) ? '' : 'none';
+    }
+    side_menu.style.display = open ? '' : 'none';
+
+    // Ensure menu button stays clickable (on top)
+  
+
+    // Side bar small element width
+    side_b.style.width = open ? '100%' : '25px';
+
+    // Animate layout properties with GSAP if available, otherwise fallback to direct styles
+    try {
+        if (typeof gsap !== 'undefined' && gsap.to) {
+            gsap.to(nav, { duration: 0.25, ease: 'power3.inOut', width: navWidth });
+            gsap.to(content, { duration: 0.25, ease: 'power3.inOut', left: contentLeft, width: contentWidth });
+            gsap.to(side_b, { duration: 0.25, ease: 'power2.inOut' });
+            if (side_menu) gsap.to(side_menu, { duration: 0.25, ease: 'power2.inOut', autoAlpha: (open && isDesktop) ? 1 : 0 });
+        } else {
+            nav.style.width = navWidth;
+            content.style.left = contentLeft;
+            content.style.width = contentWidth;
+            if (side_menu) side_menu.style.display = (open && isDesktop) ? '' : 'none';
+        }
+    } catch (err) {
+        // If animation fails, apply direct styles
+        nav.style.width = navWidth;
+        content.style.left = contentLeft;
+        content.style.width = contentWidth;
+        console.error('applyMenuState animation error:', err);
+    }
+
+    // Update actual visual state
+    isMenuOpen = open;
 }
 
 function toggleMenu() {
-    if (window.innerWidth > 1000) {
-        // Desktop: Toggle normally
-        menuShouldBeOpen = !menuShouldBeOpen;
-    } else {
-        
-        // Mobile: Always toggle, effectively opening if closed, closing if open
-        menuShouldBeOpen = !isMenuOpen; // Use current visual state for toggle decision
-    }
-    applyMenuState(menuShouldBeOpen);
+    // Toggle based on the currently visible state (isMenuOpen)
+    const newState = !isMenuOpen;
+    // Keep the intended desktop preference in menuShouldBeOpen
+    menuShouldBeOpen = newState;
+    applyMenuState(newState);
 }
+
+// Initialize menu to desired state on load
 applyMenuState(menuShouldBeOpen);
+
 function handleResize() {
     if (window.innerWidth > 1000) {
-        
+        // On desktop, respect the intended state
         applyMenuState(menuShouldBeOpen);
     } else {
-        // Mobile: always close the menu on resize to mobile view, or respect current visual state
-        applyMenuState(false); // Or applyMenuState(isMenuOpen) if you want it to stay open if already open on mobile
-        menuShouldBeOpen = false; // Reset the "intended" state for mobile
+        // On mobile collapse by default (but keep intended preference false)
+        applyMenuState(false);
+        menuShouldBeOpen = false;
     }
 }
 
