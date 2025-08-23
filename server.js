@@ -119,10 +119,6 @@ app.use(
         },
     })
 );
-
-// Authentication middleware
-// middleware/isAuthenticated.js
-// utils/tokenExtractor.js
 app.post('/api/verify-token', async (req, res) => {
     const idToken = req.body.token;
     const expiresIn = 60 * 60 * 24 * 5 * 1000; // 5 days
@@ -142,25 +138,6 @@ app.post('/api/verify-token', async (req, res) => {
       res.status(401).json({ success: false, message: err });
     }
   });
-  const verifySession = async (req, res, next) => {
-        const sessionCookie =  'aa264cbdf161c11173e106ad2f422e3c224488e2ccecd5b78bb6e4757511d762';
-        const apiKey='a264cbdf161c11173e106ad2f422e3c224488e2ccecd5b78bb6e4757511d762'
-
-     try {
-        if (sessionCookie == apiKey) {
-            req.user=apiKey
-             // Skip verification if using API key
-             next()
-        }else{
-             const decodedClaims = await admin.auth().verifySessionCookie(sessionCookie, true);
-      req.user = decodedClaims;
-      next()
-        }
-      
-    } catch (err) {
-      res.status(401).send('Unauthorized');
-    }
-  };
  
 const fetch = require('node-fetch'); // Add node-fetch
 const { Client, LocalAuth } = require('whatsapp-web.js');
@@ -192,26 +169,6 @@ const oAuth2Client = new google.auth.OAuth2(
     "YOUR_GOOGLE_CLIENT_SECRET",
     "http://localhost:4000/auth/google/callback"
 );
-
-// Helper function to create a Google Calendar event
-function createCalendarEvent(auth, event) {
-    const calendar = google.calendar({ version: 'v3', auth });
-    calendar.events.insert(
-        {
-            auth: auth,
-            calendarId: 'primary',
-            resource: event,
-        },
-        function (err, event) {
-            if (err) {
-                console.log('There was an error contacting the Calendar service: ' + err);
-                return;
-            }
-            console.log('Event created: %s', event.htmlLink);
-        }
-    );
-}
-
 app.get('/auth/google', (req, res) => {
     const authUrl = oAuth2Client.generateAuthUrl({
         access_type: 'offline',
@@ -232,60 +189,6 @@ app.get('/auth/google/callback', async (req, res) => {
 
 const axios = require('axios');
 
-// Helper function to post on LinkedIn
-async function postOnLinkedIn(message) {
-    const accessToken = 'YOUR_LINKEDIN_ACCESS_TOKEN';
-    const response = await axios.post(
-        'https://api.linkedin.com/v2/ugcPosts',
-        {
-            author: 'urn:li:person:YOUR_PERSON_ID',
-            lifecycleState: 'PUBLISHED',
-            specificContent: {
-                'com.linkedin.ugc.ShareContent': {
-                    shareCommentary: {
-                        text: message,
-                    },
-                    shareMediaCategory: 'NONE',
-                },
-            },
-            visibility: {
-                'com.linkedin.ugc.MemberNetworkVisibility': 'CONNECTIONS',
-            },
-        },
-        {
-            headers: {
-                Authorization: `Bearer ${accessToken}`,
-                'Content-Type': 'application/json',
-            },
-        }
-    );
-    console.log(response.data);
-}
-
-// Helper function to send a reminder
-function sendReminder(user, message) {
-    // The user's WhatsApp number is not a valid email address.
-    // This is just a placeholder implementation.
-    const mailOptions = {
-        from: process.env.ZOHO_EMAIL,
-        to: `${user}@sagepond.com`,
-        subject: 'Reminder from your WhatsApp Bot',
-        html: `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                <h1 style="color: black; text-align: center;">Reminder</h1>
-                <p>${message}</p>
-            </div>
-        `
-    };
-
-    transporter.sendMail(mailOptions, (error, info) => {
-        if (error) {
-            console.error('Error sending reminder email:', error);
-        } else {
-            console.log('Reminder email sent:', info.response);
-        }
-    });
-}
 
 let sessionCookie = 'aa264cbdf161c11173e106ad2f422e3c224488e2ccecd5b78bb6e4757511d762';
 
@@ -293,7 +196,7 @@ app.use((req, res, next) => {
     sessionCookie = req.cookies.session || 'aa264cbdf161c11173e106ad2f422e3c224488e2ccecd5b78bb6e4757511d762';
     next();
 });
-
+/*
 async function handleMessage(message) {
     if (message.from !== '256777040263@c.us') {
         if (feedbackData[message.from] && feedbackData[message.from].response && !feedbackData[message.from].selection ) {
@@ -329,7 +232,6 @@ async function handleMessage(message) {
             if (!userPrompt) {
                 return;
             }
-            message.reply('Your prompt is being processed, please wait...');
             const externalModelUrl = `https://sagepond--uvveyl-unveyl.modal.run/?prompt=${encodeURIComponent(userPrompt)}&apiKey=${sessionCookie}`;
 
             try {
@@ -343,13 +245,7 @@ async function handleMessage(message) {
                 const modelData = await modelResponse.json();
                 const reply = modelData.response || modelData || 'yooo';
 
-                if (reply.includes('<calendar>')) {
-                    const authUrl = oAuth2Client.generateAuthUrl({
-                        access_type: 'offline',
-                        scope: ['https://www.googleapis.com/auth/calendar.events'],
-                    });
-                    message.reply(`Please visit this URL to authorize access to your Google Calendar: ${authUrl}`);
-                } else if (reply.includes('<post_linkedin>')) {
+                if (reply.includes('<post_linkedin>')) {
                     const postContent = reply.split('<post_linkedin>')[1].split('</post_linkedin>')[0];
                     await postOnLinkedIn(postContent);
                     message.reply('I have posted on LinkedIn for you.');
@@ -357,13 +253,6 @@ async function handleMessage(message) {
                     const reminderContent = reply.split('<remember_message>')[1].split('</remember_message>')[0];
                     sendReminder(message.from, reminderContent);
                     message.reply('I have set a reminder for you.');
-                } else {
-                    message.reply(reply).then(() => {
-                    if(feedbackData[message.from]) {
-                        feedbackData[message.from].response = reply;
-                    }
-                    whatsappClient.sendMessage(message.from, "Did you find this helpful? Reply with '👍' or '👎'");
-                });
                 }
             } catch (error) {
                 console.error('Error calling external model API:', error);
@@ -381,19 +270,7 @@ whatsappClient.on('message', async message => {
     await handleMessage(message);
 });
 
-whatsappClient.on('message_reaction', async (reaction) => {
-    const message = await whatsappClient.getMessageById(reaction.msgId._serialized);
-    if (message.fromMe) {
-        if (reaction.reaction === '👍' || reaction.reaction === '👎') {
-            feedbackData[message.to] = {
-                message: message.body,
-                selection: reaction.reaction,
-                timestamp: new Date()
-            };
-            whatsappClient.sendMessage(message.to, 'Thanks for your feedback! Please provide a reason for your selection.');
-        }
-    }
-});
+
 
 whatsappClient.on('auth_failure', msg => {
     console.error('WHATSAPP AUTHENTICATION FAILURE', msg);
@@ -413,14 +290,14 @@ whatsappClient.on('authenticated', () => {
 
 whatsappClient.initialize().catch(err => console.error('WhatsApp Client Initialization Error:', err));
 
-
+*/
 // Routes
 app.get('/', (req, res) => {
+    console.log( 1)
     res.sendFile(path.join(initial_path, "index.html"));
 });
 
-// Apply verifySession middleware to the /api/unveyl route
-app.post('/api/unveyl', verifySession, async (req, res) => {
+app.post('/api/unveyl', async (req, res) => {
     const userPrompt = req.body.prompt;
 
     if (!userPrompt) {
@@ -460,7 +337,7 @@ app.get('/signup', (req, res) => {
     res.sendFile(path.join(initial_path, 'signup.html'));
 });
 // Chat routes
-app.post('/create-chat', verifySession, (req, res) => {
+app.post('/create-chat', (req, res) => {
     try {
         const chatId = uid();
         res.json({ success: true, chatId });
@@ -470,7 +347,10 @@ app.post('/create-chat', verifySession, (req, res) => {
     }
 });
 // Utility token verifier (not middleware)
-app.get('/app',verifySession, async (req, res) => {
+app.get('/admin',async (req,res)=>{
+    res.sendFile(path.join(initial_path,'admin.html'))
+})
+app.get('/app', async (req, res) => {
     res.sendFile(path.join(initial_path, 'chat.html'));
 });
 app.get('/welcome', (req, res) => {
@@ -482,13 +362,13 @@ app.use('/app', express.static(initial_path));
 
 // Serve chat.html for /app/:chatId route
 //app.use(express.static(initial_path))
-app.get('/app/:chatId', verifySession, (req, res) => {
+app.get('/app/:chatId', (req, res) => {
 
     res.sendFile(path.join(initial_path, 'chat.html'));
 });
 
 // Session ping endpoint
-app.get('/api/ping-session', verifySession, (req, res) => {
+app.get('/api/ping-session', (req, res) => {
     res.status(200).json({ success: true, user: req.user });
   });
 
@@ -616,6 +496,7 @@ app.use((req, res) => {
 });
 
 // WhatsApp Send Message Endpoint
+/*
 app.post('/api/whatsapp/send', verifySession, async (req, res) => {
     if (!whatsappClient || typeof whatsappClient.getState !== 'function') {
         return res.status(503).json({ success: false, message: 'WhatsApp client is not initialized yet.' });
@@ -647,27 +528,7 @@ app.post('/api/whatsapp/send', verifySession, async (req, res) => {
         res.status(500).json({ success: false, message: 'Failed to send WhatsApp message.', error: error.message });
     }
 });
-
-// Generate API key endpoint
-app.post('/api/keys/generate', verifySession, async (req, res) => {
-    try {
-        const keyId = uid(16);
-        const apiKey = jwt.sign({ keyId }, process.env.JWT_SECRET, { expiresIn: '1y' });
-
-        // Store API key info in Firestore
-        await db.collection('api-keys').doc(keyId).set({
-            id: keyId,
-            createdAt: admin.firestore.FieldValue.serverTimestamp(),
-            createdBy: req.user.uid,
-            lastUsed: null
-        });
-
-        res.json({ apiKey });
-    } catch (error) {
-        console.error('Error generating API key:', error);
-        res.status(500).json({ error: 'Failed to generate API key' });
-    }
-});
+*/
 
 app.listen(port, () => {
     console.log(`listening on Port ${port}`);
