@@ -314,15 +314,11 @@ app.post('/api/unveyl', async (req, res) => {
         const modelResponse = await fetch(externalModelUrl);
         if (!modelResponse.ok) {
             const errorText = await modelResponse.text();
-            console.error(`External API call failed: ${modelResponse.status} ${errorText}`);
             // Avoid sending detailed external errors to the client for security.
-            return res.status(502).json({ error: 'Failed to get response from model' });
         }
         const modelData = await modelResponse.json(); 
         res.json({ response: modelData.response || modelData }); 
     } catch (error) {
-        console.error('Error calling external model API:', error);
-        res.status(500).json({ error: 'Internal server error while contacting model' });
     }
 });
 

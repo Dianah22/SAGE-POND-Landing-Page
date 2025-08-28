@@ -105,14 +105,12 @@ const firebaseReady = new Promise((resolve) => { firebaseReadyResolve = resolve;
 
                 return chatId;
             } catch (error) {
-                console.error('Error creating chat:', error);
                 throw error;
             }
         }
 
         async function sendMessage(chatId, message) {
             try {
-                console.log(chatId, message);
                 const user = auth.currentUser;
                 const docRef = doc(db, 'chats', chatId);
                 
@@ -152,7 +150,6 @@ const firebaseReady = new Promise((resolve) => { firebaseReadyResolve = resolve;
                         })
                     });
                 } catch (error) {
-                    console.error('Error sending message to model or saving assistant message:', error);
                      await updateDoc(docRef, {
                         messages: arrayUnion({
                             content: "Error: Could not get response from assistant.",
@@ -164,7 +161,6 @@ const firebaseReady = new Promise((resolve) => { firebaseReadyResolve = resolve;
 
                 return true;
             } catch (error) {
-                console.error('Error sending message:', error);
                 return false;
             }
         }
@@ -179,7 +175,6 @@ const firebaseReady = new Promise((resolve) => { firebaseReadyResolve = resolve;
                 }
                 return [];
             } catch (error) {
-                console.error('Error loading chat history:', error);
                 return [];
             }
         }
@@ -196,7 +191,6 @@ const firebaseReady = new Promise((resolve) => { firebaseReadyResolve = resolve;
                 });
                 renderChatList(chatIds);
             } catch (error) {
-                console.error('Error loading chats:', error);
             }
         }
 
@@ -220,7 +214,6 @@ const firebaseReady = new Promise((resolve) => { firebaseReadyResolve = resolve;
                 // Save the new user message to Firestore for an existing chat
                 const user = auth.currentUser; // Ensure auth is available
                 if (!user) {
-                    console.error("User not authenticated");
                     // Optionally, redirect to login or show an error
                     return; 
                 }
@@ -254,7 +247,6 @@ const firebaseReady = new Promise((resolve) => { firebaseReadyResolve = resolve;
 
                 if (!modelResponse.ok) {
                     const errorData = await modelResponse.text(); 
-                    console.error('Model API request failed:', modelResponse.status, errorData);
                     // Save an error message to Firestore to display in chat
                     const docRef = doc(db, 'chats', chatId);
                     await updateDoc(docRef, {
@@ -272,7 +264,7 @@ const firebaseReady = new Promise((resolve) => { firebaseReadyResolve = resolve;
                 }
 
                 const modelData = await modelResponse.json();
-                console.log('Model response data:', modelData);
+          
                 const assistantMessageContent = modelData.response; // Assuming server sends { response: "..." }
 
                 if (assistantMessageContent) {
@@ -288,7 +280,6 @@ const firebaseReady = new Promise((resolve) => { firebaseReadyResolve = resolve;
                     renderChatMessages(messages);
                     
                 } else {
-                    console.warn("Model did not return a message or 'response' field is missing.");
                     const docRef = doc(db, 'chats', chatId);
                     await updateDoc(docRef, {
                         messages: arrayUnion({
@@ -302,7 +293,6 @@ const firebaseReady = new Promise((resolve) => { firebaseReadyResolve = resolve;
                     
                 }
             } catch (error) {
-                console.error('Error fetching from model or saving assistant message:', error);
                 const docRef = doc(db, 'chats', chatId);
                 await updateDoc(docRef, {
                     messages: arrayUnion({
@@ -343,10 +333,8 @@ const firebaseReady = new Promise((resolve) => { firebaseReadyResolve = resolve;
             // Initialize
             onAuthStateChanged(auth, async (user) => {
                 if (user) {
-                    console.log('User is signed in:', user.uid);
                     await loadUserChats(user.uid);
                 } else {
-                    console.log('User is signed out');
                     window.location.href = '/login';
                 }
             });
@@ -354,14 +342,12 @@ const firebaseReady = new Promise((resolve) => { firebaseReadyResolve = resolve;
             // At the end of successful Firebase setup:
             firebaseReadyResolve({ loadChatHistory, renderChatMessages, welcome_screen, chat_window });
         } catch (error) {
-            console.error('Error initializing Firebase:', error);
         }
     })();
 
     // On page load, if on /app/:chatId, load chat history and show chat UI
     window.addEventListener('DOMContentLoaded', async () => {
         const chatId = window.location.pathname.split('/')[2];
-        console.log('Chat ID from URL:', chatId);
         if (chatId) {
             const { loadChatHistory, renderChatMessages, welcome_screen, chat_window } = await firebaseReady;
             const messages = await loadChatHistory(chatId);
@@ -477,7 +463,6 @@ const firebaseReady = new Promise((resolve) => { firebaseReadyResolve = resolve;
             nav.style.width = navWidth;
             content.style.left = contentLeft;
             content.style.width = contentWidth;
-            console.error('applyMenuState animation error:', err);
         }
 
  
@@ -485,15 +470,14 @@ const firebaseReady = new Promise((resolve) => { firebaseReadyResolve = resolve;
         try {
             if (chat_window) {
                 if (isDesktop) {
+                    chat_window.style.marginLeft = '112px';
+                    chat_window.style.marginRight = '112px';
+                } else if (isDestop && open){
                     chat_window.style.marginLeft = '176px';
                     chat_window.style.marginRight = '176px';
-                } else {
-                    chat_window.style.marginLeft = '';
-                    chat_window.style.marginRight = '';
                 }
             }
         } catch (err) {
-            console.error('applyMenuState chat_window margin error:', err);
         }
 
         // Update actual visual state
