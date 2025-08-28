@@ -455,7 +455,7 @@ const firebaseReady = new Promise((resolve) => { firebaseReadyResolve = resolve;
         if (side_menu) {
             // On desktop show side_menu when open, hide on mobile
             side_menu.style.display = (open && isDesktop) ? '' : 'none';
-            side_menu.style.display = (isDesktop==false) ? '' : 'none';
+            side_menu.style.display = (isDesktop==false) ? '' : 'absolute';
 
 
         }
@@ -466,7 +466,7 @@ const firebaseReady = new Promise((resolve) => { firebaseReadyResolve = resolve;
                 gsap.to(content, { duration: 0.25, ease: 'power3.inOut', left: contentLeft, width: contentWidth });
                 gsap.to(side_b, { duration: 0.25, ease: 'power2.inOut' });
                 if (side_menu) gsap.to(side_menu, { duration: 0.25, ease: 'power2.inOut', autoAlpha: (open && isDesktop) ? 1 : 0 });
-                if (isDesktop==false) gsap.to(side_menu, { duration: 0.25, ease: 'power2.inOut', autoAlpha: 1 ,opacity:1});side_btn.style.z_index='99'
+                if (isDesktop==false){ gsap.to(side_menu, { duration: 0.25, ease: 'power2.inOut', autoAlpha: 1 ,opacity:1});side_btn.style.z_index='99'}
             } else {
                 nav.style.width = navWidth;
                 content.style.left = contentLeft;
