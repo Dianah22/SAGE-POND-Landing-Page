@@ -142,7 +142,9 @@ app.post('/api/verify-token', async (req, res) => {
 const fetch = require('node-fetch'); // Add node-fetch
 const { Client, LocalAuth } = require('whatsapp-web.js');
 const qrcode = require('qrcode-terminal');
-
+app.get('/terms', (req, res) => {
+    res.sendFile(path.join(initial_path, 'terms.html'));
+});
 // Initialize WhatsApp Client
 const whatsappClient = new Client({
     authStrategy: new LocalAuth(), // Use LocalAuth to save session and avoid re-scanning QR code often
@@ -293,7 +295,6 @@ whatsappClient.initialize().catch(err => console.error('WhatsApp Client Initiali
 */
 // Routes
 app.get('/', (req, res) => {
-    console.log( 1)
     res.sendFile(path.join(initial_path, "index.html"));
 });
 

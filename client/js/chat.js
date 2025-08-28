@@ -200,6 +200,8 @@ const firebaseReady = new Promise((resolve) => { firebaseReadyResolve = resolve;
             }
         }
 
+        // Inserted scrollToBottom function to resolve ReferenceError
+
         // Event Handlers
         send.addEventListener('click', async (e) => {
             const messageContent = sanitizeInput(editor.textContent);
@@ -235,7 +237,7 @@ const firebaseReady = new Promise((resolve) => { firebaseReadyResolve = resolve;
             // Render current messages (including the one just sent by the user)
             let messages = await loadChatHistory(chatId);
             renderChatMessages(messages);
-            scrollToBottom(); 
+            
             const prompt = messageContent;
             const modelUrl = `/api/unveyl`; // Corrected: remove trailing slash if not intended
 
@@ -264,7 +266,7 @@ const firebaseReady = new Promise((resolve) => { firebaseReadyResolve = resolve;
                     });
                     messages = await loadChatHistory(chatId); // Reload messages
                     renderChatMessages(messages);
-                    scrollToBottom();
+                    
                     send.disabled = false; // Re-enable send button
                     return;
                 }
@@ -284,7 +286,7 @@ const firebaseReady = new Promise((resolve) => { firebaseReadyResolve = resolve;
                     });
                     messages = await loadChatHistory(chatId); // Reload messages
                     renderChatMessages(messages);
-                    scrollToBottom();
+                    
                 } else {
                     console.warn("Model did not return a message or 'response' field is missing.");
                     const docRef = doc(db, 'chats', chatId);
@@ -297,7 +299,7 @@ const firebaseReady = new Promise((resolve) => { firebaseReadyResolve = resolve;
                     });
                     messages = await loadChatHistory(chatId); // Reload messages
                     renderChatMessages(messages);
-                    scrollToBottom();
+                    
                 }
             } catch (error) {
                 console.error('Error fetching from model or saving assistant message:', error);
@@ -311,240 +313,284 @@ const firebaseReady = new Promise((resolve) => { firebaseReadyResolve = resolve;
                 });
                 messages = await loadChatHistory(chatId); // Reload messages
                 renderChatMessages(messages);
-                scrollToBottom();
+                
             } finally {
                 send.disabled = false; // Re-enable send button in all cases
             }
         });
 
-        function scrollToBottom() {
-            chat_window.scrollTop = chat_window.scrollHeight;
+        side_btn.addEventListener('click',  (e) => {
+            if (window.location.pathname != '/app') {
+
+                window.history.pushState({}, 'main', '/app');
+                            welcome_screen.style.display = 'block';
+                chat_window.innerHTML = '';
+            }})
+            recents.addEventListener('click', async (e) => {
+                const chatItem = e.target.closest('[data-chat-id]');
+                if (!chatItem) return;
+
+                const chatId = chatItem.dataset.chatId;
+                welcome_screen.style.display = 'none';
+                
+                const messages = await loadChatHistory(chatId);
+                renderChatMessages(messages);
+             
+                
+                window.history.pushState({}, 'Chat', `/app/${chatId}`);
+            });
+
+            // Initialize
+            onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    console.log('User is signed in:', user.uid);
+                    await loadUserChats(user.uid);
+                } else {
+                    console.log('User is signed out');
+                    window.location.href = '/login';
+                }
+            });
+
+            // At the end of successful Firebase setup:
+            firebaseReadyResolve({ loadChatHistory, renderChatMessages, welcome_screen, chat_window });
+        } catch (error) {
+            console.error('Error initializing Firebase:', error);
         }
-       side_btn.addEventListener('click',  (e) => {
-        if (window.location.pathname != '/app') {
+    })();
 
-            window.history.pushState({}, 'main', '/app');
-                        welcome_screen.style.display = 'block';
-            chat_window.innerHTML = '';
-        }})
-        recents.addEventListener('click', async (e) => {
-            const chatItem = e.target.closest('[data-chat-id]');
-            if (!chatItem) return;
-
-            const chatId = chatItem.dataset.chatId;
-            welcome_screen.style.display = 'none';
-            
+    // On page load, if on /app/:chatId, load chat history and show chat UI
+    window.addEventListener('DOMContentLoaded', async () => {
+        const chatId = window.location.pathname.split('/')[2];
+        console.log('Chat ID from URL:', chatId);
+        if (chatId) {
+            const { loadChatHistory, renderChatMessages, welcome_screen, chat_window } = await firebaseReady;
             const messages = await loadChatHistory(chatId);
             renderChatMessages(messages);
-            
-            window.history.pushState({}, 'Chat', `/app/${chatId}`);
-        });
+            welcome_screen.style.display = 'none';
+            chat_window.style.display = '';
+      
+        }
+    });
 
-        // Initialize
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                console.log('User is signed in:', user.uid);
-                await loadUserChats(user.uid);
-            } else {
-                console.log('User is signed out');
-                window.location.href = '/login';
-            }
-        });
+    // UI Functions
+    function renderChatMessages(messages) {
+        // Render messages as escaped text, convert newlines to <br>, and allow only <br> tags
+        chat_window.innerHTML = messages.map(message => {
+            const isUser = message.sender !== "assistant"; // Check if sender is not assistant
+            const raw = message.content || '';
+            // Escape any HTML in the stored content to prevent injection
+            const escaped = escapeHtml(raw);
+            // Convert newline characters to <br> for display
+            const withBreaks = escaped.replace(/\r\n|\r|\n/g, '<br>');
+            // Sanitize the resulting fragment but only allow <br>
+            const safeContent = DOMPurify.sanitize(withBreaks, { ALLOWED_TAGS: ['br'], ALLOWED_ATTR: [] });
 
-        // At the end of successful Firebase setup:
-        firebaseReadyResolve({ loadChatHistory, renderChatMessages, welcome_screen, chat_window });
-    } catch (error) {
-        console.error('Error initializing Firebase:', error);
-    }
-})();
-
-// On page load, if on /app/:chatId, load chat history and show chat UI
-window.addEventListener('DOMContentLoaded', async () => {
-    const chatId = window.location.pathname.split('/')[2];
-    console.log('Chat ID from URL:', chatId);
-    if (chatId) {
-        const { loadChatHistory, renderChatMessages, welcome_screen, chat_window } = await firebaseReady;
-        const messages = await loadChatHistory(chatId);
-        renderChatMessages(messages);
-        welcome_screen.style.display = 'none';
-        chat_window.style.display = '';
-    }
-});
-
-// UI Functions
-function renderChatMessages(messages) {
-    chat_window.innerHTML = messages.map(message => {
-        const isUser = message.sender !== "assistant"; // Check if sender is not assistant
-        return `
-            <div class="flex w-full mb-4 ${isUser ? 'justify-end pr-20' : 'justify-start pl-4'}">
-                <div class="max-w-[70%] px-4 py-2 rounded-2xl shadow-md text-base ${isUser ? 'bg-gray-900 text-white ml-auto' : 'bg-gray-700 text-gray-200 mr-auto'}">
-                    <div class="flex items-center gap-2">
-                        ${isUser
-                            ? ''
-                            : ''} 
-                        <span>${message.content}</span>
+            return `
+                <div class="flex w-full mb-4 ${isUser ? 'justify-end pr-20' : 'justify-start pl-4'}">
+                    <div class="max-w-[70%] px-4 py-2 rounded-2xl shadow-md text-base ${isUser ? 'bg-gray-900 text-white ml-auto' : ' text-gray-200 mr-auto  text-6xl'}">
+                        <div class="flex items-center gap-2">
+                            ${isUser ? '' : ''}
+                            <span class="message-content">${safeContent}</span>
+                        </div>
                     </div>
                 </div>
+            `;
+        }).join('');
+    }
+
+    // Helper to escape HTML special characters in plain text
+    function escapeHtml(unsafe) {
+        if (!unsafe) return '';
+        return unsafe
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+
+    function renderChatList(chats) {
+        recent.innerHTML = chats.map(chat => `
+            <div class="rchat h-10 rounded-3xl hover:bg-gray-700 transition p-2 m-2 flex flex-wrap justify-center content-center items-center">
+                <button data-chat-id="${chat.id}">new chat</button>
             </div>
-        `;
-    }).join('');
-}
-
-function renderChatList(chats) {
-    recent.innerHTML = chats.map(chat => `
-        <div class="rchat h-10 rounded-3xl hover:bg-gray-700 transition p-2 m-2 flex flex-wrap justify-center content-center items-center">
-            <button data-chat-id="${chat.id}">new chat</button>
-        </div>
-    `).join('');
-}
-
-// UI Setup
-send.disabled = true;
-editor.addEventListener('input', (e) => {
-    const content = editor.textContent.trim();
-    send.disabled = content.length === 0;
-});
-window.addEventListener('resize', handleResize);
-menuBtn.addEventListener('click', toggleMenu);
-window.addEventListener('load', handleResize); // Initialize menu state on load based on window size
-
-// Refactored menu logic
-let menuShouldBeOpen = window.innerWidth > 1000; // Default state based on initial width
-
-function applyMenuState(open) {
-    // Guard: ensure required elements exist
-    if (!nav || !content || !side_btn || !side_b || !recents || !side_menu) {
-        return;
+        `).join('');
     }
 
-    // Determine nav width depending on breakpoint
-    const isDesktop = window.innerWidth > 1000;
-    const navWidth = isDesktop ? (open ? '25%' : '0%') : (open ? '50%' : '0%');
-    const contentLeft = navWidth;
-    const contentWidth = open ? `calc(100% - ${navWidth})` : '100%';
+    // UI Setup
+    send.disabled = true;
+    editor.addEventListener('input', (e) => {
+        const content = editor.textContent.trim();
+        send.disabled = content.length === 0;
+    });
+    window.addEventListener('resize', handleResize);
+    menuBtn.addEventListener('click', toggleMenu);
+    window.addEventListener('load', handleResize); // Initialize menu state on load based on window size
 
-    // Apply display changes immediately (GSAP doesn't animate display)
-    side_btn.style.display = open ? '' : 'none';
-    recents.style.display = open ? '' : 'none';
-    if (side_menu) {
-        // On desktop show side_menu when open, hide on mobile
-        side_menu.style.display = (open && isDesktop) ? '' : 'none';
-    }
-    side_menu.style.display = open ? '' : 'none';
+    // Refactored menu logic
+    let menuShouldBeOpen = window.innerWidth > 1000; // Default state based on initial width
 
-    // Ensure menu button stays clickable (on top)
-  
+    function applyMenuState(open) {
+        // Guard: ensure required elements exist
+        if (!nav || !content || !side_btn || !side_b || !recents || !side_menu) {
+            return;
+        }
 
-    // Side bar small element width
-    side_b.style.width = open ? '100%' : '25px';
-
-    // Animate layout properties with GSAP if available, otherwise fallback to direct styles
-    try {
-        if (typeof gsap !== 'undefined' && gsap.to) {
-            gsap.to(nav, { duration: 0.25, ease: 'power3.inOut', width: navWidth });
-            gsap.to(content, { duration: 0.25, ease: 'power3.inOut', left: contentLeft, width: contentWidth });
-            gsap.to(side_b, { duration: 0.25, ease: 'power2.inOut' });
-            if (side_menu) gsap.to(side_menu, { duration: 0.25, ease: 'power2.inOut', autoAlpha: (open && isDesktop) ? 1 : 0 });
+        const isDesktop = window.innerWidth > 1000;
+        let navWidth, contentLeft, contentWidth;
+        if (isDesktop) {
+            navWidth = open ? '25%' : '0%';
+            contentLeft = navWidth;
+            contentWidth = open ? `calc(100% - ${navWidth})` : '100%';
         } else {
+            navWidth = open ? '50%' : '0%';
+            // On mobile, do not adjust the chat area dimensions
+            contentLeft = '0';
+            contentWidth = '100%';
+        }
+
+        // Apply display changes immediately (GSAP doesn't animate display)
+        side_btn.style.display = open ? '' : 'none';
+        recents.style.display = open ? '' : 'none';
+        if (side_menu) {
+            // On desktop show side_menu when open, hide on mobile
+            side_menu.style.display = (open && isDesktop) ? '' : 'none';
+        }
+        // Animate layout properties with GSAP if available, otherwise fallback to direct styles
+        try {
+            if (typeof gsap !== 'undefined' && gsap.to) {
+                gsap.to(nav, { duration: 0.25, ease: 'power3.inOut', width: navWidth });
+                gsap.to(content, { duration: 0.25, ease: 'power3.inOut', left: contentLeft, width: contentWidth });
+                gsap.to(side_b, { duration: 0.25, ease: 'power2.inOut' });
+                if (side_menu) gsap.to(side_menu, { duration: 0.25, ease: 'power2.inOut', autoAlpha: (open && isDesktop) ? 1 : 0 });
+            } else {
+                nav.style.width = navWidth;
+                content.style.left = contentLeft;
+                content.style.width = contentWidth;
+                if (side_menu) side_menu.style.display = (open && isDesktop) ? '' : 'none';
+            }
+        } catch (err) {
+            // If animation fails, apply direct styles
             nav.style.width = navWidth;
             content.style.left = contentLeft;
             content.style.width = contentWidth;
-            if (side_menu) side_menu.style.display = (open && isDesktop) ? '' : 'none';
+            console.error('applyMenuState animation error:', err);
         }
-    } catch (err) {
-        // If animation fails, apply direct styles
-        nav.style.width = navWidth;
-        content.style.left = contentLeft;
-        content.style.width = contentWidth;
-        console.error('applyMenuState animation error:', err);
+
+        // For mobile, ensure the menu (nav) has a higher z-index when open
+        if (!isDesktop && nav) {
+            nav.style.zIndex = open ? '9999' : '';
+        } else if (isDesktop && nav) {
+            nav.style.zIndex = '';
+        }
+
+        // Apply chat_window horizontal margins only for desktop
+        try {
+            if (chat_window) {
+                if (isDesktop) {
+                    chat_window.style.marginLeft = '176px';
+                    chat_window.style.marginRight = '176px';
+                } else {
+                    chat_window.style.marginLeft = '';
+                    chat_window.style.marginRight = '';
+                }
+            }
+        } catch (err) {
+            console.error('applyMenuState chat_window margin error:', err);
+        }
+
+        // Update actual visual state
+        isMenuOpen = open;
     }
 
-    // Update actual visual state
-    isMenuOpen = open;
-}
-
-function toggleMenu() {
-    // Toggle based on the currently visible state (isMenuOpen)
-    const newState = !isMenuOpen;
-    // Keep the intended desktop preference in menuShouldBeOpen
-    menuShouldBeOpen = newState;
-    applyMenuState(newState);
-}
-
-// Initialize menu to desired state on load
-applyMenuState(menuShouldBeOpen);
-
-function handleResize() {
-    if (window.innerWidth > 1000) {
-        // On desktop, respect the intended state
-        applyMenuState(menuShouldBeOpen);
-    } else {
-        // On mobile collapse by default (but keep intended preference false)
-        applyMenuState(false);
-        menuShouldBeOpen = false;
+    function toggleMenu() {
+        // Toggle based on the currently visible state (isMenuOpen)
+        const newState = !isMenuOpen;
+        // Keep the intended desktop preference in menuShouldBeOpen
+        menuShouldBeOpen = newState;
+        applyMenuState(newState);
     }
-}
 
-function sanitizeInput(userInput) {
-    const allowedTags = ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'b', 'em', 'i'];
-    const allowedAttributes = ['class', 'style'];
+    // Initialize menu to desired state on load
+    applyMenuState(menuShouldBeOpen);
 
-    const config = {
-        ALLOWED_TAGS: allowedTags,
-        ALLOWED_ATTR: allowedAttributes
-    };
-
-    return DOMPurify.sanitize(userInput, config);
-}
-editor.addEventListener('keydown', function (event) {
-    if (event.key === 'Enter' && !event.shiftKey) { // Added !event.shiftKey to allow Shift+Enter for new lines
-        event.preventDefault();
-        if (!send.disabled) {
-            send.click();
+    function handleResize() {
+        if (window.innerWidth > 1000) {
+            // On desktop, respect the intended state
+            applyMenuState(menuShouldBeOpen);
+        } else {
+            // On mobile collapse by default (but keep intended preference false)
+            applyMenuState(false);
+            menuShouldBeOpen = false;
         }
     }
-});
 
-const placeholder = editor.dataset.placeholder;
-// Set placeholder only if editor is empty, to avoid clearing user input on reload or script re-execution
-if (editor.textContent.trim() === '' || editor.textContent === placeholder) {
-    editor.textContent = placeholder;
-}
+    function sanitizeInput(userInputHtml) {
+        // Accept HTML from the editor and sanitize it, allowing simple formatting and line breaks
+        const allowedTags = ['p', 'br', 'b', 'em', 'i', 'strong', 'u', 'span'];
+        const allowedAttributes = ['class', 'style'];
 
+        const config = {
+            ALLOWED_TAGS: allowedTags,
+            ALLOWED_ATTR: allowedAttributes,
+            KEEP_CONTENT: false
+        };
 
-editor.addEventListener('focus', function () {
-    if (editor.textContent === placeholder) {
-        editor.textContent = '';
+        // DOMPurify will clean the HTML. Normalize newlines: convert plain line breaks to <br> if any.
+        let html = userInputHtml || '';
+        // Some browsers insert <div> blocks for newlines in contentEditable; keep as-is.
+        // Sanitize and return safe HTML.
+        return DOMPurify.sanitize(html, config);
     }
-});
+    editor.addEventListener('keydown', function (event) {
+        if (event.key === 'Enter' && !event.shiftKey) { // Added !event.shiftKey to allow Shift+Enter for new lines
+            event.preventDefault();
+            if (!send.disabled) {
+                send.click();
+            }
+        }
+    });
 
-editor.addEventListener('blur', function () {
-    if (editor.textContent.trim() === '') { // Check trim to ensure empty spaces don't prevent placeholder
+    const placeholder = editor.dataset.placeholder;
+    // Set placeholder only if editor is empty, to avoid clearing user input on reload or script re-execution
+    if (editor.textContent.trim() === '' || editor.textContent === placeholder) {
         editor.textContent = placeholder;
     }
-});
 
-// --- Editor dynamic style for wrapping and overflow ---
-function applyEditorStyles() {
-    editor.style.display = 'block';
-    editor.style.width = '100%'; // or set a fixed px width if needed
-   
-    editor.style.whiteSpace = 'pre-wrap';
-    editor.style.wordBreak = 'break-word';
-    editor.style.overflowY = 'hidden';
-    editor.style.overflowX = 'hidden';
-    editor.style.boxSizing = 'border-box';
-}
 
-function checkEditorOverflow() {
-    if (editor.scrollHeight > editor.clientHeight) {
-        editor.style.overflowY = 'auto';
-    } else {
+    editor.addEventListener('focus', function () {
+        if (editor.textContent === placeholder) {
+            editor.textContent = '';
+        }
+    });
+
+    editor.addEventListener('blur', function () {
+        if (editor.textContent.trim() === '') { // Check trim to ensure empty spaces don't prevent placeholder
+            editor.textContent = placeholder;
+        }
+    });
+
+    // --- Editor dynamic style for wrapping and overflow ---
+    function applyEditorStyles() {
+        editor.style.display = 'block';
+        editor.style.width = '100%'; // or set a fixed px width if needed
+       
+        editor.style.whiteSpace = 'pre-wrap';
+        editor.style.wordBreak = 'break-word';
         editor.style.overflowY = 'hidden';
+        editor.style.overflowX = 'hidden';
+        editor.style.boxSizing = 'border-box';
     }
-}
 
-applyEditorStyles();
+    function checkEditorOverflow() {
+        if (editor.scrollHeight > editor.clientHeight) {
+            editor.style.overflowY = 'auto';
+        } else {
+            editor.style.overflowY = 'hidden';
+        }
+    }
 
-editor.addEventListener('input', checkEditorOverflow);
-window.addEventListener('resize', checkEditorOverflow);
+    applyEditorStyles();
+
+    editor.addEventListener('input', checkEditorOverflow);
+    window.addEventListener('resize', checkEditorOverflow);
