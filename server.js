@@ -300,7 +300,6 @@ app.get('/', (req, res) => {
 
 app.post('/api/unveyl', async (req, res) => {
     const userPrompt = req.body.prompt;
-    console.log()
     if (!userPrompt) {
         return res.status(400).json({ error: 'Prompt is required' });
     }
