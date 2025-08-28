@@ -106,6 +106,7 @@ app.use(
                 "https://cdn.jsdelivr.net/npm/dompurify@3.1.0/dist/purify.min.js",
                 "https://fonts.googleapis.com",
                 "https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css",
+                "'unsafe-inline'"
             ],
             imgSrc: ["'self'", "data:"],
             connectSrc: [

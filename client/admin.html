@@ -4,82 +4,43 @@
 <title>SAGE POND DASH</title>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="stylesheet" href="./admin.css">
-<link rel="stylesheet" href="./css/apexcharts.min.css">
-
+<link rel="stylesheet" href="../admin.css">
+<link rel="stylesheet" href="../css/apexcharts.min.css">
+<link rel="stylesheet" href="../css/datepicker.min.css">
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
 
-<script>
-  // Your web app's Firebase configuration
-  // This should be replaced with your actual Firebase project configuration
-  const firebaseConfig = {
-    apiKey: "AIzaSyDyXWSxpBqk7lgomflc_Sl3BCXp8Dvffbg",
-    authDomain: "sage-pond-gen-ai.firebaseapp.com",
-    projectId: "sage-pond-gen-ai",
-    storageBucket: "sage-pond-gen-ai.appspot.com",
-    messagingSenderId: "369426724601",
-    appId: "1:369426724601:web:698e582d4e10ff710c5428",
-    measurementId: "G-XY1Y3VW550"
-  };
 
-  // Initialize Firebase
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.firestore(); // Initialize Firestore
-  const auth = firebase.auth();   // Initialize Firebase Auth
-
-  // Client-side admin access check
-  auth.onAuthStateChanged(async (user) => {
-    if (user) {
-      try {
-        const token = await user.getIdTokenResult(true); // Force refresh to get latest claims
-        if (token.claims.admin === true) {
-          console.log('Admin access confirmed client-side.');
-          // Allow page to load
-        } else {
-          console.log('User is not an admin. Redirecting to login.');
-          window.location.href = '/login?error=forbidden_client';
-        }
-      } catch (error) {
-        console.error('Error checking admin status client-side:', error);
-        window.location.href = '/login?error=auth_error_client';
-      }
-    } else {
-      console.log('No user logged in. Redirecting to login.');
-      window.location.href = '/login?error=unauthorized_client';
-    }
-  });
-</script>
-
-<!-- TinyMCE -->
 <script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
 
 </head>
 <body class="bg-gray-50 dark:bg-gray-900">
 <div class="flex pt-16 overflow-hidden bg-gray-50 dark:bg-gray-900">
   <aside id="sidebar" class="fixed top-0 left-0 z-20 flex-col flex-shrink-0 hidden w-64 h-full pt-16 font-normal duration-75 transition-width" aria-label="Sidebar">
-    <div class="relative flex flex-col flex-1 min-h-0 pt-0 bg-white border-r border-gray-200 dark:bg-gray-800 dark:border-gray-700">
-      <div class="flex flex-col flex-1 pt-5 pb-4 overflow-y-auto">
-        <div class="flex-1 px-3 space-y-1 bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
-          <ul class="pb-2 space-y-2">
-            <li>
-              <form action="#" method="GET" class="lg:hidden" autocomplete>
-                <label for="mobile-search" class="sr-only">Search</label>
-                <div class="relative">
-                  <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                    <svg class="w-5 h-5 text-gray-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"></path></svg>
+    <!-- Insert menu toggle button at the top of the aside -->
+    <button id="menu-toggle-btn" onclick="toggleSidebar()" class="p-2 m-2 bg-blue-600 text-white rounded focus:outline-none">Menu</button>
+      <div class="relative flex flex-col flex-1 min-h-0 pt-0 bg-white border-r border-gray-200 dark:bg-gray-800 dark:border-gray-700">
+        <div class="flex flex-col flex-1 pt-5 pb-4 overflow-y-auto">
+          <div class="flex-1 px-3 space-y-1 bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
+            <ul class="pb-2 space-y-2">
+              <li>
+                <form action="#" method="GET" class="lg:hidden" autocomplete>
+                  <label for="mobile-search" class="sr-only">Search</label>
+                  <div class="relative">
+                    <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                      <svg class="w-5 h-5 text-gray-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"></path></svg>
+                    </div>
+                    <input type="text" name="email" id="mobile-search" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full pl-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-gray-200 dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="Search">
                   </div>
-                  <input type="text" name="email" id="mobile-search" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full pl-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-gray-200 dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="Search">
-                </div>
-              </form>
-            </li>
-            <li>
-              <a href="#" class="flex items-center p-2 text-base text-gray-900 rounded-lg hover:bg-gray-100 group dark:text-gray-200 dark:hover:bg-gray-700">
-                  <svg class="w-6 h-6 text-gray-500 transition duration-75 group-hover:text-gray-900 dark:text-gray-400 dark:group-hover:text-white" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M2 10a8 8 0 018-8v8h8a8 8 0 11-16 0z"></path><path d="M12 2.252A8.014 8.014 0 0117.748 8H12V2.252z"></path></svg>
-                  <span class="ml-3" sidebar-toggle-item>Dashboard</span>
-              </a>
-            </li>
+                </form>
+              </li>
+              <li>
+                <a href="#" class="flex items-center p-2 text-base text-gray-900 rounded-lg hover:bg-gray-100 group dark:text-gray-200 dark:hover:bg-gray-700">
+                    <svg class="w-6 h-6 text-gray-500 transition duration-75 group-hover:text-gray-900 dark:text-gray-400 dark:group-hover:text-white" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M2 10a8 8 0 018-8v8h8a8 8 0 11-16 0z"></path><path d="M12 2.252A8.014 8.014 0 0117.748 8H12V2.252z"></path></svg>
+                    <span class="ml-3" sidebar-toggle-item>Dashboard</span>
+                </a>
+              </li>
 
             <li>
               <button type="button" class="flex items-center w-full p-2 text-base text-gray-900 rounded-lg group dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700" aria-controls="write-research-post-section" data-drawer-target="write-research-post-section" data-drawer-toggle="write-research-post-section">
@@ -1593,32 +1554,21 @@
 </div>
 </div>
     </main>
+<!-- Sidebar toggle script -->
+<script>
+  function toggleSidebar() {
+    var sidebar = document.getElementById('sidebar');
+    if (sidebar.classList.contains('hidden')) {
+      sidebar.classList.remove('hidden');
+    } else {
+      sidebar.classList.add('hidden');
+    }
+  }
+</script>
 </body>
 <!--<script async defer src="https://buttons.github.io/buttons.js"></script>-->
-<script src="/js/apexcharts.min.js"></script>
-<script src="/js/datepicker.min.js"></script>
-<script src="/js/admin.js"></script>
-<script type="text/javascript" src="richtexteditor/richtexteditor/rte.js"></script>
-<script type="text/javascript" src='richtexteditor/richtexteditor/plugins/all_plugins.js'></script>
-<script src='js/editor.js'></script>
-<script>
-  document.addEventListener('DOMContentLoaded', function () {
-    const sidebar = document.getElementById('sidebar');
-    const toggleSidebarMobile = document.getElementById('toggleSidebarMobile');
-    const sidebarBackdrop = document.getElementById('sidebarBackdrop');
-    const toggleSidebarMobileHamburger = document.getElementById('toggleSidebarMobileHamburger');
-    const toggleSidebarMobileClose = document.getElementById('toggleSidebarMobileClose');
-
-    const toggleMenu = () => {
-      sidebar.classList.toggle('hidden');
-      sidebarBackdrop.classList.toggle('hidden');
-      toggleSidebarMobileHamburger.classList.toggle('hidden');
-      toggleSidebarMobileClose.classList.toggle('hidden');
-    };
-
-    toggleSidebarMobile.addEventListener('click', toggleMenu);
-    sidebarBackdrop.addEventListener('click', toggleMenu);
-  });
-</script>
+<script src="../js/apexcharts.min.js"></script>
+<script src="../js/datepicker.min.js"></script>
+<script src="../js/admin.js"></script>
 </body>
 </html>

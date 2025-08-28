@@ -1,6 +1,9 @@
-// Ensure Firebase is initialized before this script runs (typically in HTML)
-// const db = firebase.firestore(); // Already initialized in admin.html
-// const auth = firebase.auth();   // Already initialized in admin.html
+// Ensure Firebase is initialized and 'db' is available
+if (typeof firebase !== 'undefined' && firebase.firestore) {
+    var db = firebase.firestore();
+} else {
+    console.error('Firebase is not initialized.');
+}
 
 // Ensure Firebase is initialized before this script runs (typically in HTML)
 // const db = firebase.firestore(); // Already initialized in admin.html
@@ -66,6 +69,9 @@ function hideAllSectionsAndStyles() {
     if (manageResearchPostsSection) manageResearchPostsSection.classList.add('hidden');
     removeActiveSidebarStyles();
 }
+
+// Alias hideAllSections to maintain compatibility
+//const hideAllSections = hideAllSectionsAndStyles;
 
 // Event Listeners for sidebar links
 if (settingsButton) {
@@ -1035,3 +1041,58 @@ themeToggleBtn.addEventListener('click', function() {
     document.dispatchEvent(event);
     
 });
+document.addEventListener('DOMContentLoaded', function () {
+    const sidebar = document.getElementById('sidebar');
+    const toggleSidebarMobile = document.getElementById('toggleSidebarMobile');
+    const sidebarBackdrop = document.getElementById('sidebarBackdrop');
+    const toggleSidebarMobileHamburger = document.getElementById('toggleSidebarMobileHamburger');
+    const toggleSidebarMobileClose = document.getElementById('toggleSidebarMobileClose');
+
+    const toggleMenu = () => {
+      sidebar.classList.toggle('hidden');
+      sidebarBackdrop.classList.toggle('hidden');
+      toggleSidebarMobileHamburger.classList.toggle('hidden');
+      toggleSidebarMobileClose.classList.toggle('hidden');
+    };
+
+    toggleSidebarMobile.addEventListener('click', toggleMenu);
+    sidebarBackdrop.addEventListener('click', toggleMenu);
+  });
+    // Your web app's Firebase configuration
+  // This should be replaced with your actual Firebase project configuration
+  const firebaseConfig = {
+    apiKey: "AIzaSyDyXWSxpBqk7lgomflc_Sl3BCXp8Dvffbg",
+    authDomain: "sage-pond-gen-ai.firebaseapp.com",
+    projectId: "sage-pond-gen-ai",
+    storageBucket: "sage-pond-gen-ai.appspot.com",
+    messagingSenderId: "369426724601",
+    appId: "1:369426724601:web:698e582d4e10ff710c5428",
+    measurementId: "G-XY1Y3VW550"
+  };
+
+  // Initialize Firebase
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore(); // Initialize Firestore
+  const auth = firebase.auth();   // Initialize Firebase Auth
+
+  // Client-side admin access check
+  auth.onAuthStateChanged(async (user) => {
+    if (user) {
+      try {
+        const token = await user.getIdTokenResult(true); // Force refresh to get latest claims
+        if (token.claims.admin === true) {
+          console.log('Admin access confirmed client-side.');
+          // Allow page to load
+        } else {
+          console.log('User is not an admin. Redirecting to login.');
+          window.location.href = '/login?error=forbidden_client';
+        }
+      } catch (error) {
+        console.error('Error checking admin status client-side:', error);
+        window.location.href = '/login?error=auth_error_client';
+      }
+    } else {
+      console.log('No user logged in. Redirecting to login.');
+      window.location.href = '/login?error=unauthorized_client';
+    }
+  });
