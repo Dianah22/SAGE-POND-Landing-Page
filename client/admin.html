@@ -11,7 +11,7 @@
 <body class="bg-gray-100 dark:bg-gray-900">
 
     <!-- Sidebar -->
-    <aside id="sidebar" class="fixed z-20 h-full top-0 left-0 pt-16 flex lg:flex flex-shrink-0 flex-col w-64 transition-width duration-75" aria-label="Sidebar">
+    <aside id="sidebar" class="fixed hidden z-20 h-full top-0 left-0 pt-16 lg:flex flex-shrink-0 flex-col w-64 transition-width duration-75" aria-label="Sidebar">
         <div class="relative flex-1 flex flex-col min-h-0 border-r border-gray-200 bg-white dark:bg-gray-800 pt-0">
             <div class="flex-1 flex flex-col pt-5 pb-4 overflow-y-auto">
                 <div class="flex-1 px-3 bg-white divide-y space-y-1 dark:bg-gray-800 dark:divide-gray-700">
@@ -54,21 +54,49 @@
         <nav class="bg-white border-b border-gray-200 px-4 py-2.5 dark:bg-gray-800 dark:border-gray-700 fixed left-0 right-0 top-0 z-50">
             <div class="flex flex-wrap justify-between items-center">
                 <div class="flex justify-start items-center">
+                    <button id="toggleSidebarMobile" aria-expanded="true" aria-controls="sidebar" class="lg:hidden mr-2 text-gray-600 hover:text-gray-900 cursor-pointer p-2 hover:bg-gray-100 focus:bg-gray-100 focus:ring-2 focus:ring-gray-100 rounded">
+                        <svg id="toggleSidebarMobileHamburger" class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"></path></svg>
+                        <svg id="toggleSidebarMobileClose" class="w-6 h-6 hidden" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
+                    </button>
                     <a href="#" class="flex items-center justify-between mr-4">
                         <span class="self-center text-2xl font-semibold whitespace-nowrap dark:text-white">SagePond</span>
                     </a>
                 </div>
                 <div class="flex items-center lg:order-2">
-                    <button type="button" class="hidden sm:inline-flex items-center justify-center text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">
+                    <button id="new-post-btn" type="button" class="hidden sm:inline-flex items-center justify-center text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">
                         <svg class="w-5 h-5 mr-2 -ml-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd"></path></svg>
                         New Post
                     </button>
                     <!-- Profile -->
-                    <div class="flex items-center">
-                        <button type="button" class="flex mx-3 text-sm bg-gray-800 rounded-full md:mr-0 focus:ring-4 focus:ring-gray-300 dark:focus:ring-gray-600" id="user-menu-button" aria-expanded="false" data-dropdown-toggle="dropdown">
-                            <span class="sr-only">Open user menu</span>
-                            <img class="w-8 h-8 rounded-full" src="https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/michael-gough.png" alt="user photo">
-                        </button>
+                    <div class="flex items-center ml-3">
+                        <div>
+                            <button type="button" class="flex text-sm bg-gray-800 rounded-full focus:ring-4 focus:ring-gray-300 dark:focus:ring-gray-600" id="user-menu-button" aria-expanded="false">
+                                <span class="sr-only">Open user menu</span>
+                                <img class="w-8 h-8 rounded-full" src="https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/michael-gough.png" alt="user photo">
+                            </button>
+                        </div>
+                        <!-- Dropdown menu -->
+                        <div class="z-50 hidden my-4 text-base list-none bg-white divide-y divide-gray-100 rounded shadow dark:bg-gray-700 dark:divide-gray-600" id="user-dropdown">
+                            <div class="px-4 py-3" role="none">
+                                <p class="text-sm text-gray-900 dark:text-white" role="none">
+                                Neil Sims
+                                </p>
+                                <p class="text-sm font-medium text-gray-900 truncate dark:text-gray-300" role="none">
+                                neil.sims@flowbite.com
+                                </p>
+                            </div>
+                            <ul class="py-1" role="none">
+                                <li>
+                                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600 dark:hover:text-white" role="menuitem">Profile</a>
+                                </li>
+                                <li>
+                                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600 dark:hover:text-white" role="menuitem">Settings</a>
+                                </li>
+                                <li>
+                                <a href="#" id="logout-link-dropdown" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600 dark:hover:text-white" role="menuitem">Sign out</a>
+                                </li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -165,34 +193,22 @@
                     <!-- Daily Visitors -->
                     <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
                         <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Daily Visitors</h2>
-                        <div class="flex items-end justify-around h-48 space-x-2">
-                            <div class="bg-blue-500 rounded-t-lg" style="height: 60%; width: 15%;"></div>
-                            <div class="bg-blue-500 rounded-t-lg" style="height: 80%; width: 15%;"></div>
-                            <div class="bg-blue-500 rounded-t-lg" style="height: 50%; width: 15%;"></div>
-                            <div class="bg-blue-500 rounded-t-lg" style="height: 90%; width: 15%;"></div>
-                            <div class="bg-blue-500 rounded-t-lg" style="height: 70%; width: 15%;"></div>
+                        <div id="daily-visitors-chart" class="flex items-end justify-around h-48 space-x-2">
+                            <!-- bars will be generated by JS -->
                         </div>
                     </div>
                     <!-- Signups -->
                     <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
                         <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Signups</h2>
-                        <div class="flex items-end justify-around h-48 space-x-2">
-                            <div class="bg-green-500 rounded-t-lg" style="height: 40%; width: 15%;"></div>
-                            <div class="bg-green-500 rounded-t-lg" style="height: 60%; width: 15%;"></div>
-                            <div class="bg-green-500 rounded-t-lg" style="height: 70%; width: 15%;"></div>
-                            <div class="bg-green-500 rounded-t-lg" style="height: 55%; width: 15%;"></div>
-                            <div class="bg-green-500 rounded-t-lg" style="height: 85%; width: 15%;"></div>
+                        <div id="signups-chart" class="flex items-end justify-around h-48 space-x-2">
+                            <!-- bars will be generated by JS -->
                         </div>
                     </div>
                     <!-- API Requests -->
                     <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
                         <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">API Requests</h2>
-                        <div class="flex items-end justify-around h-48 space-x-2">
-                            <div class="bg-indigo-500 rounded-t-lg" style="height: 75%; width: 15%;"></div>
-                            <div class="bg-indigo-500 rounded-t-lg" style="height: 65%; width: 15%;"></div>
-                            <div class="bg-indigo-500 rounded-t-lg" style="height: 95%; width: 15%;"></div>
-                            <div class="bg-indigo-500 rounded-t-lg" style="height: 80%; width: 15%;"></div>
-                            <div class="bg-indigo-500 rounded-t-lg" style="height: 50%; width: 15%;"></div>
+                        <div id="api-requests-count" class="text-3xl font-bold text-gray-900 dark:text-white">
+                            0
                         </div>
                     </div>
                 </div>
