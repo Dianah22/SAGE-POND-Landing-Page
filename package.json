@@ -6,9 +6,9 @@
   "scripts": {
     "dev": "webpack",
     "start": "nodemon server.js",
-    "build": "@tailwindcss -i client/style.css -o client/css/main.css --minify",
+    "build": "@tailwindcss -i client/style.css -o client/main.css --minify",
     "be": "webpack --mode production",
-    "watch": "@tailwindcss -i client/style.css -o client/css/main.css --watch&& --minify"
+    "watch": "@tailwindcss -i client/style.css -o client/main.css --watch && --minify"
   },
   "author": "",
   "license": "ISC",
