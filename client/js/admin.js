@@ -120,10 +120,59 @@ if(researchPostsLink) {
     });
 }
 
+function loadMockAnalyticsData() {
+    const dailyVisitorsChart = document.getElementById('daily-visitors-chart');
+    const signupsChart = document.getElementById('signups-chart');
+
+    if (dailyVisitorsChart) {
+        dailyVisitorsChart.innerHTML = ''; // Clear existing bars
+        for (let i = 0; i < 7; i++) {
+            const height = Math.floor(Math.random() * 80) + 20; // random height between 20% and 100%
+            const bar = document.createElement('div');
+            bar.className = 'bg-blue-500 rounded-t-lg';
+            bar.style.height = `${height}%`;
+            bar.style.width = '12%';
+            dailyVisitorsChart.appendChild(bar);
+        }
+    }
+
+    if (signupsChart) {
+        signupsChart.innerHTML = ''; // Clear existing bars
+        for (let i = 0; i < 7; i++) {
+            const height = Math.floor(Math.random() * 80) + 20; // random height between 20% and 100%
+            const bar = document.createElement('div');
+            bar.className = 'bg-green-500 rounded-t-lg';
+            bar.style.height = `${height}%`;
+            bar.style.width = '12%';
+            signupsChart.appendChild(bar);
+        }
+    }
+}
+
+async function loadApiRequestCount() {
+    const apiRequestsCountDiv = document.getElementById('api-requests-count');
+    if (apiRequestsCountDiv) {
+        apiRequestsCountDiv.textContent = '...'; // loading state
+        try {
+            const doc = await db.collection('analytics').doc('api_requests_counter').get();
+            if (doc.exists) {
+                apiRequestsCountDiv.textContent = doc.data().count;
+            } else {
+                apiRequestsCountDiv.textContent = '0';
+            }
+        } catch (error) {
+            console.error("Error fetching API request count: ", error);
+            apiRequestsCountDiv.textContent = 'N/A';
+        }
+    }
+}
+
 if(analyticsLink) {
     analyticsLink.addEventListener('click', (e) => {
         e.preventDefault();
         showSection(analyticsSection, analyticsLink);
+        loadMockAnalyticsData();
+        loadApiRequestCount();
     });
 }
 
@@ -137,6 +186,37 @@ if(logoutLink) {
 
 // Show the dashboard by default
 showSection(dashboardSection, dashboardLink);
+
+const newPostBtn = document.getElementById('new-post-btn');
+if (newPostBtn) {
+    newPostBtn.addEventListener('click', () => {
+        blogPostsLink.click();
+    });
+}
+
+const userMenuButton = document.getElementById('user-menu-button');
+const userDropdown = document.getElementById('user-dropdown');
+
+if (userMenuButton) {
+    userMenuButton.addEventListener('click', () => {
+        userDropdown.classList.toggle('hidden');
+    });
+}
+
+// Close the dropdown if the user clicks outside of it
+window.addEventListener('click', function(event) {
+    if (userMenuButton && userDropdown && !userMenuButton.contains(event.target) && !userDropdown.contains(event.target)) {
+        userDropdown.classList.add('hidden');
+    }
+});
+
+const logoutLinkDropdown = document.getElementById('logout-link-dropdown');
+if(logoutLinkDropdown) {
+    logoutLinkDropdown.addEventListener('click', (e) => {
+        e.preventDefault();
+        logoutLink.click();
+    });
+}
 
 
 async function loadBlogPostsForManagement() {
@@ -1086,6 +1166,27 @@ document.addEventListener('DOMContentLoaded', function () {
   const auth = firebase.auth();   // Initialize Firebase Auth
 
   // Client-side admin access check
+  document.addEventListener('DOMContentLoaded', function () {
+    const sidebar = document.getElementById('sidebar');
+    const toggleSidebarMobile = document.getElementById('toggleSidebarMobile');
+    const sidebarBackdrop = document.getElementById('sidebarBackdrop');
+    const toggleSidebarMobileHamburger = document.getElementById('toggleSidebarMobileHamburger');
+    const toggleSidebarMobileClose = document.getElementById('toggleSidebarMobileClose');
+
+    const toggleMenu = () => {
+      if(sidebar) sidebar.classList.toggle('hidden');
+      if(sidebarBackdrop) sidebarBackdrop.classList.toggle('hidden');
+      if(toggleSidebarMobileHamburger) toggleSidebarMobileHamburger.classList.toggle('hidden');
+      if(toggleSidebarMobileClose) toggleSidebarMobileClose.classList.toggle('hidden');
+    };
+
+    if(toggleSidebarMobile) {
+        toggleSidebarMobile.addEventListener('click', toggleMenu);
+    }
+    if(sidebarBackdrop) {
+        sidebarBackdrop.addEventListener('click', toggleMenu);
+    }
+  });
   auth.onAuthStateChanged(async (user) => {
     if (user) {
       try {
