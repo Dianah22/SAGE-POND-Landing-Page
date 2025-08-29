@@ -5,31 +5,6 @@ if (typeof firebase !== 'undefined' && firebase.firestore) {
     console.error('Firebase is not initialized.');
 }
 
-// Ensure Firebase is initialized before this script runs (typically in HTML)
-// const db = firebase.firestore(); // Already initialized in admin.html
-// const auth = firebase.auth();   // Already initialized in admin.html
-
-const settingsSection = document.getElementById('settings');
-const settingsButton = document.getElementById('settings-btn');
-const mainDashboardSection = document.getElementById('main');
-const writeResearchPostSection = document.getElementById('write-research-post-section');
-const writeResearchPostLink = document.getElementById('write-research-post-link');
-const writeBlogPostSection = document.getElementById('write-blog-post-section');
-const writeBlogPostLink = document.getElementById('write-blog-post-link');
-const manageBlogPostsSection = document.getElementById('manage-blog-posts-section');
-const manageBlogPostsLink = document.getElementById('manage-blog-posts-link');
-const manageResearchPostsSection = document.getElementById('manage-research-posts-section');
-const manageResearchPostsLink = document.getElementById('manage-research-posts-link');
-
-const allSidebarLinks = [
-    settingsButton, 
-    writeResearchPostLink, 
-    writeBlogPostLink, 
-    manageBlogPostsLink, 
-    manageResearchPostsLink
-    // Add dashboard link here if it exists and needs active styling
-];
-
 // Function to display feedback messages
 function showFeedback(elementId, message, isError = false) {
     const feedbackDiv = document.getElementById(elementId);
@@ -49,59 +24,120 @@ function showFeedback(elementId, message, isError = false) {
     }
 }
 
+const dashboardLink = document.getElementById('dashboard-link');
+const blogPostsLink = document.getElementById('blog-posts-link');
+const researchPostsLink = document.getElementById('research-posts-link');
+const analyticsLink = document.getElementById('analytics-link');
+const logoutLink = document.getElementById('logout-link');
 
-// Function to remove active styles from all sidebar links
-function removeActiveSidebarStyles() {
-    allSidebarLinks.forEach(link => {
-        if (link) { // Check if the link element exists
-            link.classList.remove('bg-gray-100', 'dark:bg-gray-700');
+const dashboardSection = document.getElementById('dashboard-section');
+const blogPostsSection = document.getElementById('blog-posts-section');
+const researchPostsSection = document.getElementById('research-posts-section');
+const analyticsSection = document.getElementById('analytics-section');
+
+const sections = [dashboardSection, blogPostsSection, researchPostsSection, analyticsSection];
+const links = [dashboardLink, blogPostsLink, researchPostsLink, analyticsLink];
+
+function hideAllSections() {
+    sections.forEach(section => {
+        if(section) section.classList.add('hidden');
+    });
+}
+
+function removeActiveStyles() {
+    links.forEach(link => {
+        if(link) link.classList.remove('bg-gray-100', 'dark:bg-gray-700');
+    });
+}
+
+function showSection(sectionToShow, linkToActivate) {
+    hideAllSections();
+    removeActiveStyles();
+    if(sectionToShow) sectionToShow.classList.remove('hidden');
+    if(linkToActivate) linkToActivate.classList.add('bg-gray-100', 'dark:bg-gray-700');
+}
+
+if(dashboardLink) {
+    dashboardLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        showSection(dashboardSection, dashboardLink);
+    });
+}
+
+if(blogPostsLink) {
+    blogPostsLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        showSection(blogPostsSection, blogPostsLink);
+        if (typeof loadBlogPostsForManagement === 'function') {
+            loadBlogPostsForManagement();
         }
+        if (typeof tinymce !== 'undefined') {
+            if (tinymce.get('blog-post-content')) {
+                tinymce.get('blog-post-content').remove();
+            }
+            tinymce.init({
+                selector: '#blog-post-content',
+                plugins: 'advlist autolink lists link image charmap print preview hr anchor pagebreak',
+                toolbar_mode: 'floating',
+            });
+        }
+        document.getElementById('blog-post-form').reset();
+        if(tinymce.get('blog-post-content')) {
+            tinymce.get('blog-post-content').setContent('');
+        }
+        document.getElementById('blog-form-title').textContent = 'Create New Blog Post';
+        const publishBtn = document.getElementById('publish-blog-post-btn');
+        publishBtn.textContent = 'Publish Blog Post';
+        delete publishBtn.dataset.editingId;
     });
 }
 
-// Function to hide all content sections and remove active styles
-function hideAllSectionsAndStyles() {
-    if (mainDashboardSection) mainDashboardSection.classList.add('hidden'); // Hide dashboard first
-    if (settingsSection) settingsSection.classList.add('hidden');
-    if (writeResearchPostSection) writeResearchPostSection.classList.add('hidden');
-    if (writeBlogPostSection) writeBlogPostSection.classList.add('hidden');
-    if (manageBlogPostsSection) manageBlogPostsSection.classList.add('hidden');
-    if (manageResearchPostsSection) manageResearchPostsSection.classList.add('hidden');
-    removeActiveSidebarStyles();
-}
-
-// Alias hideAllSections to maintain compatibility
-//const hideAllSections = hideAllSectionsAndStyles;
-
-// Event Listeners for sidebar links
-if (settingsButton) {
-    settingsButton.addEventListener('click', e => {
+if(researchPostsLink) {
+    researchPostsLink.addEventListener('click', (e) => {
         e.preventDefault();
-        hideAllSectionsAndStyles();
-        settingsButton.classList.add('bg-gray-100', 'dark:bg-gray-700');
-        if (settingsSection) settingsSection.classList.remove('hidden');
+        showSection(researchPostsSection, researchPostsLink);
+        if (typeof loadResearchPostsForManagement === 'function') {
+            loadResearchPostsForManagement();
+        }
+        if (typeof tinymce !== 'undefined') {
+            if (tinymce.get('research-post-content')) {
+                tinymce.get('research-post-content').remove();
+            }
+            tinymce.init({
+                selector: '#research-post-content',
+                plugins: 'advlist autolink lists link image charmap print preview hr anchor pagebreak',
+                toolbar_mode: 'floating',
+            });
+        }
+        document.getElementById('research-post-form').reset();
+        if(tinymce.get('research-post-content')){
+            tinymce.get('research-post-content').setContent('');
+        }
+        document.getElementById('research-form-title').textContent = 'Create New Research Post';
+        const publishBtn = document.getElementById('publish-research-post-btn');
+        publishBtn.textContent = 'Publish Research Post';
+        delete publishBtn.dataset.editingId;
     });
 }
 
-if (manageBlogPostsLink) {
-    manageBlogPostsLink.addEventListener('click', e => {
+if(analyticsLink) {
+    analyticsLink.addEventListener('click', (e) => {
         e.preventDefault();
-        hideAllSectionsAndStyles();
-        manageBlogPostsLink.classList.add('bg-gray-100', 'dark:bg-gray-700');
-        if (manageBlogPostsSection) manageBlogPostsSection.classList.remove('hidden');
-        loadBlogPostsForManagement(); 
+        showSection(analyticsSection, analyticsLink);
     });
 }
 
-if (manageResearchPostsLink) {
-    manageResearchPostsLink.addEventListener('click', e => {
+if(logoutLink) {
+    logoutLink.addEventListener('click', (e) => {
         e.preventDefault();
-        hideAllSectionsAndStyles();
-        manageResearchPostsLink.classList.add('bg-gray-100', 'dark:bg-gray-700');
-        if (manageResearchPostsSection) manageResearchPostsSection.classList.remove('hidden');
-        loadResearchPostsForManagement(); 
+        // Implement logout functionality here
+        alert('Logout clicked');
     });
 }
+
+// Show the dashboard by default
+showSection(dashboardSection, dashboardLink);
+
 
 async function loadBlogPostsForManagement() {
     const blogPostsListDiv = document.getElementById('blog-posts-list');
@@ -151,7 +187,7 @@ async function loadBlogPostsForManagement() {
             });
         });
 
-        // Add event listeners for edit buttons (setup for next step)
+        // Add event listeners for edit buttons
         document.querySelectorAll('.edit-blog-post-btn').forEach(button => {
             button.addEventListener('click', async (e) => {
                 const postId = e.target.dataset.id;
@@ -162,28 +198,30 @@ async function loadBlogPostsForManagement() {
                 }
                 const postData = postDoc.data();
 
-                hideAllSections();
-                if (writeBlogPostSection) writeBlogPostSection.classList.remove('hidden');
+                window.scrollTo(0, 0);
                 
                 // Ensure TinyMCE is initialized for blog content
                 if (typeof tinymce !== 'undefined') {
-                    if (!tinymce.get('blog-post-content')) {
-                        await tinymce.init({ // Use await if init can be async, or handle with callbacks
+                    if (tinymce.get('blog-post-content')) {
+                        tinymce.get('blog-post-content').setContent(postData.content || '');
+                    } else {
+                        await tinymce.init({
                             selector: '#blog-post-content',
                             plugins: 'advlist autolink lists link image charmap print preview hr anchor pagebreak',
                             toolbar_mode: 'floating',
                         });
+                        tinymce.get('blog-post-content').setContent(postData.content || '');
                     }
-                    tinymce.get('blog-post-content').setContent(postData.content || '');
                 }
 
-
                 document.getElementById('blog-post-title').value = postData.title || '';
-                
+                document.getElementById('blog-post-author').value = postData.author || '';
+                document.getElementById('blog-post-tags').value = postData.tags ? postData.tags.join(', ') : '';
+
                 const publishBtn = document.getElementById('publish-blog-post-btn');
                 publishBtn.textContent = 'Update Blog Post';
                 publishBtn.dataset.editingId = postId; // Store ID for update
-
+                document.getElementById('blog-form-title').textContent = 'Edit Blog Post';
             });
         });
 
@@ -198,76 +236,44 @@ const publishBlogPostBtn = document.getElementById('publish-blog-post-btn');
 if (publishBlogPostBtn) {
     publishBlogPostBtn.addEventListener('click', async () => {
         const title = document.getElementById('blog-post-title').value;
+        const author = document.getElementById('blog-post-author').value;
+        const tags = document.getElementById('blog-post-tags').value.split(',').map(tag => tag.trim());
         const content = tinymce.get('blog-post-content').getContent();
         const editingId = publishBlogPostBtn.dataset.editingId;
 
-        if (!title.trim() || !content.trim()) {
-            showFeedback('blog-post-feedback', 'Please enter a title and content for the blog post.', true);
+        if (!title.trim() || !content.trim() || !author.trim()) {
+            showFeedback('blog-post-feedback', 'Please fill all fields.', true);
             return;
         }
+
+        const postData = {
+            title,
+            author,
+            tags,
+            content,
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        };
 
         try {
             if (editingId) {
                 // Update existing post
-                await db.collection('blogPosts').doc(editingId).update({
-                    title: title,
-                    content: content,
-                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
+                await db.collection('blogPosts').doc(editingId).update(postData);
                 showFeedback('blog-post-feedback', 'Blog post updated successfully!');
                 publishBlogPostBtn.textContent = 'Publish Blog Post';
                 delete publishBlogPostBtn.dataset.editingId;
+                document.getElementById('blog-form-title').textContent = 'Create New Blog Post';
             } else {
                 // Add new post
-                await db.collection('blogPosts').add({
-                    title: title,
-                    content: content,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
+                postData.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+                await db.collection('blogPosts').add(postData);
                 showFeedback('blog-post-feedback', 'Blog post published successfully!');
             }
-            document.getElementById('blog-post-title').value = '';
+            document.getElementById('blog-post-form').reset();
             tinymce.get('blog-post-content').setContent('');
-            // Optionally, switch back to manage posts view or stay on write view
-            // hideAllSectionsAndStyles();
-            // if(manageBlogPostsSection) manageBlogPostsSection.classList.remove('hidden');
-            // loadBlogPostsForManagement();
+            loadBlogPostsForManagement();
         } catch (error) {
             console.error("Error publishing/updating blog post: ", error);
             showFeedback('blog-post-feedback', 'Failed to publish/update blog post. See console for details.', true);
-        }
-    });
-}
-
-if (writeBlogPostLink) {
-    writeBlogPostLink.addEventListener('click', e => {
-        e.preventDefault();
-        hideAllSections();
-        if (writeBlogPostSection) writeBlogPostSection.classList.remove('hidden');
-        // Initialize TinyMCE for blog post content if it's not already initialized
-        if (typeof tinymce !== 'undefined' && !tinymce.get('blog-post-content')) {
-            tinymce.init({
-                selector: '#blog-post-content',
-                plugins: 'advlist autolink lists link image charmap print preview hr anchor pagebreak',
-                toolbar_mode: 'floating',
-            });
-        }
-    });
-}
-
-if (writeResearchPostLink) {
-    writeResearchPostLink.addEventListener('click', e => {
-        e.preventDefault();
-        hideAllSections();
-        if (writeResearchPostSection) writeResearchPostSection.classList.remove('hidden');
-        // Initialize TinyMCE for research post content if it's not already initialized
-        if (typeof tinymce !== 'undefined' && !tinymce.get('research-post-content')) {
-            tinymce.init({
-                selector: '#research-post-content',
-                plugins: 'advlist autolink lists link image charmap print preview hr anchor pagebreak',
-                toolbar_mode: 'floating',
-            });
         }
     });
 }
@@ -320,7 +326,7 @@ async function loadResearchPostsForManagement() {
             });
         });
 
-        // Add event listeners for edit buttons (setup for next step)
+        // Add event listeners for edit buttons
         document.querySelectorAll('.edit-research-post-btn').forEach(button => {
             button.addEventListener('click', async (e) => {
                 const postId = e.target.dataset.id;
@@ -331,25 +337,29 @@ async function loadResearchPostsForManagement() {
                 }
                 const postData = postDoc.data();
 
-                hideAllSections();
-                if (writeResearchPostSection) writeResearchPostSection.classList.remove('hidden');
+                window.scrollTo(0, 0);
 
                 if (typeof tinymce !== 'undefined') {
-                    if (!tinymce.get('research-post-content')) {
-                         await tinymce.init({
+                    if (tinymce.get('research-post-content')) {
+                        tinymce.get('research-post-content').setContent(postData.content || '');
+                    } else {
+                        await tinymce.init({
                             selector: '#research-post-content',
                             plugins: 'advlist autolink lists link image charmap print preview hr anchor pagebreak',
                             toolbar_mode: 'floating',
                         });
+                        tinymce.get('research-post-content').setContent(postData.content || '');
                     }
-                    tinymce.get('research-post-content').setContent(postData.content || '');
                 }
                 
                 document.getElementById('research-post-title').value = postData.title || '';
-                
+                document.getElementById('research-post-author').value = postData.author || '';
+                document.getElementById('research-post-tags').value = postData.tags ? postData.tags.join(', ') : '';
+
                 const publishBtn = document.getElementById('publish-research-post-btn');
                 publishBtn.textContent = 'Update Research Post';
                 publishBtn.dataset.editingId = postId; // Store ID for update
+                document.getElementById('research-form-title').textContent = 'Edit Research Post';
             });
         });
 
@@ -365,38 +375,41 @@ const publishResearchPostBtn = document.getElementById('publish-research-post-bt
 if (publishResearchPostBtn) {
     publishResearchPostBtn.addEventListener('click', async () => {
         const title = document.getElementById('research-post-title').value;
+        const author = document.getElementById('research-post-author').value;
+        const tags = document.getElementById('research-post-tags').value.split(',').map(tag => tag.trim());
         const content = tinymce.get('research-post-content').getContent();
         const editingId = publishResearchPostBtn.dataset.editingId;
 
-        if (!title.trim() || !content.trim()) {
-            showFeedback('research-post-feedback', 'Please enter a title and content for the research post.', true);
+        if (!title.trim() || !content.trim() || !author.trim()) {
+            showFeedback('research-post-feedback', 'Please fill all fields.', true);
             return;
         }
+        
+        const postData = {
+            title,
+            author,
+            tags,
+            content,
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        };
 
         try {
             if (editingId) {
                 // Update existing post
-                await db.collection('researchPosts').doc(editingId).update({
-                    title: title,
-                    content: content,
-                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
+                await db.collection('researchPosts').doc(editingId).update(postData);
                 showFeedback('research-post-feedback', 'Research post updated successfully!');
                 publishResearchPostBtn.textContent = 'Publish Research Post';
                 delete publishResearchPostBtn.dataset.editingId;
+                document.getElementById('research-form-title').textContent = 'Create New Research Post';
             } else {
                 // Add new post
-                await db.collection('researchPosts').add({
-                    title: title,
-                    content: content,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                    updatedAt: firebase.firestore.FieldValue.serverTimestamp() 
-                });
+                postData.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+                await db.collection('researchPosts').add(postData);
                 showFeedback('research-post-feedback', 'Research post published successfully!');
             }
-            document.getElementById('research-post-title').value = '';
+            document.getElementById('research-post-form').reset();
             tinymce.get('research-post-content').setContent('');
-            // Optionally, switch back to manage view or stay on write view
+            loadResearchPostsForManagement();
         } catch (error) {
             console.error("Error publishing/updating research post: ", error);
             showFeedback('research-post-feedback', 'Failed to publish/update research post. See console for details.', true);
@@ -405,9 +418,6 @@ if (publishResearchPostBtn) {
 }
 
 
-// Default view: Show main dashboard (or a specific default section)
-hideAllSections(); // Hide all first
-if (mainDashboardSection) mainDashboardSection.classList.remove('hidden'); // Then show default
 
 
 const sidebar = document.getElementById('sidebar');
