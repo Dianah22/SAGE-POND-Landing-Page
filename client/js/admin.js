@@ -1,9 +1,20 @@
-// Ensure Firebase is initialized and 'db' is available
-if (typeof firebase !== 'undefined' && firebase.firestore) {
-    var db = firebase.firestore();
-} else {
-    console.error('Firebase is not initialized.');
+// Your web app's Firebase configuration
+const firebaseConfig = {
+    apiKey: "AIzaSyDyXWSxpBqk7lgomflc_Sl3BCXp8Dvffbg",
+    authDomain: "sage-pond-gen-ai.firebaseapp.com",
+    projectId: "sage-pond-gen-ai",
+    storageBucket: "sage-pond-gen-ai.appspot.com",
+    messagingSenderId: "369426724601",
+    appId: "1:369426724601:web:698e582d4e10ff710c5428",
+    measurementId: "G-XY1Y3VW550"
+};
+
+// Initialize Firebase
+if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
 }
+const db = firebase.firestore();
+const auth = firebase.auth();
 
 // Function to display feedback messages
 function showFeedback(elementId, message, isError = false) {
@@ -1148,22 +1159,6 @@ document.addEventListener('DOMContentLoaded', function () {
     toggleSidebarMobile.addEventListener('click', toggleMenu);
     sidebarBackdrop.addEventListener('click', toggleMenu);
   });
-    // Your web app's Firebase configuration
-  // This should be replaced with your actual Firebase project configuration
-  const firebaseConfig = {
-    apiKey: "AIzaSyDyXWSxpBqk7lgomflc_Sl3BCXp8Dvffbg",
-    authDomain: "sage-pond-gen-ai.firebaseapp.com",
-    projectId: "sage-pond-gen-ai",
-    storageBucket: "sage-pond-gen-ai.appspot.com",
-    messagingSenderId: "369426724601",
-    appId: "1:369426724601:web:698e582d4e10ff710c5428",
-    measurementId: "G-XY1Y3VW550"
-  };
-
-  // Initialize Firebase
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.firestore(); // Initialize Firestore
-  const auth = firebase.auth();   // Initialize Firebase Auth
 
   // Client-side admin access check
   document.addEventListener('DOMContentLoaded', function () {
