@@ -15,6 +15,7 @@
   "dependencies": {
     "@tailwindcss/cli": "^4.1.12",
     "@thi.ng/color": "^5.7.34",
+    "@whiskeysockets/baileys": "^7.0.0-rc.2",
     "axios": "^1.10.0",
     "body-parser": "^1.20.3",
     "cookie-parser": "^1.4.7",

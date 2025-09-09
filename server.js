@@ -141,29 +141,122 @@ app.post('/api/verify-token', async (req, res) => {
   });
  
 const fetch = require('node-fetch'); // Add node-fetch
-const { Client, LocalAuth } = require('whatsapp-web.js');
+const makeWASocket = require('@whiskeysockets/baileys').default;
+const { useMultiFileAuthState, DisconnectReason } = require('@whiskeysockets/baileys');
 const qrcode = require('qrcode-terminal');
+const { Boom } = require('@hapi/boom');
+
 app.get('/terms', (req, res) => {
     res.sendFile(path.join(initial_path, 'terms.html'));
 });
-// Initialize WhatsApp Client
-const whatsappClient = new Client({
-    authStrategy: new LocalAuth(), // Use LocalAuth to save session and avoid re-scanning QR code often
-    puppeteer: {
-        headless: true,
-        args: ['--no-sandbox', '--disable-setuid-sandbox'] // Args for running in restricted environments
-    }
-});
 
-whatsappClient.on('qr', qr => {
-    qrcode.generate(qr, { small: true });
-    console.log('QR RECEIVED, scan it with your phone.');
-    require('fs').writeFileSync('/app/qr.txt', qr);
-});
+let sock;
+let qrCodeData;
 
-whatsappClient.on('ready', () => {
-    console.log('WhatsApp Client is ready!');
-});
+async function connectToWhatsApp() {
+    const { state, saveCreds } = await useMultiFileAuthState('auth_info_baileys');
+    sock = makeWASocket({
+        auth: state,
+        printQRInTerminal: true,
+    });
+
+    sock.ev.on('connection.update', (update) => {
+        const { connection, lastDisconnect, qr } = update;
+        if (qr) {
+            qrCodeData = qr;
+            console.log('QR RECEIVED, scan it with your phone.');
+            qrcode.generate(qr, { small: true });
+        }
+        if (connection === 'close') {
+            const shouldReconnect = (lastDisconnect.error instanceof Boom)?.output?.statusCode !== DisconnectReason.loggedOut;
+            console.log('connection closed due to ', lastDisconnect.error, ', reconnecting ', shouldReconnect);
+            // reconnect if not logged out
+            if (shouldReconnect) {
+                connectToWhatsApp();
+            }
+        } else if (connection === 'open') {
+            console.log('opened connection');
+        }
+    });
+
+    sock.ev.on('creds.update', saveCreds);
+    sock.ev.on('messages.upsert', async m => {
+        const message = m.messages[0];
+        if (!message.key.fromMe && m.type === 'notify') {
+            const sender = message.key.remoteJid;
+            const messageContent = message.message.conversation || message.message.extendedTextMessage?.text;
+
+            if (sender !== '256777040263@c.us') {
+                if (feedbackData[sender] && feedbackData[sender].response && !feedbackData[sender].selection) {
+                    feedbackData[sender].selection = messageContent;
+
+                    try {
+                        await db.collection('feedback').add({
+                            from: sender,
+                            prompt: feedbackData[sender].prompt,
+                            response: feedbackData[sender].response,
+                            selection: feedbackData[sender].selection,
+                            timestamp: new Date()
+                        });
+                        await sock.sendMessage(sender, { text: 'Thank you for the feedback!' });
+                    } catch (error) {
+                        console.error('Error saving feedback to Firestore:', error);
+                        await sock.sendMessage(sender, { text: 'Sorry, there was an error saving your feedback.' });
+                    } finally {
+                        delete feedbackData[sender];
+                    }
+                } else if (feedbackData[sender] && feedbackData[sender].isProcessing) {
+                    await sock.sendMessage(sender, { text: 'Your previous prompt is still being processed, please wait...' });
+                } else {
+                    const userPrompt = messageContent;
+                    feedbackData[sender] = {
+                        prompt: userPrompt,
+                        isProcessing: true
+                    };
+
+                    if (!userPrompt) {
+                        return;
+                    }
+                    const externalModelUrl = `https://sagepond--uvveyl-unveyl.modal.run/?prompt=${encodeURIComponent(userPrompt)}&apiKey=${sessionCookie}`;
+
+                    try {
+                        const modelResponse = await fetch(externalModelUrl);
+                        if (!modelResponse.ok) {
+                            const errorText = await modelResponse.text();
+                            console.error(`External API call failed: ${modelResponse.status} ${errorText}`);
+                            await sock.sendMessage(sender, { text: 'Failed to get response from model' });
+                            return;
+                        }
+                        const modelData = await modelResponse.json();
+                        const reply = modelData.response || modelData || 'yooo';
+
+                        if (reply.includes('<post_linkedin>')) {
+                            const postContent = reply.split('<post_linkedin>')[1].split('</post_linkedin>')[0];
+                            await postOnLinkedIn(postContent);
+                            await sock.sendMessage(sender, { text: 'I have posted on LinkedIn for you.' });
+                        } else if (reply.includes('<remember_message>')) {
+                            const reminderContent = reply.split('<remember_message>')[1].split('</remember_message>')[0];
+                            sendReminder(sender, reminderContent);
+                            await sock.sendMessage(sender, { text: 'I have set a reminder for you.' });
+                        } else {
+                            await sock.sendMessage(sender, { text: reply });
+                        }
+                    } catch (error) {
+                        console.error('Error calling external model API:', error);
+                        await sock.sendMessage(sender, { text: 'Internal server error while contacting model' });
+                    } finally {
+                        if (feedbackData[sender]) {
+                            feedbackData[sender].isProcessing = false;
+                        }
+                    }
+                }
+            }
+        }
+    });
+    
+}
+
+//connectToWhatsApp();
 
 const { google } = require('googleapis');
 
@@ -199,101 +292,6 @@ app.use((req, res, next) => {
     sessionCookie = req.cookies.session || 'aa264cbdf161c11173e106ad2f422e3c224488e2ccecd5b78bb6e4757511d762';
     next();
 });
-/*
-async function handleMessage(message) {
-    if (message.from !== '256777040263@c.us') {
-        if (feedbackData[message.from] && feedbackData[message.from].response && !feedbackData[message.from].selection ) {
-            feedbackData[message.from].selection = message.body;
-            
-            // Store feedback in Firestore
-            try {
-                await db.collection('feedback').add({
-                    from: message.from,
-                    prompt: feedbackData[message.from].prompt,
-                    response: feedbackData[message.from].response,
-                    selection: feedbackData[message.from].selection,
-                    timestamp: new Date()
-                });
-                message.reply('Thank you for the feedback!');
-            } catch (error) {
-                console.error('Error saving feedback to Firestore:', error);
-                message.reply('Sorry, there was an error saving your feedback.');
-            } finally {
-                delete feedbackData[message.from];
-            }
-        } else if(feedbackData[message.from] && feedbackData[message.from].isProcessing){
-            // If the user is still waiting for a response
-            message.reply('Your previous prompt is still being processed, please wait...');
-        }
-        else {
-            const userPrompt = message.body;
-            feedbackData[message.from] = {
-                prompt: userPrompt,
-                isProcessing: true
-            };
-
-            if (!userPrompt) {
-                return;
-            }
-            const externalModelUrl = `https://sagepond--uvveyl-unveyl.modal.run/?prompt=${encodeURIComponent(userPrompt)}&apiKey=${sessionCookie}`;
-
-            try {
-                const modelResponse = await fetch(externalModelUrl);
-                if (!modelResponse.ok) {
-                    const errorText = await modelResponse.text();
-                    console.error(`External API call failed: ${modelResponse.status} ${errorText}`);
-                    message.reply('Failed to get response from model');
-                    return;
-                }
-                const modelData = await modelResponse.json();
-                const reply = modelData.response || modelData || 'yooo';
-
-                if (reply.includes('<post_linkedin>')) {
-                    const postContent = reply.split('<post_linkedin>')[1].split('</post_linkedin>')[0];
-                    await postOnLinkedIn(postContent);
-                    message.reply('I have posted on LinkedIn for you.');
-                } else if (reply.includes('<remember_message>')) {
-                    const reminderContent = reply.split('<remember_message>')[1].split('</remember_message>')[0];
-                    sendReminder(message.from, reminderContent);
-                    message.reply('I have set a reminder for you.');
-                }
-            } catch (error) {
-                console.error('Error calling external model API:', error);
-                message.reply('Internal server error while contacting model');
-            }finally {
-                if (feedbackData[message.from]) {
-                    feedbackData[message.from].isProcessing = false;
-                }
-            }
-        }
-    }
-}
-
-whatsappClient.on('message', async message => {
-    await handleMessage(message);
-});
-
-
-
-whatsappClient.on('auth_failure', msg => {
-    console.error('WHATSAPP AUTHENTICATION FAILURE', msg);
-});
-
-whatsappClient.on('disconnected', (reason) => {
-    console.log('WhatsApp Client was logged out', reason);
-});
-
-whatsappClient.on('loading_screen', (percent, message) => {
-    console.log('LOADING SCREEN', percent, message);
-});
-
-whatsappClient.on('authenticated', () => {
-    console.log('AUTHENTICATED');
-});
-
-whatsappClient.initialize().catch(err => console.error('WhatsApp Client Initialization Error:', err));
-
-*/
 // Routes
 app.get('/', (req, res) => {
     res.sendFile(path.join(initial_path, "index.html"));
@@ -489,39 +487,30 @@ app.use((req, res) => {
 });
 
 // WhatsApp Send Message Endpoint
-/*
-app.post('/api/whatsapp/send', verifySession, async (req, res) => {
-    if (!whatsappClient || typeof whatsappClient.getState !== 'function') {
+app.post('/api/whatsapp/send', async (req, res) => {
+    if (!sock) {
         return res.status(503).json({ success: false, message: 'WhatsApp client is not initialized yet.' });
     }
 
-    const clientState = await whatsappClient.getState();
-    if (clientState !== 'CONNECTED') {
-         // Log detailed state for debugging
-        console.log(`WhatsApp client not ready. Current state: ${clientState}`);
-        return res.status(503).json({ success: false, message: `WhatsApp client not ready. State: ${clientState}` });
-    }
-
-    const { number, message } = req.body; // number should be like '1234567890@c.us'
+    const { number, message } = req.body; // number should be like '1234567890@s.whatsapp.net'
 
     if (!number || !message) {
         return res.status(400).json({ success: false, message: 'Number and message are required.' });
     }
 
     // Validate number format (simple check, can be improved)
-    if (!/^\d+@c\.us$/.test(number)) {
-        return res.status(400).json({ success: false, message: 'Invalid number format. Expected: 1234567890@c.us' });
+    if (!/^\d+@s\.whatsapp\.net$/.test(number)) {
+        return res.status(400).json({ success: false, message: 'Invalid number format. Expected: 1234567890@s.whatsapp.net' });
     }
 
     try {
-        const msg = await whatsappClient.sendMessage(number, message);
-        res.json({ success: true, message: 'Message sent successfully.', messageId: msg.id.id });
+        const msg = await sock.sendMessage(number, { text: message });
+        res.json({ success: true, message: 'Message sent successfully.', messageId: msg.key.id });
     } catch (error) {
         console.error('Error sending WhatsApp message:', error);
         res.status(500).json({ success: false, message: 'Failed to send WhatsApp message.', error: error.message });
     }
 });
-*/
 
 app.listen(port, () => {
     console.log(`listening on Port ${port}`);
