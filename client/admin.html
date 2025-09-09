@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <link href="main.css" rel="stylesheet">
+    <link href="../main.css" rel="stylesheet">
     <script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/5/tinymce.min.js" referrerpolicy="origin"></script>
 </head>
 <body class="bg-gray-100 dark:bg-gray-900">
@@ -17,27 +17,27 @@
                 <div class="flex-1 px-3 bg-white divide-y space-y-1 dark:bg-gray-800 dark:divide-gray-700">
                     <ul class="space-y-2 pb-2">
                         <li>
-                            <a href="#" id="dashboard-link" class="text-base text-gray-900 font-normal rounded-lg flex items-center p-2 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">
+                            <a role="button" id="dashboard-link" class="text-base text-gray-900 font-normal rounded-lg flex items-center p-2 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">
                                 <span class="ml-3">Dashboard</span>
                             </a>
                         </li>
                         <li>
-                            <a href="#" id="blog-posts-link" class="text-base text-gray-900 font-normal rounded-lg flex items-center p-2 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">
+                            <a role="button" id="blog-posts-link" class="text-base text-gray-900 font-normal rounded-lg flex items-center p-2 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">
                                 <span class="ml-3">Blog Posts</span>
                             </a>
                         </li>
                         <li>
-                            <a href="#" id="research-posts-link" class="text-base text-gray-900 font-normal rounded-lg flex items-center p-2 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">
+                            <a role="button" id="research-posts-link" class="text-base text-gray-900 font-normal rounded-lg flex items-center p-2 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">
                                 <span class="ml-3">Research</span>
                             </a>
                         </li>
                         <li>
-                            <a href="#" id="analytics-link" class="text-base text-gray-900 font-normal rounded-lg flex items-center p-2 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">
+                            <a role="button" id="analytics-link" class="text-base text-gray-900 font-normal rounded-lg flex items-center p-2 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">
                                 <span class="ml-3">Analytics</span>
                             </a>
                         </li>
                         <li>
-                            <a href="#" id="logout-link" class="text-base text-gray-900 font-normal rounded-lg flex items-center p-2 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">
+                            <a role="button" id="logout-link" class="text-base text-gray-900 font-normal rounded-lg flex items-center p-2 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">
                                 <span class="ml-3">Logout</span>
                             </a>
                         </li>
@@ -224,9 +224,10 @@
         </main>
     </div>
 
+    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
     <script src="../js/admin.js"></script>
 </body>
