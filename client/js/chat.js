@@ -394,7 +394,7 @@ const firebaseReady = new Promise((resolve) => { firebaseReadyResolve = resolve;
             .replace(/"/g, '&quot;')
             .replace(/'/g, '&#039;');
     }
-
+const recent_title = document.getElementById('recent_title');
     function renderChatList(chats) {
         recent.innerHTML = chats.map(chat => `
             <div class="rchat h-10 rounded-3xl hover:bg-gray-700 transition p-2 m-2 flex flex-wrap justify-center content-center items-center">
@@ -437,6 +437,7 @@ const firebaseReady = new Promise((resolve) => { firebaseReadyResolve = resolve;
 
         // Apply display changes immediately (GSAP doesn't animate display)
         side_btn.style.display = open ? '' : 'none';
+        recent_title.style.display = open ? '' : 'none';
         recents.style.display = open ? '' : 'none';
         if (side_menu) {
             // On desktop show side_menu when open, hide on mobile
