@@ -372,7 +372,7 @@ const firebaseReady = new Promise((resolve) => { firebaseReadyResolve = resolve;
             const safeContent = DOMPurify.sanitize(withBreaks, { ALLOWED_TAGS: ['br'], ALLOWED_ATTR: [] });
 
             return `
-                <div class="flex w-full mb-4 ${isUser ? 'justify-end pr-20' : 'justify-start pl-4'}">
+                <div class="flex w-full mb-4 ${isUser ? 'justify-end ' : 'justify-start'}">
                     <div class="max-w-[70%] px-4 py-2 rounded-2xl shadow-md text-base ${isUser ? 'bg-gray-900 text-white ml-auto' : ' text-gray-200 mr-auto  text-6xl'}">
                         <div class="flex items-center gap-2">
                             ${isUser ? '' : ''}
