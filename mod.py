@@ -3,12 +3,12 @@ from pathlib import Path
 
 app = modal.App('uvveyl')
 
-image = modal.Image.debian_slim(python_version='3.12').pip_install("torch",'sentencepiece','fastapi[standard]','datasets','firebase_admin','torch_tensorrt','torchvision','nvidia-modelopt[all]',gpu='B200')
+image = modal.Image.debian_slim(python_version='3.12').pip_install("torch",'sentencepiece','fastapi[standard]','datasets','firebase_admin','torch_tensorrt','torchvision','nvidia-modelopt[all]',gpu='B200').cmd(["--enforce-eager"])
 vol = modal.Volume.from_name("sage",create_if_missing=True)
-MODEL_DIR = '/sage' #
 @app.function(gpu="a10g", image=image,volumes={'/sage/': vol},secrets=[modal.Secret.from_name("apiKey")],enable_memory_snapshot=True,experimental_options={"enable_gpu_snapshot": True})
 @modal.fastapi_endpoint()
 async def unveyl(prompt:str, apiKey: str):
+    
     import os
     import firebase_admin
     from firebase_admin import credentials, auth
@@ -19,7 +19,9 @@ async def unveyl(prompt:str, apiKey: str):
     import os
     import torch_tensorrt
     import math
-    torch.backends.cudnn.deterministic = False
+    FAST_BOOT = True
+    cmd = ["--enforce-eager" if FAST_BOOT else "--no-enforce-eager"]
+    
     directory_path = '/sage/sage'
     file_paths = [os.path.join(directory_path, f) for f in os.listdir(directory_path)]
     cred = credentials.Certificate('/sage/sage/sagepond.json')
@@ -267,7 +269,7 @@ async def unveyl(prompt:str, apiKey: str):
 
         print(f"Loaded LoRA adapters from {path}")
 
-    checkpoints = torch.load('/sage/sage/sage/un_comp24.pt',weights_only=True,map_location=device)
+    checkpoints = torch.load('un_comp2.pt',weights_only=True,map_location=device)
     
     model = torch.compile(Unveyl1().to(device),backend="torch_tensorrt", dynamic=False,
                                 options={
@@ -277,8 +279,7 @@ async def unveyl(prompt:str, apiKey: str):
                                          "use_python_runtime": False,})
     model.load_state_dict(checkpoints)
     max_new_tokens = 512
-    system_prompt = f'''Always be faithful to the user instructions.
-    You are a helpful AI Assistant that helps with the user's tasks
+    system_prompt = f'''You are Unveyl, a smart, friendly, and reliable AI assistant. Your role is to provide clear, concise, and helpful responses across a wide range of topics. Whether the user needs explanations, creative ideas, technical help, or just a conversation, you respond with accuracy, respect, and relevance. Always aim to be engaging, informative, and easy to understand. If a task requires step-by-step reasoning, take the time to explain your thought process logically and clearly. 
 User: {prompt} '''
     context =  torch.tensor(tokenizer.EncodeAsIds(system_prompt,add_eos=True),device=device).unsqueeze(0) # (B, T)
     inputs=model.generate(context,max_new_tokens)  # (B, T + max_new_tokens)

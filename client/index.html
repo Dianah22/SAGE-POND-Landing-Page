@@ -39,7 +39,7 @@
       
       <div class="nav_content w-[350px] md:w-[550px] h-10 rounded-[40px]  flex justify-center z-[20] backdrop-blur-3xl bg-[#000000b5]  "id='nav'>
         <ul class="flex-row flex text-white content-center flex-wrap text-center md:gap-12 gap-3 items-center text-[16.1px]">
-          <li><img src='/images/logo.png'alt='sage pond logo' class="md:w-[30px] md:h-[45px] relative top-[2px] object-contain w-[40px] h-[32px] "></li>
+          <li><img src='/images/logo.png'alt='sage pond logo' class="md:w-[30px] md:h-[45px] relative top-[2px]   h-[32px] " style="object-fit: contain; width:40px; height:32px"></li>
           <li><a href='/'>Home</a></li>
           <li><a href='#blog'>BLOG</a></li>
           <li><a href='/research'>Research</a></li>
@@ -48,11 +48,16 @@
       </div>
     </div> 
     <div class=" flex flex-row flex-wrap  sm:bottom-[49px] justify-center items-center gap-3 mt-10 mb-4 lg:bottom-60 bottom-10 relative">
-      <div class="img1 w-100 h-28">
-        <img src="images\AWS White - Cloudvisor (1).png" class="w-100 h-100" alt="cloudvisor">  
+      <div class="img1 " style="width: 25rem; height:7rem;">
+        <img src="images\AWS White - Cloudvisor (1).png" class="" alt="cloudvisor" style="width:25rem; height:7rem; object-fit:contain;">  
       </div>
-      <div class="img1 w-100 h-16 bg-white rounded-[60px]">
-        <img src="images\f6s.png" class="w-[326px] h-full md:h-100 object-contain md:w-100" alt="f6s">  
+      <div class="img1 w-100 h-16 bg-white rounded-[60px]"style='    display: flex
+;
+    align-items: center;
+    flex-wrap: wrap;
+    flex-direction: row;
+    justify-content: center;'>
+        <img src="images\f6s.png" class=" md:h-100  md:w-100" style="width:326px; height:100%; object-fit: contain; " alt="f6s">  
       </div>
     </div>
     <section class="spacer h-[150px]"></section>
@@ -135,7 +140,7 @@
           <div class="md:flex md:justify-between">
             <div class="mb-6 md:mb-0">
                 <a href="https://sagepond.com/" class="flex items-center text-3xl">
-                    <img src="images/logo2.png" class="h-12 me-3 sm:h-12 w-[69px]" alt="SAGE POND  Logo" /> <b>SAGE POND</b>
+                    <img src="images/logo2.png" class="h-12 me-3 sm:h-12 " alt="SAGE POND  Logo" style="width:69px"/> <b>SAGE POND</b>
                 </a>
             </div>
             <div class="grid grid-cols-2 gap-8 sm:gap-6 sm:grid-cols-3"> 
@@ -147,11 +152,11 @@
             </span>
             <div class="flex mt-4 sm:justify-center sm:mt-0">
                 <a href="https://www.linkedin.com/company/sagepond/" class="text-gray-500 hover:text-gray-900 dark:hover:text-white">
-                    <img src="images/linkedin.svg" class="w-4 h-4" alt="SAGE POND LINKEDIN ACCOUNT">
+                    <img src="images/linkedin.svg"  alt="SAGE POND LINKEDIN ACCOUNT"style='width: 16px; height:16px'>
                     <span class="sr-only">Linkedin page</span>
                 </a> 
                 <a href="https://github.com/sage-pond" class="text-gray-500 hover:text-gray-900 dark:hover:text-white ms-5">
-                    <img src="images/github.svg" class="w-4 h-4" alt="SAGE POND, GITHUB ACCOUNT">
+                    <img src="images/github.svg" alt="SAGE POND, GITHUB ACCOUNT"style='width: 16px; height:16px'>
                     <span class="sr-only">GitHub account</span>
                 </a>
             </div>

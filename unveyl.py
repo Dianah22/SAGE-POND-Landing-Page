@@ -1,17 +1,15 @@
 import torch
 from torch import nn
 import torch.optim as optim
-from torch.utils.data import Dataset,DataLoader,DistributedSampler,WeightedRandomSampler
+from torch.utils.data import Dataset
 import torch.nn.functional as F
 from torch.distributed import init_process_group,destroy_process_group
 from torch.nn.parallel import DistributedDataParallel as DDP
 #import sentencepiece as spm
 import os
-from datasets import load_dataset,concatenate_datasets
+import sentencepiece as spm
 from typing import Optional
 from typing import Tuple
-torch.backends.cuda.matmul.allow_tf32 = True  
-torch.set_float32_matmul_precision('high')
 def set_seed(seed):
     torch.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
@@ -149,43 +147,6 @@ def get_batch_log_probs(
     else:
         return (per_token_log_probs * loss_mask).sum(-1)
 
-
-def truncate_sequence_for_logprobs(
-    query_response_logits: torch.Tensor, context_length: int
-) -> torch.Tensor:
-    """
-    Truncates logits generated over a sequence for estimating logprobs over the tokens in the sequence.
-    This assumes the sequence is of the (query, response) format with length (context_length + response_length)
-    Args:
-        query_response_logits (torch.Tensor): The logits tensor of shape [b, context_length + response_length, vocab_size].
-        context_length (int): The length of the context.
-
-    Returns:
-        torch.Tensor: The truncated logits for the response with shape [b, response_length, vocab_size]."""
-    return query_response_logits[:, context_length - 1 : -1]
-source_weights = {
-    "dolly": 1.0,
-    "general": 1.0,
-    "self_knowledge": 5.0,  # upweight this
-    "self_instruct": 1.0,
-    "everythinglm": 1.0,
-    "coedit": 1.0,
-    "openbookqa_main_promptsource": 1.0,
-    "poems": 1.0,
-    "wizard": 1.0,
-    "guardian_authorship_cross_topic_7_promptsource": 1.0,
-    "mwsc_promptsource": 1.0,
-    "ambig_qa_light_promptsource": 1.0,
-    "ai2_arc_ARC-Challenge_promptsource": 1.0,
-    "prompter-natural-instructions": 1.0,
-    "Human-Like-DPO-Dataset": 1.0,
-}
-def add_source(dataset, source_name):
-    return dataset.map(lambda x: {"source": source_name})
-
-weights = [source_weights[ex['source']] for ex in data]
-sampler = WeightedRandomSampler(weights, num_samples=len(weights), replacement=True)
-
 tokenizer = spm.SentencePieceProcessor(model_file='unveyl.model')
 torch.autograd.set_detect_anomaly(True)
 pad_token_id=0
@@ -226,15 +187,12 @@ if ddp:
     device = f'cuda:{ddp_local_rank}'
     torch.cuda.set_device(device)
     master_process = ddp_rank==0
-    sampler = DistributedSampler(Boom(data))
-    train_data = DataLoader(Boom(combine),sampler=sampler,batch_size=32,collate_fn=collate_fn,pin_memory=True)
 else:
     ddp_rank=0
     dpp_local_rank=0
     ddp_world_size=1
     master_process=True
-    device = 'cuda'
-    train_data = DataLoader(Boom(combine),batch_size=10,collate_fn=collate_fn,pin_memory=True)
+    device = 'cpu'
 n_embd = 768
 n_head = 12
 n_layer = 12
@@ -414,7 +372,7 @@ def save_checkpoint(model, optimizer,step, filepath):
     }
     torch.save(checkpoint, filepath)
 
-checkpoints = torch.load('unveylchat.pt',map_location=device)
+checkpoints = torch.load('un_comp2.pt',map_location=device)
 model = Unveyl1().to(device)
 beta = 0.1  # A scaling factor for the loss
 def test(model):
@@ -425,14 +383,11 @@ def test(model):
             mod = model.generate(context,512).tolist()[0][context.shape[1]:]
             print(tokenizer.decode(mod))
             print()   
-model.load_state_dict(checkpoints['model_state_dict'])
+model.load_state_dict(checkpoints)
 if ddp:
     model = DDP(model,device_ids=[ddp_local_rank],find_unused_parameters=True)
 raw_model = model.module if ddp else model
 optimizer = raw_model.config_optimizer(weight_decay=0.1,lr=2e-6,device=device)
-optimizer.load_state_dict(checkpoints['optimizer_state_dict'])
-scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=len(train_data), eta_min=2e-6)
-
 def train(model,optimizer):
     model.train()
     for epoch in range(3):
@@ -454,7 +409,7 @@ def train(model,optimizer):
                 if step % 500 == 0 and step != 0:
                         test(raw_model)
                         save_checkpoint(raw_model,optimizer,step,'unveylchat.pt')
-train(raw_model,optimizer)
+#train(raw_model,optimizer)
 if ddp:
     destroy_process_group()
 

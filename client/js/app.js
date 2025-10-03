@@ -30,7 +30,7 @@ renderer.setClearColor(0x1E2A78, 1);
 // Set initial size and handle resizing
 function updateCanvasSize() {
     const width = window.innerWidth;
-    const height = 600;
+    const height = 664;
     renderer.setSize(width, height);
     // Lower pixel ratio on mobile to save GPU
     renderer.setPixelRatio(isMobile() ? 1 : Math.min(window.devicePixelRatio, 2));
@@ -38,7 +38,7 @@ function updateCanvasSize() {
     renderer.domElement.style.top = '0';
     renderer.domElement.style.left = '0';
     renderer.domElement.style.width = '100%';
-    renderer.domElement.style.height = '600px';
+    renderer.domElement.style.height = '664px';
     renderer.domElement.style.zIndex = '-1';
     renderer.domElement.style.pointerEvents = 'none';
 }
