@@ -3,7 +3,7 @@ from pathlib import Path
 
 app = modal.App('uvveyl')
 
-image = modal.Image.debian_slim(python_version='3.12').pip_install("torch",'sentencepiece','fastapi[standard]','datasets','firebase_admin','torch_tensorrt','torchvision','nvidia-modelopt[all]',gpu='B200').cmd(["--enforce-eager"])
+image = modal.Image.debian_slim(python_version='3.12').pip_install("torch==2.7.1",'sentencepiece','fastapi[standard]','datasets','firebase_admin','torch_tensorrt','torchvision','nvidia-modelopt[all]',gpu='B200').cmd(["--enforce-eager"])
 vol = modal.Volume.from_name("sage",create_if_missing=True)
 @app.function(gpu="a10g", image=image,volumes={'/sage/': vol},secrets=[modal.Secret.from_name("apiKey")],enable_memory_snapshot=True,experimental_options={"enable_gpu_snapshot": True})
 @modal.fastapi_endpoint()
@@ -22,8 +22,9 @@ async def unveyl(prompt:str, apiKey: str):
     FAST_BOOT = True
     cmd = ["--enforce-eager" if FAST_BOOT else "--no-enforce-eager"]
     
-    directory_path = '/sage/sage'
+    directory_path = '/sage/sage/sage'
     file_paths = [os.path.join(directory_path, f) for f in os.listdir(directory_path)]
+    print("Files in /sage/sage/sage/:", file_paths)
     cred = credentials.Certificate('/sage/sage/sagepond.json')
     try:
         # Set check_revoked=True to ensure the session cookie is not revoked
@@ -37,7 +38,10 @@ async def unveyl(prompt:str, apiKey: str):
     except auth.InvalidSessionCookieError as e:
         # Session cookie is invalid, expired or revoke
         pass
-        
+    def set_seed(seed):
+        torch.manual_seed(seed)
+        torch.cuda.manual_seed_all(seed)
+    set_seed(42)
     tokenizer = spm.SentencePieceProcessor(model_file='/sage/sage/unveyl.model')
     n_embd = 768
     n_head = 12
@@ -269,19 +273,18 @@ async def unveyl(prompt:str, apiKey: str):
 
         print(f"Loaded LoRA adapters from {path}")
 
-    checkpoints = torch.load('un_comp2.pt',weights_only=True,map_location=device)
+    checkpoints = torch.load('/sage/sage/sage/unv1.pt',weights_only=False,map_location=device)
     
     model = torch.compile(Unveyl1().to(device),backend="torch_tensorrt", dynamic=False,
                                 options={
-                                         "enabled_precisions": {torch.float, torch.half},
-                                         "sparse_weights": True,
-                                         "use_fp32_acc": True,
-                                         "use_python_runtime": False,})
+                                        "enabled_precisions": {torch.float, torch.half},
+                                       "sparse_weights": True,
+                                      "use_fp32_acc": True,
+                                     "use_python_runtime": False,})
     model.load_state_dict(checkpoints)
     max_new_tokens = 512
-    system_prompt = f'''You are Unveyl, a smart, friendly, and reliable AI assistant. Your role is to provide clear, concise, and helpful responses across a wide range of topics. Whether the user needs explanations, creative ideas, technical help, or just a conversation, you respond with accuracy, respect, and relevance. Always aim to be engaging, informative, and easy to understand. If a task requires step-by-step reasoning, take the time to explain your thought process logically and clearly. 
-User: {prompt} '''
-    context =  torch.tensor(tokenizer.EncodeAsIds(system_prompt,add_eos=True),device=device).unsqueeze(0) # (B, T)
+    system_prompt = f'''{prompt}'''
+    context =  torch.tensor(tokenizer.EncodeAsIds(system_prompt,add_eos=False),device=device).unsqueeze(0) # (B, T)
     inputs=model.generate(context,max_new_tokens)  # (B, T + max_new_tokens)
-    outputs = tokenizer.decode(inputs.tolist()[0][context.shape[1]:]).replace('assistant: ','')
+    outputs = tokenizer.decode(inputs.tolist()[0][context.shape[1]:])
     return outputs

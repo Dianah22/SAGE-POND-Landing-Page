@@ -6,14 +6,14 @@
   "scripts": {
     "dev": "webpack",
     "start": "nodemon server.js",
-    "build": "@tailwindcss -i client/style.css -o client/main.css --minify",
+    "build": "@tailwindcss/cli -i client/style.css -o client/main.css",
     "be": "webpack --mode production",
-    "watch": "@tailwindcss -i client/style.css -o client/main.css --watch && --minify"
+    "watch": "@tailwindcss/cli -i client/style.css -o client/main.css --watch"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@tailwindcss/cli": "^4.1.12",
+    "@tailwindcss/cli": "^4.1.16",
     "@thi.ng/color": "^5.7.34",
     "@whiskeysockets/baileys": "^7.0.0-rc.2",
     "axios": "^1.10.0",
@@ -36,7 +36,7 @@
     "path": "^0.12.7",
     "qrcode-terminal": "^0.12.0",
     "stream": "^0.0.3",
-    "tailwindcss": "^4.1.12",
+    "tailwindcss": "^4.1.16",
     "tailwindcss-scrollbar": "^0.1.0",
     "three-globe": "^2.31.0",
     "uid": "^2.0.2",
