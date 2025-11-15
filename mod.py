@@ -273,7 +273,7 @@ async def unveyl(prompt:str, apiKey: str):
 
         print(f"Loaded LoRA adapters from {path}")
 
-    checkpoints = torch.load('/sage/sage/sage/unv2.pt',weights_only=False,map_location=device)
+    checkpoints = torch.load('/sage/sage/sage/unv3.pt',weights_only=False,map_location=device)
     
     model = torch.compile(Unveyl1().to(device),backend="torch_tensorrt", dynamic=False,
                                 options={
