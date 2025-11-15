@@ -273,7 +273,7 @@ async def unveyl(prompt:str, apiKey: str):
 
         print(f"Loaded LoRA adapters from {path}")
 
-    checkpoints = torch.load('/sage/sage/sage/unv1.pt',weights_only=False,map_location=device)
+    checkpoints = torch.load('/sage/sage/sage/unv2.pt',weights_only=False,map_location=device)
     
     model = torch.compile(Unveyl1().to(device),backend="torch_tensorrt", dynamic=False,
                                 options={
@@ -284,7 +284,7 @@ async def unveyl(prompt:str, apiKey: str):
     model.load_state_dict(checkpoints)
     max_new_tokens = 512
     system_prompt = f'''{prompt}'''
-    context =  torch.tensor(tokenizer.EncodeAsIds(system_prompt,add_eos=False),device=device).unsqueeze(0) # (B, T)
+    context =  torch.tensor(tokenizer.EncodeAsIds(system_prompt,add_eos=True),device=device).unsqueeze(0) # (B, T)
     inputs=model.generate(context,max_new_tokens)  # (B, T + max_new_tokens)
     outputs = tokenizer.decode(inputs.tolist()[0][context.shape[1]:])
     return outputs
