@@ -8,7 +8,7 @@
     "start": "nodemon server.js",
     "build": "@tailwindcss/cli -i client/style.css -o client/main.css",
     "be": "webpack --mode production",
-    "watch": "@tailwindcss/cli -i client/style.css -o client/main.css --watch"
+    "watch": "@tailwindcss -i client/style.css -o client/main.css --watch"
   },
   "author": "",
   "license": "ISC",

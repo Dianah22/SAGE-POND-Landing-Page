@@ -12,8 +12,8 @@
 <body class="bg-black overflow-hidden">
     <main class="flex flex-col h-screen">
         <div class = "content  w-full h-full items-center self-center"> 
-          <div class="side-menu-button fixed top-0 z-[99] min-h-[40px] justify-center items-center flex mt-3 mr-0 mb-0 ml-4">
-           <button class="p-2 flex-shrink text-white menuButton">  
+          <div class="side-menu-button fixed top-0 z-99 min-h-10 justify-center items-center flex mt-3 mr-0 mb-0 ml-4">
+           <button class="p-2 shrink text-white menuButton">  
              <span class="material-symbols-outlined">
             menu
             </span>
@@ -46,9 +46,9 @@
       
     </nav>
     <div class="h-screen rounded-[30px] w-full flex flex-wrap justify-center overflow-y-scroll">
-    <div class="chat_window flex  flex-col pt-16 mb-44 w-[80%] "id='chat_window'>
+    <div class="chat_window flex  flex-col pt-16 mb-44 w-[80%] ml-0 mr-0  lg:mr-16 lg:ml-16 "id='chat_window' style="word-break: break-word;">
       <div class="chat_history flex flex-col flex-1 w-full h-full flex-wrap content-center justify-center">
-        <div class="welcome_screen max-w-[800px] w-full  flex flex-shrink-0  flex-wrap content-center h-[290px] justify-center flex-col">
+        <div class="welcome_screen max-w-[800px] w-full  flex shrink-0  flex-wrap content-center h-[290px] justify-center flex-col">
           <div class="discover   flex   h-full">
                <div class="flex flex-col">
                 <img src="images/logo.svg"class='h-[150px]'>
@@ -68,11 +68,11 @@
       </div>
       </div>
       </div>
-        <div class="bottom flex absolute bottom-0  max-w-[900px] w-full z-10 self-center min-h-14 -mt-12 flex-col pl-5 pr-5 content-center    opacity-85  rounded-t-3xl rounded-r-3xl">
+        <div class="bottom flex absolute bottom-0  max-w-[900px] w-full z-10 self-center min-h-14 -mt-12 flex-col pl-5 pr-5 content-center   bg-black   rounded-t-3xl rounded-r-3xl">
           <div class="input-cont-area w-full flex flex-col self-center text-center bg-[#141414]  max-w-[830px] rounded-3xl max-h-[200px] text-white">
             <div class="input-area relative p-0 inline-flex items-end ">
-            <div class="prompt min-w-0 flex items-center justify-end flex-grow flex-wrap p-2 overflow-hidden rounded-3xl  z-10">
-              <div class="text-area-wrapper ms-3 justify-between flex  flex-grow max-w-full self-stretch items-start">
+            <div class="prompt min-w-0 flex items-center justify-end grow flex-wrap p-2 overflow-hidden rounded-3xl  z-10">
+              <div class="text-area-wrapper ms-3 justify-between flex  grow max-w-full self-stretch items-start">
                  <div class="items-center self-end flex-initial mb-1 min-h-9">
                  </div>
                 <div class="w-full h-full">

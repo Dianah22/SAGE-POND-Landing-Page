@@ -344,6 +344,9 @@
   .z-50 {
     z-index: 50;
   }
+  .z-99 {
+    z-index: 99;
+  }
   .z-\[1\] {
     z-index: 1;
   }
@@ -506,6 +509,9 @@
   .-ml-1 {
     margin-left: calc(var(--spacing) * -1);
   }
+  .ml-0 {
+    margin-left: calc(var(--spacing) * 0);
+  }
   .ml-1 {
     margin-left: calc(var(--spacing) * 1);
   }
@@ -643,6 +649,9 @@
   }
   .min-h-9 {
     min-height: calc(var(--spacing) * 9);
+  }
+  .min-h-10 {
+    min-height: calc(var(--spacing) * 10);
   }
   .min-h-14 {
     min-height: calc(var(--spacing) * 14);
@@ -788,7 +797,16 @@
   .flex-shrink-0 {
     flex-shrink: 0;
   }
+  .shrink {
+    flex-shrink: 1;
+  }
+  .shrink-0 {
+    flex-shrink: 0;
+  }
   .flex-grow {
+    flex-grow: 1;
+  }
+  .grow {
     flex-grow: 1;
   }
   .table-fixed {
@@ -2224,9 +2242,19 @@
       margin-top: calc(var(--spacing) * 1.5);
     }
   }
+  .lg\:mr-16 {
+    @media (width >= 64rem) {
+      margin-right: calc(var(--spacing) * 16);
+    }
+  }
   .lg\:mb-10 {
     @media (width >= 64rem) {
       margin-bottom: calc(var(--spacing) * 10);
+    }
+  }
+  .lg\:ml-16 {
+    @media (width >= 64rem) {
+      margin-left: calc(var(--spacing) * 16);
     }
   }
   .lg\:ml-64 {

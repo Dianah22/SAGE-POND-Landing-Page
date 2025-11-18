@@ -467,19 +467,7 @@ const recent_title = document.getElementById('recent_title');
         }
 
  
-        // Apply chat_window horizontal margins only for desktop
-        try {
-            if (chat_window) {
-                if (isDesktop) {
-                    chat_window.style.marginLeft = '112px';
-                    chat_window.style.marginRight = '112px';
-                } else if (isDestop && open){
-                    chat_window.style.marginLeft = '176px';
-                    chat_window.style.marginRight = '176px';
-                }
-            }
-        } catch (err) {
-        }
+       
 
         // Update actual visual state
         isMenuOpen = open;
