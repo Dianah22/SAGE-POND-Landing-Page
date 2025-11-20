@@ -325,7 +325,8 @@ app.get('/login', (req, res) => {
 });
 
 app.get('/signup', (req, res) => {
-    res.sendFile(path.join(initial_path, 'signup.html'));
+    res.send('currently not avialable')
+    //res.sendFile(path.join(initial_path, 'signup.html'));
 });
 // Chat routes
 app.post('/create-chat', (req, res) => {
