@@ -10,7 +10,7 @@ const rateLimit = require('express-rate-limit');
 const validator = require('validator');
 const admin = require('firebase-admin');
 const nodemailer = require('nodemailer');
-const fs = require('fs').promises;
+const fs = require('fs');
 const jwt = require('jsonwebtoken');
 const serviceAccount = require('./sagepond.json');
 // Initialize Firebase Admin
@@ -23,7 +23,6 @@ if (!admin.apps.length) {
 
 // Initialize Firestore
 const db = admin.firestore();
-
 const feedbackData = {};
 
 let initial_path = __dirname + '/client';
@@ -42,10 +41,8 @@ const parseSession = async (req, res, next) => {
             const decodedClaims = await admin.auth().verifySessionCookie(sessionCookie, true); // true checks for revocation
             req.user = decodedClaims;
         } catch (error) {
-            // Invalid or revoked cookie, treat as unauthenticated
-            // console.warn('Session cookie verification failed for parseSession:', error.code);
             req.user = null; 
-            // Optionally clear the invalid cookie from the client
+            
             // res.clearCookie('session'); 
         }
     } else {
@@ -343,6 +340,7 @@ app.get('/admin',async (req,res)=>{
     res.sendFile(path.join(initial_path,'admin.html'))
 })
 app.get('/app', async (req, res) => {
+
     res.sendFile(path.join(initial_path, 'chat.html'));
 });
 app.get('/welcome', (req, res) => {
@@ -357,8 +355,11 @@ app.use('/app', express.static(initial_path));
 app.get('/app/:chatId', (req, res) => {
 
     res.sendFile(path.join(initial_path, 'chat.html'));
+    
 });
-
+app.get('/extract-feedback',parseSession, (req, res) => {    
+   res.sendFile(path.join(initial_path, 'extract.html'))
+});
 // Session ping endpoint
 app.get('/api/ping-session', (req, res) => {
     res.status(200).json({ success: true, user: req.user });
@@ -512,6 +513,8 @@ app.post('/api/whatsapp/send', async (req, res) => {
         res.status(500).json({ success: false, message: 'Failed to send WhatsApp message.', error: error.message });
     }
 });
+
+// 1. Configuration
 
 app.listen(port, () => {
     console.log(`listening on Port ${port}`);

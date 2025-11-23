@@ -23,8 +23,6 @@ async def unveyl(prompt:str, apiKey: str):
     cmd = ["--enforce-eager" if FAST_BOOT else "--no-enforce-eager"]
     
     directory_path = '/sage/sage/sage'
-    file_paths = [os.path.join(directory_path, f) for f in os.listdir(directory_path)]
-    print("Files in /sage/sage/sage/:", file_paths)
     cred = credentials.Certificate('/sage/sage/sagepond.json')
     try:
         # Set check_revoked=True to ensure the session cookie is not revoked
