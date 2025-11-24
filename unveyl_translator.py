@@ -1,6 +1,24 @@
 import torch
 from torch import nn
 import torch.nn.functional as F
+import sentencepiece as spm
+from torch.utils.data import DataLoader, Dataset
+class UnveylDataset(Dataset):
+    def __init__(self, data_pairs, tokenizer):
+        self.data_pairs = data_pairs
+        self.tokenizer = tokenizer
+
+    def __len__(self):
+        return len(self.data_pairs)
+
+    def __getitem__(self, idx):
+        src, trg = self.data_pairs[idx]
+        src_ids = self.tokenizer.EncodeAsIds(src)
+        trg_ids = self.tokenizer.EncodeAsIds(trg)
+        return torch.tensor(src_ids, dtype=torch.long), torch.tensor(trg_ids, dtype=torch.long)
+data = DataLoader(UnveylDataset(data_set, tokenizer), batch_size=96, shuffle=True)
+tokenizer = spm.SentencePieceProcessor()
+tokenizer.Load("unveyl_tokenizer.model")
 class UnveylTranslator(nn.Module):
     def __init__(self, input_dim, hidden_dim, output_dim, num_layers=2, dropout=0.1):
         super(UnveylTranslator, self).__init__()
