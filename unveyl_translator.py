@@ -3,6 +3,24 @@ from torch import nn
 import torch.nn.functional as F
 import sentencepiece as spm
 from torch.utils.data import DataLoader, Dataset
+from datasets import load_dataset
+tokenizer = spm.SentencePieceProcessor(model_file='unveyl.model')
+data_set = load_dataset("Sunbird/salt",'text-all',split='train')
+print(tokenizer.EncodeAsIds(data_set['lug_text'][0]))
+pad_token_id = 0    
+def collate_fn(batch):
+    srcs, tgts = zip(*batch)
+    # Determine the maximum length for the batch, constrained to 2000
+    max_length = min(max(len(src) for src in srcs), 2000)
+    # Pad sequences to the max_length
+    padded_srcs = [torch.cat([src[:max_length], torch.full((max_length - len(src[:max_length]),), pad_token_id, dtype=torch.long)]) if len(src) < max_length else src[:max_length] for src in srcs]
+    padded_tgts = [torch.cat([tgt[:max_length], torch.full((max_length - len(tgt[:max_length]),), pad_token_id, dtype=torch.long)]) if len(tgt) < max_length else tgt[:max_length] for tgt in tgts]
+    
+    # Stack tensors to create the batch
+    batch_srcs = torch.stack(padded_srcs)
+    batch_tgts = torch.stack(padded_tgts)
+    return batch_srcs, batch_tgts
+
 class UnveylDataset(Dataset):
     def __init__(self, data_pairs, tokenizer):
         self.data_pairs = data_pairs
@@ -12,32 +30,32 @@ class UnveylDataset(Dataset):
         return len(self.data_pairs)
 
     def __getitem__(self, idx):
-        src, trg = self.data_pairs[idx]
+        dat= self.data_pairs[idx]
+        src = tokenizer.EncodeAsIds(dat['eng_text'])
+        trg = tokenizer.EncodeAsIds(dat['lug_text'])
         src_ids = self.tokenizer.EncodeAsIds(src)
         trg_ids = self.tokenizer.EncodeAsIds(trg)
         return torch.tensor(src_ids, dtype=torch.long), torch.tensor(trg_ids, dtype=torch.long)
-data = DataLoader(UnveylDataset(data_set, tokenizer), batch_size=96, shuffle=True)
-tokenizer = spm.SentencePieceProcessor()
-tokenizer.Load("unveyl_tokenizer.model")
+data = DataLoader(UnveylDataset(data_set, tokenizer), batch_size=96, shuffle=True, collate_fn=collate_fn)
+
 class UnveylTranslator(nn.Module):
-    def __init__(self, input_dim, hidden_dim, output_dim, num_layers=2, dropout=0.1):
-        super(UnveylTranslator, self).__init__()
-        self.input_dim = input_dim
-        self.hidden_dim = hidden_dim
-        self.output_dim = output_dim
+    def __init__(self, num_layers=12, dropout=0.1):
+        super().__init__()
+        self.vocab_size = 36000
+        self.n_embd = 768
         self.num_layers = num_layers
         self.dropout = dropout
-        self.embedding = nn.Embedding(input_dim, hidden_dim)    
+        self.embedding = nn.Embedding(self.vocab_size, self.n_embd)    
         self.encoder = nn.TransformerEncoder(
-            nn.TransformerEncoderLayer(d_model=hidden_dim, nhead=16, dropout=dropout,batch_first=True),
+            nn.TransformerEncoderLayer(d_model=self.n_embd, nhead=24, dropout=dropout,batch_first=True),
             num_layers=num_layers
         )
         self.decoder = nn.TransformerDecoder(
-            nn.TransformerDecoderLayer(d_model=hidden_dim, nhead=8, dropout=
+            nn.TransformerDecoderLayer(d_model=self.n_embd, nhead=16, dropout=
 dropout,batch_first=True),
             num_layers=num_layers
         )
-        self.fc_out = nn.Linear(hidden_dim, output_dim)
+        self.fc_out = nn.Linear(self.n_embd, self.vocab_size)
 
     def forward(self, src):
         src_emb = self.embedding(src)
@@ -61,7 +79,9 @@ dropout,batch_first=True),
             if (next_token == end_token).all():
                 break
         return outputs
-model = UnveylTranslator(input_dim=1000, hidden_dim=512, output_dim=1000)
+model = UnveylTranslator()
+print(sum(p.numel() for p in model.parameters())/1e6, "Million Parameters")
+import sys;sys.exit()
 optimizer = torch.optim.AdamW(model.parameters(), lr=0.001)
 criterion = nn.CrossEntropyLoss(ignore_index=0)
 def train_step(model, optimizer, criterion, src, trg):
