@@ -102,7 +102,7 @@ def train_step(model, optimizer, criterion):
             optimizer.zero_grad()
             output,tgt = model(src,tgt)
             loss = criterion(output, tgt)
-            if step%10==0:
+            if step%10==0 and step!=0:
                 test_sentence()
             loss.backward()
             optimizer.step()
