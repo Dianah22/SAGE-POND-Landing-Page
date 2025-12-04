@@ -74,13 +74,12 @@ dropout,batch_first=True),
         src_emb = self.embedding(src)
         src_enc = self.encoder(src_emb)
         tgt_emb = self.embedding(tgt)
+        tgt_mask = nn.Transformer.generate_square_subsequent_mask(tgt.size(1)).to(tgt.device)
         if inference:
-            tgt_mask = nn.Transformer.generate_square_subsequent_mask(tgt.size(1)).to(tgt.device)
             src_dec = self.decoder(tgt_emb,src_enc,tgt_mask=tgt_mask)
             src_out = self.fc_out(src_dec)[:, -1, :]
             return src_out,None
         else:
-            tgt_mask = nn.Transformer.generate_square_subsequent_mask(tgt.size(1)).to(tgt.device)
             src_dec = self.decoder(tgt_emb,src_enc,tgt_mask=tgt_mask)
             src_out = self.fc_out(src_dec)
             B,T,C = src_out.shape
@@ -88,16 +87,21 @@ dropout,batch_first=True),
             tgt = tgt.view(B*T)
             return src_out,tgt
     @torch.no_grad()
-    def translate(self, src,tgt=torch.tensor(tokenizer.EncodeAsIds('',add_bos=True),device=device).unsqueeze(0), max_len=50):
+    def translate(self, src, max_len=50):
         self.eval()
+        B = src.size(0)
+        start_token_id = tokenizer.bos_id() # Assuming standardized tokenizer method
+        # Initialize tgt as [B, 1] filled with BOS token
+        tgt = torch.full((B, 1), start_token_id, dtype=torch.long, device=device)
+        print(tgt)
         for _ in range(max_len):
             logits = self(src,tgt,inference=True)[0]
             probs = F.softmax(logits,dim=-1)
             next_token = torch.argmax(probs, dim=-1).unsqueeze(0)
-            src = torch.cat((tgt, next_token), dim=1)
+            tgt = torch.cat((tgt, next_token), dim=1)
             if (next_token == 2).all():
                 break
-        return src
+        return tgt
 model = UnveylTranslator().to(device)
 optimizer = torch.optim.AdamW(model.parameters(), lr=1e-3,fused=True if device=='cuda' else False)
 criterion = nn.CrossEntropyLoss(ignore_index=0)
