@@ -66,26 +66,25 @@ dropout,batch_first=True),
         tgt_emb = self.embedding(tgt)
         if inference:
             tgt_mask = nn.Transformer.generate_square_subsequent_mask(tgt.size(0)).to(tgt.device)
-            src_dec = self.decoder(tgt_emb,src_enc,tgt_mask=tgt_mask)[:, -1, :]
+            src_dec = self.decoder(tgt_emb,src_enc,tgt_mask=tgt_mask)
+            src_out = self.fc_out(src_dec)[:, -1, :]
+            return src_out,tgt
         else:
             tgt_mask = nn.Transformer.generate_square_subsequent_mask(tgt.size(1)).to(tgt.device)
-            src_dec = self.decoder(tgt_emb,src_enc,tgt_mask=tgt_mask)[:, -1, :]
             src_dec = self.decoder(tgt_emb,src_enc,tgt_mask=tgt_mask)
             src_out = self.fc_out(src_dec)
             B,T,C = src_out.shape
             src_out = src_out.view(B*T,C)
             tgt = tgt.view(B*T)
-        
-       
-        return src_out,tgt
+            return src_out,tgt
     @torch.no_grad()
-    def translate(self, src,tgt=torch.tensor(tokenizer.EncodeAsIds('',add_bos=True)).unsqueeze(0), max_len=50):
+    def translate(self, src,tgt=torch.tensor(tokenizer.EncodeAsIds('',add_bos=True),device=device).unsqueeze(0), max_len=50):
         self.eval()
         for _ in range(max_len):
-            logits = self(src,tgt,inference=True)[1][:, -1, :]
+            logits = self(src,tgt,inference=True)[0]
             probs = F.softmax(logits,dim=-1)
             next_token = torch.argmax(probs, dim=-1).unsqueeze(0)
-            src = torch.cat((src, next_token), dim=1)
+            src = torch.cat((tgt, next_token), dim=1)
             if (next_token == 2).all():
                 break
         return src
@@ -108,4 +107,4 @@ def train_step(model, optimizer, criterion):
             loss.backward()
             optimizer.step()
             print(loss.item())
-    train_step(model, optimizer, criterion)       
+train_step(model, optimizer, criterion)       
