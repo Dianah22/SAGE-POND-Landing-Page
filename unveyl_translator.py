@@ -6,6 +6,13 @@ from torch.utils.data import DataLoader, Dataset
 from datasets import load_dataset
 from huggingface_hub import login
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
+torch.set_float32_matmul_precision('high')
+def set_seed(seed):
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+set_seed(42)
+torch.autograd.set_detect_anomaly(True)
+
 l = login(token='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')
 tokenizer = spm.SentencePieceProcessor(model_file='/mnt/sage/sage/sage/unveyl.model')
 print()
@@ -36,39 +43,42 @@ class UnveylDataset(Dataset):
         dat= self.data_pairs[idx]
         src = tokenizer.EncodeAsIds(str(dat['eng_target_text']),add_bos=True,add_eos=True)
         trg = tokenizer.EncodeAsIds(str(dat['lug_text']),add_bos=True,add_eos=True)
+        src = src+trg
+        trg = src[1:]
         return torch.tensor(src, dtype=torch.long), torch.tensor(trg, dtype=torch.long)
-data = DataLoader(UnveylDataset(data_set, tokenizer), batch_size=2, shuffle=True, collate_fn=collate_fn)
+data = DataLoader(UnveylDataset(data_set, tokenizer), batch_size=96 if device=='cuda' else 1, shuffle=True, collate_fn=collate_fn)
 
 class UnveylTranslator(nn.Module):
     def __init__(self,  dropout=0.1):
         super().__init__()
         self.vocab_size = 36000
         self.n_embd = 768
-        self.encoder_layers = 16
-        self.decoder_layers = 8
+        self.encoder_layers = 24
+        self.decoder_layers = 16
         self.dropout = dropout
         self.embedding = nn.Embedding(self.vocab_size, self.n_embd)    
         self.encoder = nn.TransformerEncoder(
-            nn.TransformerEncoderLayer(d_model=self.n_embd, nhead=16, dropout=dropout,batch_first=True),
+            nn.TransformerEncoderLayer(d_model=self.n_embd, nhead=24, dropout=dropout,batch_first=True),
             num_layers=self.encoder_layers
         )
         
         self.decoder = nn.TransformerDecoder(
-            nn.TransformerDecoderLayer(d_model=self.n_embd, nhead=16, dropout=
+            nn.TransformerDecoderLayer(d_model=self.n_embd, nhead=24, dropout=
 dropout,batch_first=True),
             num_layers=self.decoder_layers
         )
         self.fc_out = nn.Linear(self.n_embd, self.vocab_size)
+    @torch.autocast(device_type=device)
     def forward(self, src,tgt=None,inference=False):
         B,T = src.size()
         src_emb = self.embedding(src)
         src_enc = self.encoder(src_emb)
         tgt_emb = self.embedding(tgt)
         if inference:
-            tgt_mask = nn.Transformer.generate_square_subsequent_mask(tgt.size(0)).to(tgt.device)
+            tgt_mask = nn.Transformer.generate_square_subsequent_mask(tgt.size(1)).to(tgt.device)
             src_dec = self.decoder(tgt_emb,src_enc,tgt_mask=tgt_mask)
             src_out = self.fc_out(src_dec)[:, -1, :]
-            return src_out,tgt
+            return src_out,None
         else:
             tgt_mask = nn.Transformer.generate_square_subsequent_mask(tgt.size(1)).to(tgt.device)
             src_dec = self.decoder(tgt_emb,src_enc,tgt_mask=tgt_mask)
@@ -89,10 +99,10 @@ dropout,batch_first=True),
                 break
         return src
 model = UnveylTranslator().to(device)
-optimizer = torch.optim.AdamW(model.parameters(), lr=4e-3,fused=True if device=='cuda' else False)
+optimizer = torch.optim.AdamW(model.parameters(), lr=1e-3,fused=True if device=='cuda' else False)
 criterion = nn.CrossEntropyLoss(ignore_index=0)
 def test_sentence():
-    x = torch.tensor(tokenizer.EncodeAsIds('who are you?',add_eos=True)).unsqueeze(0).to(device)
+    x = torch.tensor(tokenizer.EncodeAsIds('who are you?',add_bos=True,add_eos=True)).unsqueeze(0).to(device)
     output = model.translate(x)
     print(f"Output: {tokenizer.DecodeIds(output.squeeze().tolist())}")
 def train_step(model, optimizer, criterion):
@@ -102,9 +112,10 @@ def train_step(model, optimizer, criterion):
             optimizer.zero_grad()
             output,tgt = model(src,tgt)
             loss = criterion(output, tgt)
-            if step%10==0 and step!=0:
+            if step%100==0:
                 test_sentence()
             loss.backward()
+            norm = torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
             optimizer.step()
-            print(loss.item())
+            print(f'Step {step}, Loss: {loss.item():.2f}  norm {norm:.2f}')
 train_step(model, optimizer, criterion)       
