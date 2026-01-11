@@ -3,7 +3,7 @@ from pathlib import Path
 
 app = modal.App('uvveyl')
 
-image = modal.Image.debian_slim(python_version='3.12').pip_install("torch",'sentencepiece','fastapi[standard]','datasets','firebase_admin','torch_tensorrt','torchvision','nvidia-cuda-runtime',gpu='h200').run_commands("apt install -y wget","wget https://developer.download.nvidia.com/compute/cuda/repos/debian12/x86_64/cuda-keyring_1.1-1_all.deb","dpkg -i cuda-keyring_1.1-1_all.deb"," apt-get update"," apt-get -y install cuda-toolkit-13-1","apt-get install -y nvidia-open")
+image = modal.Image.debian_slim(python_version='3.12').pip_install("torch==2.7.1",'sentencepiece','fastapi[standard]','datasets','firebase_admin','torch_tensorrt','torchvision',gpu='b200')
 vol = modal.Volume.from_name("sage",create_if_missing=True)
 @app.function(gpu="a10g", image=image,volumes={'/sage/': vol},secrets=[modal.Secret.from_name("apiKey")],enable_memory_snapshot=True,experimental_options={"enable_gpu_snapshot": True})
 @modal.fastapi_endpoint()
