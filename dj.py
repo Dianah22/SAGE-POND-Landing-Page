@@ -73,7 +73,7 @@ def extract_and_expand_sentences(input_csv, output_csv):
 if __name__ == "__main__":
     # Define input and output file paths
     input_file = "content.csv"  # Change this to your input CSV filename
-    output_file = "sentences.csv"
+    output_file = "fineweb_l_test.csv"
     
     # Check if input file exists
     if not Path(input_file).exists():
