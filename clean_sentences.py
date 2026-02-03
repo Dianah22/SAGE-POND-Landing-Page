@@ -10,6 +10,9 @@ def clean_and_split(dataset):
     final_count = len(df)
     print(f"Removed {initial_count - final_count} duplicates. Final count: {final_count}")
         
+    # Remove entries with text length greater than 526
+    df = df[df['English'].str.len() <= 526]
+    df = df[df['Luganda'].str.len() <= 526]
     # Split the dataset
-    return df.to_csv('new.csv', index=False)
-clean_and_split('sentences.csv')
+    return df.to_csv('new3.csv', index=False)
+clean_and_split('new2.csv')

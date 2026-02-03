@@ -27,7 +27,7 @@ def translate_csv(input_file, output_file, test_mode=False, batch_size=300):
     xy=0
     for index, row in df.iterrows():
         xy+=1
-        if xy>2400:
+        if xy>20407:  # Skip first 6900 rows
             original_text = row['English']
             translation = ""
             try:
@@ -74,7 +74,7 @@ if __name__ == "__main__":
     parser.add_argument('--test', action='store_true', help='Run on first 5 rows for testing')
     args = parser.parse_args()
 
-    input_csv = 'new.csv'
+    input_csv = 'new3.csv'
     output_csv = 'translated_new.csv'
     
     if not os.path.exists(input_csv):

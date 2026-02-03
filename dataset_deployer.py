@@ -2,7 +2,7 @@ from datasets import load_dataset,concatenate_datasets
 from datasets import Dataset, concatenate_datasets, DatasetDict
 import pandas as pd
 luganda  = load_dataset('pkyoyetera/luganda_english_dataset')
-csv_data = Dataset.from_csv('new.csv')
+csv_data = Dataset.from_csv('new3.csv')
 raw_dataset = concatenate_datasets([luganda['train'], csv_data])
 
 def clean_and_split(dataset):
