@@ -27,7 +27,7 @@ def translate_csv(input_file, output_file, test_mode=False, batch_size=300):
     xy=0
     for index, row in df.iterrows():
         xy+=1
-        if xy>20407:  # Skip first 6900 rows
+        if xy>30007:  # Skip first 6900 rows
             original_text = row['English']
             translation = ""
             try:
