@@ -1,6 +1,6 @@
 const background = document.getElementById('background');
 const screenSize = window.screen.width;
-if (screenSize > 1440) {
+if (screenSize >= 1350) {
   background.src = 'images/1440p.svg';
 } else if (screenSize >= 1728) {
   background.src = 'images/1728.svg';
