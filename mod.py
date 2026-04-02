@@ -10,8 +10,6 @@ vol = modal.Volume.from_name("sage",create_if_missing=True)
 async def unveyl(prompt:str, apiKey: str):
     
     import os
-    import firebase_admin
-    from firebase_admin import credentials, auth
     import torch
     from torch import nn
     import torch.nn.functional as F
@@ -23,19 +21,6 @@ async def unveyl(prompt:str, apiKey: str):
     cmd = ["--enforce-eager" if FAST_BOOT else "--no-enforce-eager"]
     
     directory_path = '/sage/sage/sage'
-    cred = credentials.Certificate('/sage/sage/sagepond.json')
-    try:
-        # Set check_revoked=True to ensure the session cookie is not revoked
-        if apiKey=='aa264cbdf161c11173e106ad2f422e3c224488e2ccecd5b78bb6e4757511d762':
-            pass
-        else:
-            if not firebase_admin._apps:
-                # Initialize Firebase Admin SDK if not already initialized
-                firebase_admin.initialize_app(cred)
-                decoded_claims = auth.verify_session_cookie(apiKey, check_revoked=True)
-    except auth.InvalidSessionCookieError as e:
-        # Session cookie is invalid, expired or revoke
-        pass
     def set_seed(seed):
         torch.manual_seed(seed)
         torch.cuda.manual_seed_all(seed)
@@ -235,42 +220,7 @@ async def unveyl(prompt:str, apiKey: str):
                     # append new token
                     idx = torch.cat((idx, idx_next), dim=1)
                 return idx
-    def apply_lora_to_attention(model, r=16, alpha=32):
-        for i, block in enumerate(model.blocks):
-            sa_module = block.sa
-            # Replace c_attn
-            old_c_attn = sa_module.c_attn
-            lora_c_attn = LoRALinear(old_c_attn, r=r, alpha=alpha).to(device)
-            lora_c_attn.linear.weight.data = old_c_attn.weight.data.clone()
-            if old_c_attn.bias is not None:
-                lora_c_attn.linear.bias.data = old_c_attn.bias.data.clone()
-            sa_module.c_attn = lora_c_attn
-
-            # Replace proj
-            old_proj = sa_module.proj
-            lora_proj = LoRALinear(old_proj, r=r, alpha=alpha).to(device)
-            lora_proj.linear.weight.data = old_proj.weight.data.clone()
-            if old_proj.bias is not None:
-                lora_proj.linear.bias.data = old_proj.bias.data.clone()
-            sa_module.proj = lora_proj
-    def load_lora_adapters(model, path, device=None):
-        """
-        Load LoRA adapter weights into a model.
-        
-        Args:
-            model (nn.Module): The model with LoRALinear layers
-            path (str): File path of saved adapters
-            device (torch.device, optional): Device to load weights on
-        """
-        lora_state_dict = torch.load(path, map_location=device)
-
-        for name, module in model.named_modules():
-            if isinstance(module, LoRALinear):
-                module.lora_A.data.copy_(lora_state_dict[f"{name}.lora_A"])
-                module.lora_B.data.copy_(lora_state_dict[f"{name}.lora_B"])
-
-        print(f"Loaded LoRA adapters from {path}")
-
+ 
     checkpoints = torch.load('/sage/sage/sage/unv4.pt',weights_only=False,map_location=device)
     
     model = torch.compile(Unveyl1().to(device),backend="torch_tensorrt", dynamic=False,
