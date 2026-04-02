@@ -294,19 +294,23 @@ app.post('/beta-signup', async (req, res) => {
             to: email,
             subject: 'Welcome to Unveyl Beta Program',
             html: `
-                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                    <img src="../images/logo.svg" alt="SAGE POND Logo" style="display: block; margin: 20px auto; width: 50px;">
-                    <h1 style="color: black; text-align: center;">Welcome to SAGE POND Beta!</h1>
-                    <p>Thank you for joining our beta program. We're excited to have you on board!</p>
-                    <p>We'll keep you updated about:</p>
-                    <ul>
-                        <li>Early access to new features</li>
-                        <li>Exclusive beta tester feedback sessions</li>
-                        <li>Official launch updates</li>
-                    </ul>
-                    <p>Stay tuned for more information coming your way soon.</p>
-                    <p style="color: #666;">Best regards,<br>Caleb,CEO & FOUNDER,SAGE POND</p>
-                </div>
+                Hello,
+Thanks for joining the SAGE POND Developer Platform waitlist.
+This means you’re among the early group of builders who will get access to the platform as we launch in Q2. We’re currently building the foundation layer for AI in Uganda, and the platform will give you direct access to our APIs without the complexity of managing infrastructure.
+
+What to expect:
+* Early access to our APIs (starting with core NLP tooling)
+* Updates as we roll out new capabilities
+* Opportunities to test features before public release
+
+Our goal is simple: make it easier for you to build real AI products without worrying about the underlying systems.
+We will reach out soon with next steps and access details.
+If you’re already building something or planning to, feel free to reply and share. We’re always interested in what developers are working on.
+
+Best regards,
+Caleb Matovu
+Founder, SAGE POND
+
             `
         };
 
