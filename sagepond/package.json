@@ -1,0 +1,21 @@
+{
+  "name": "sagepond",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "deploy": "wrangler deploy",
+    "dev": "wrangler dev",
+    "start": "wrangler dev",
+    "test": "vitest",
+    "secrets": "wrangler secret put FIREBASE_API_KEY"
+  },
+  "devDependencies": {
+    "@cloudflare/vitest-pool-workers": "^0.12.4",
+    "vitest": "~3.2.0",
+    "wrangler": "^4.80.0"
+  },
+  "dependencies": {
+    "firebase": "^12.11.0",
+    "resend": "^4.8.0"
+  }
+}

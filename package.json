@@ -8,14 +8,12 @@
     "start": "nodemon server.js",
     "build": "@tailwindcss/cli -i client/style.css -o client/main.css",
     "be": "webpack --mode production",
-    "watch": "@tailwindcss -i client/style.css -o client/main.css --watch"
+    "watch": "@tailwindcss -i client/style.css -o client/main.css  --watch --minify"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "@tailwindcss/cli": "^4.1.16",
-    "@thi.ng/color": "^5.7.34",
-    "@whiskeysockets/baileys": "^7.0.0-rc.2",
     "axios": "^1.10.0",
     "body-parser": "^1.20.3",
     "cookie-parser": "^1.4.7",
@@ -27,34 +25,24 @@
     "express-rate-limit": "^7.5.0",
     "firebase": "^10.11.1",
     "firebase-admin": "^13.3.0",
-    "firebase-tools": "^13.7.2",
-    "glsl-noise": "^0.0.0",
-    "googleapis": "^105.0.0",
     "helmet": "^8.1.0",
     "needle": "^3.5.0",
-    "nodemailer": "^7.0.3",
     "nodemon": "^3.1.0",
     "path": "^0.12.7",
-    "qrcode-terminal": "^0.12.0",
-    "stream": "^0.0.3",
+    "resend": "^6.10.0",
     "tailwindcss": "^4.1.16",
     "tailwindcss-scrollbar": "^0.1.0",
     "three-globe": "^2.31.0",
     "uid": "^2.0.2",
     "uuid": "^9.0.1",
     "validator": "^13.15.0",
-    "webpack": "^5.99.7",
-    "webpack-cli": "^5.1.4",
-    "whatsapp-web.js": "^1.23.0"
+    "worker-mailer": "^1.2.1"
   },
   "devDependencies": {
     "@tailwindcss/aspect-ratio": "^0.4.2",
     "@tailwindcss/forms": "^0.5.7",
     "@tailwindcss/line-clamp": "^0.4.4",
     "@tailwindcss/typography": "^0.5.12",
-    "glslify": "^7.1.1",
-    "rollup": "^4.40.0",
-    "rollup-plugin-glsl": "^1.3.0",
     "wrangler": "^4.35.0"
   }
 }

@@ -9,25 +9,116 @@ app.set('trust proxy', 1); // Trust first proxy (Cloudflare)
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const validator = require('validator');
-const admin = require('firebase-admin');
-const { WorkerMailer } = require('worker-mailer');
+const { initializeApp, getApps, getApp } = require('firebase/app');
+const {
+    getFirestore,
+    collection,
+    query,
+    where,
+    getDocs,
+    addDoc,
+    serverTimestamp,
+    updateDoc
+} = require('firebase/firestore');
+const { getAuth, signInAnonymously } = require('firebase/auth');
+const { Resend } = require('resend');
 const fs = require('fs');
 const jwt = require('jsonwebtoken');
-const serviceAccount = require('./sagepond.json');
 const needle = require('needle');
-// Initialize Firebase Admin
-if (!admin.apps.length) {
-    admin.initializeApp({
-        credential: admin.credential.cert(serviceAccount),
-        databaseURL: "https://sage-pond-gen-ai-default-rtdb.firebaseio.com"
-    });
-}
-
-// Initialize Firestore
-const db = admin.firestore();
+const firebaseConfig = require('./firebase.config');
 const feedbackData = {};
 
-let initial_path = __dirname + '/client';
+const getFirebaseApp = () => (getApps().length ? getApp() : initializeApp(firebaseConfig));
+const getDb = () => getFirestore(getFirebaseApp());
+let anonymousSignInPromise = null;
+
+const ensureAnonymousAuth = async () => {
+    const auth = getAuth(getFirebaseApp());
+    if (auth.currentUser) {
+        return auth.currentUser;
+    }
+
+    if (!anonymousSignInPromise) {
+        anonymousSignInPromise = signInAnonymously(auth)
+            .then((credential) => credential.user)
+            .catch((error) => {
+                anonymousSignInPromise = null;
+                throw error;
+            });
+    }
+
+    return anonymousSignInPromise;
+};
+
+const isWorkersRuntime = () =>
+    typeof WebSocketPair !== 'undefined' || Boolean(globalThis.__WORKER_ENV);
+
+const sendWaitlistConfirmationEmail = async (email) => {
+    if (!process.env.RESEND_API_KEY) {
+        throw new Error('RESEND_API_KEY is not configured');
+    }
+    if (!process.env.RESEND_FROM) {
+        throw new Error('RESEND_FROM is not configured');
+    }
+
+    const resend = new Resend(process.env.RESEND_API_KEY);
+    const { data, error } = await resend.emails.send({
+        from: process.env.RESEND_FROM,
+        to: [email],
+        subject: 'Welcome to SAGE POND Developer Platform waitlist',
+        html: `
+                Hello, <br>
+Thanks for joining the SAGE POND Developer Platform waitlist.<br>
+This means you're among the early group of builders who will get access to the platform as we launch in Q2. <br>
+We're currently building the foundation layer for AI in Uganda, and the platform will give you direct access to our APIs without the complexity of managing infrastructure.<br>
+
+What to expect:<br>
+* Early access to our APIs (starting with core NLP tooling)<br>
+* Updates as we roll out new capabilities<br>
+* Opportunities to test features before public release<br>
+<br>
+Our goal is simple: make it easier for you to build real AI products without worrying about the underlying systems.<br>
+We will reach out soon with next steps and access details.<br>
+If you're already building something or planning to, feel free to reply and share. We're always interested in what developers are working on.<br>
+
+Best regards,<br>
+Caleb Matovu<br>
+Founder, SAGE POND<br>
+            `,
+        idempotencyKey: `waitlist-signup/${email}`
+    });
+
+    if (error) {
+        throw new Error(error.message);
+    }
+
+    return data;
+};
+
+const verifyTurnstileToken = async (token, remoteip) => {
+    if (!process.env.TURNSTILE_SECRET_KEY) {
+        throw new Error('TURNSTILE_SECRET_KEY is not configured');
+    }
+
+    const response = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: new URLSearchParams({
+            secret: process.env.TURNSTILE_SECRET_KEY,
+            response: token,
+            remoteip: remoteip || ''
+        })
+    });
+
+    return response.json();
+};
+
+const appRoot = typeof process !== 'undefined' && typeof process.cwd === 'function'
+    ? process.cwd()
+    : '.';
+let initial_path = path.resolve(appRoot, 'client');
 const port = process.env.PORT || 4000
 
 // Middleware setup
@@ -36,26 +127,13 @@ app.use(helmet());
 app.use(cookieParser()); // Ensure cookie parser runs first
 
 // Middleware to parse session and attach user, but not enforce authentication
-const parseSession = async (req, res, next) => {
-    const sessionCookie = req.cookies.session || '';
-    if (sessionCookie) {
-        try {
-            const decodedClaims = await admin.auth().verifySessionCookie(sessionCookie, true); // true checks for revocation
-            req.user = decodedClaims;
-        } catch (error) {
-            req.user = null;
 
-            // res.clearCookie('session'); 
-        }
-    } else {
-        req.user = null;
-    }
-    next();
-};
-app.use(parseSession); // This will populate req.user if a valid session cookie exists
+const passthroughMiddleware = (req, res, next) => next();
+const createRateLimiter = (options) =>
+    isWorkersRuntime() ? passthroughMiddleware : rateLimit(options);
 
 // General rate limiter - now uses req.user.uid if available, otherwise req.ip
-const generalRateLimiter = rateLimit({
+const generalRateLimiter = createRateLimiter({
     windowMs: 15 * 60 * 1000, // 15 minutes
     max: 100, // limit each key (user ID or IP) to 100 requests per windowMs
     standardHeaders: true,
@@ -74,7 +152,7 @@ const generalRateLimiter = rateLimit({
         return false;
     }
 });
-const waitlistLimiter = rateLimit({
+const waitlistLimiter = createRateLimiter({
     windowMs: 60 * 60 * 1000, // 1 hour
     max: 1, // limit each IP to 1 request per windowMs
     message: { success: false, message: 'Too many requests from this IP, please try again after an hour.' },
@@ -107,6 +185,7 @@ app.use(
             scriptSrc: [
                 "'self'",
                 "https://cdn.jsdelivr.net/npm/dompurify@3.1.0/dist/purify.min.js",
+                "https://challenges.cloudflare.com"
             ],
             styleSrc: [
                 "'self'",
@@ -127,25 +206,6 @@ app.use(
         },
     })
 );
-app.post('/api/verify-token', async (req, res) => {
-    const idToken = req.body.token;
-    const expiresIn = 60 * 60 * 24 * 5 * 1000; // 5 days
-    try {
-        const sessionCookie = await admin.auth().createSessionCookie(idToken, { expiresIn });
-
-        const options = {
-            maxAge: expiresIn,
-            httpOnly: true,
-            secure: false,
-            sameSite: 'Lax', // Set to 'None' for cross-site cookies  
-        };
-        res.cookie('session', sessionCookie, options);
-        res.status(200).json({ success: true });
-        // Redirect to /app after successful login     
-    } catch (err) {
-        res.status(401).json({ success: false, message: err });
-    }
-});
 
 const fetch = require('node-fetch'); // Add node-fetch
 
@@ -154,10 +214,6 @@ app.get('/terms', (req, res) => {
 });
 const axios = require('axios');
 
-app.use((req, res, next) => {
-    sessionCookie = req.cookies.session || 'aa264cbdf161c11173e106ad2f422e3c224488e2ccecd5b78bb6e4757511d762';
-    next();
-});
 // Routes
 app.get('/', (req, res) => {
     res.sendFile(path.join(initial_path, "index.html"));
@@ -231,16 +287,6 @@ app.get('/api/ping-session', (req, res) => {
 
 // Firebase config route
 app.all('/api/firebase-config', (req, res) => {
-    const firebaseConfig = {
-        apiKey: "AIzaSyDyXWSxpBqk7lgomflc_Sl3BCXp8Dvffbg",
-        authDomain: "sage-pond-gen-ai.firebaseapp.com",
-        projectId: "sage-pond-gen-ai",
-        storageBucket: "sage-pond-gen-ai.appspot.com",
-        messagingSenderId: "369426724601",
-        appId: "1:369426724601:web:698e582d4e10ff710c5428",
-        measurementId: "G-XY1Y3VW550"
-    };
-
     const authHeader = req.headers.authorization;
     if (!authHeader || authHeader !== 'Bearer secure-fetch-key') {
         return res.status(403).json({ success: false, message: 'Forbidden' });
@@ -249,13 +295,20 @@ app.all('/api/firebase-config', (req, res) => {
     res.json({ success: true, config: firebaseConfig });
 });
 
+app.get('/api/public-config', (req, res) => {
+    res.json({
+        success: true,
+        turnstileSiteKey: process.env.TURNSTILE_SITE_KEY || ''
+    });
+});
+
 // Transporter logic removed in favor of WorkerMailer in /waitlist route
 app.get('/beta', (req, res) => {
     res.sendFile(path.join(initial_path, 'beta.html'));
 });
 // Beta signup route with strict rate limiting
 app.post('/waitlist', waitlistLimiter, async (req, res) => {
-    const { email } = req.body;
+    const { email, turnstileToken } = req.body;
     console.log('Beta signup request:', email);
     // Validate email
     if (!email || !validator.isEmail(email)) {
@@ -264,12 +317,28 @@ app.post('/waitlist', waitlistLimiter, async (req, res) => {
             message: 'Please provide a valid email address.'
         });
     }
+    if (!turnstileToken) {
+        return res.status(400).json({
+            success: false,
+            message: 'Turnstile verification is required.'
+        });
+    }
 
     try {
+        const turnstileResult = await verifyTurnstileToken(turnstileToken, req.ip);
+        if (!turnstileResult.success) {
+            return res.status(400).json({
+                success: false,
+                message: 'Turnstile verification failed.'
+            });
+        }
+
+        await ensureAnonymousAuth();
+        const db = getDb();
+        const signupsCollection = collection(db, 'beta-signups');
+
         // Check if email already exists
-        const emailDoc = await db.collection('beta-signups')
-            .where('email', '==', email)
-            .get();
+        const emailDoc = await getDocs(query(signupsCollection, where('email', '==', email)));
 
         if (!emailDoc.empty) {
             return res.status(400).json({
@@ -279,26 +348,17 @@ app.post('/waitlist', waitlistLimiter, async (req, res) => {
         }
 
         // Store email in Firestore with timestamp
-        await db.collection('beta-signups').add({
+        await addDoc(signupsCollection, {
             email,
-            timestamp: admin.firestore.FieldValue.serverTimestamp(),
+            timestamp: serverTimestamp(),
             status: 'pending'
         });
 
         // Send confirmation email
-        const mailer = await WorkerMailer.connect({
-            credentials: {
-                username: process.env.ZOHO_EMAIL,
-                password: process.env.ZOHO_PASSWORD,
-            },
-            authType: 'login',
-            host: 'smtp.zoho.com',
-            port: 465,
-            secure: true,
-        });
+        await sendWaitlistConfirmationEmail(email);
+        void ({
 
-        await mailer.send({
-            from: { name: 'SAGE POND', email: process.env.ZOHO_EMAIL },
+            from: process.env.RESEND_FROM,
             to: { email: email },
             subject: 'Welcome to SAGE POND Developer Platform waitlist',
             html: `
@@ -321,15 +381,12 @@ Founder, SAGE POND
             `
         });
 
+
         // Update status in Firestore
-        await db.collection('beta-signups')
-            .where('email', '==', email)
-            .get()
-            .then((querySnapshot) => {
-                querySnapshot.forEach((doc) => {
-                    doc.ref.update({ status: 'confirmed' });
-                });
-            });
+        const pendingSignupDocs = await getDocs(query(signupsCollection, where('email', '==', email)));
+        for (const signupDoc of pendingSignupDocs.docs) {
+            await updateDoc(signupDoc.ref, { status: 'confirmed' });
+        }
 
         res.json({
             success: true,

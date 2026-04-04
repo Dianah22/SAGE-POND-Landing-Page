@@ -22,12 +22,60 @@ const waitlistForm = document.getElementById('waitlist-form');
 const emailInput = document.getElementById('waitlist-email');
 const submitBtn = document.getElementById('submit-waitlist');
 const modalMessage = document.getElementById('modal-message');
+const turnstileContainer = document.getElementById('turnstile-container');
+let turnstileWidgetId = null;
+let turnstileToken = '';
+
+const resetTurnstile = () => {
+    if (window.turnstile && turnstileWidgetId !== null) {
+        window.turnstile.reset(turnstileWidgetId);
+    }
+    turnstileToken = '';
+};
+
+const showMessage = (message, isError) => {
+    modalMessage.textContent = message;
+    modalMessage.classList.remove('hidden', 'text-green-400', 'text-red-400');
+    modalMessage.classList.add(isError ? 'text-red-400' : 'text-green-400');
+};
+
+const initializeTurnstile = async () => {
+    if (!turnstileContainer || !window.turnstile) {
+        return;
+    }
+    if (turnstileWidgetId !== null) {
+        return;
+    }
+
+    const response = await fetch('/api/public-config');
+    const data = await response.json();
+    if (!data.success || !data.turnstileSiteKey) {
+        throw new Error('Turnstile is not configured.');
+    }
+
+    turnstileWidgetId = window.turnstile.render(turnstileContainer, {
+        sitekey: data.turnstileSiteKey,
+        theme: 'dark',
+        callback(token) {
+            turnstileToken = token;
+        },
+        'expired-callback'() {
+            turnstileToken = '';
+        },
+        'error-callback'() {
+            turnstileToken = '';
+        }
+    });
+};
 
 const showModal = () => {
     modal.classList.remove('hidden');
     setTimeout(() => {
         modal.classList.remove('opacity-0');
     }, 10);
+    initializeTurnstile().catch(() => {
+        showMessage('Turnstile failed to load. Please refresh and try again.', true);
+    });
 };
 
 const hideModal = () => {
@@ -55,11 +103,18 @@ if (waitlistForm) {
         submitBtn.textContent = 'Joining...';
         modalMessage.classList.add('hidden');
 
+        if (!turnstileToken) {
+            showMessage('Please complete the verification challenge.', true);
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Get Early Access';
+            return;
+        }
+
         try {
             const response = await fetch('/waitlist', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email })
+                body: JSON.stringify({ email, turnstileToken })
             });
 
             const data = await response.json();
@@ -69,18 +124,17 @@ if (waitlistForm) {
                 modalMessage.classList.remove('hidden', 'text-red-400');
                 modalMessage.classList.add('text-green-400');
                 emailInput.value = '';
+                resetTurnstile();
                 setTimeout(hideModal, 2000);
             } else {
-                modalMessage.textContent = data.message || 'An error occurred.';
-                modalMessage.classList.remove('hidden', 'text-green-400');
-                modalMessage.classList.add('text-red-400');
+                showMessage(data.message || 'An error occurred.', true);
+                resetTurnstile();
                 submitBtn.disabled = false;
                 submitBtn.textContent = 'Get Early Access';
             }
         } catch (error) {
-            modalMessage.textContent = 'Network error. Please try again.';
-            modalMessage.classList.remove('hidden', 'text-green-400');
-            modalMessage.classList.add('text-red-400');
+            showMessage('Network error. Please try again.', true);
+            resetTurnstile();
             submitBtn.disabled = false;
             submitBtn.textContent = 'Get Early Access';
         }
