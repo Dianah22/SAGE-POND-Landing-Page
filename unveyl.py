@@ -14,58 +14,6 @@ def set_seed(seed):
     torch.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
 set_seed(42)
-class DPOLoss(nn.Module):
-
-    def __init__(
-        self,
-        beta: float = 0.1,
-        label_smoothing: float = 0.0,
-    ):
-        super().__init__()
-        self.beta = beta
-        self.label_smoothing = label_smoothing
-
-    def forward(
-        self,
-        policy_chosen_logps: torch.Tensor,
-        policy_rejected_logps: torch.Tensor,
-        reference_chosen_logps: torch.Tensor,
-        reference_rejected_logps: torch.Tensor,
-    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
-        """
-        Compute the DPO loss for a batch of policy and reference model log probabilities.
-
-        Args:
-            policy_chosen_logps (torch.Tensor): Log probabilities of the policy model
-                for the chosen responses. Shape: (batch_size)
-            policy_rejected_logps (torch.Tensor): Log probabilities of the policy model
-                for the rejected responses. Shape: (batch_size)
-            reference_chosen_logps (torch.Tensor): Log probabilities of the reference model
-                for the chosen responses. Shape: (batch_size)
-            reference_rejected_logps (torch.Tensor): Log probabilities of the reference model
-                for the rejected responses. Shape: (batch_size)
-                """
-        pi_logratios = policy_chosen_logps - policy_rejected_logps
-        ref_logratios = reference_chosen_logps - reference_rejected_logps
-
-        logits = pi_logratios - ref_logratios
-
-        # The beta is a temperature parameter for the DPO loss, typically something in the range of 0.1 to 0.5.
-        # We ignore the reference model as beta -> 0. The label_smoothing parameter encodes our uncertainty about the labels and
-        # calculates a conservative DPO loss.
-        losses = (
-            -F.logsigmoid(self.beta * logits) * (1 - self.label_smoothing)
-            - F.logsigmoid(-self.beta * logits) * self.label_smoothing
-        )
-
-        chosen_rewards = (
-            self.beta * (policy_chosen_logps - reference_chosen_logps).detach()
-        )
-        rejected_rewards = (
-            self.beta * (policy_rejected_logps - reference_rejected_logps).detach()
-        )
-
-        return losses, chosen_rewards, rejected_rewards
 def truncate_sequence_at_first_stop_token(
     sequences: torch.Tensor, stop_tokens: torch.Tensor, fill_value: int = 0
 ) -> Tuple[torch.Tensor, torch.Tensor]:
@@ -76,76 +24,6 @@ def truncate_sequence_at_first_stop_token(
     return padding_mask, sequences
 
 
-
-def logits_to_logprobs(
-    logits: torch.Tensor, sequences: torch.Tensor, temperature: float = 1.0
-) -> torch.Tensor:
-    """
-    Converts logits corresponding to a generated sequence to logprobs over the generated tokens.
-
-    Args:
-        logits (torch.Tensor): The logits tensor of shape [b, response_length, vocab_size].
-        sequences (torch.Tensor): The corresponding tokens of shape [b, response_length].
-        temperature (float): The temperature to scale the logits. Default 1.0
-    Returns:
-        torch.Tensor: The log probabilities corresponding to each token in ``sequences``. Shape [b, response_length].
-    """
-    return torch.gather(
-        F.log_softmax(logits / temperature, dim=-1),
-        2,
-        sequences.unsqueeze(-1),
-    ).squeeze(-1)
-
-def masked_mean(
-    x: torch.Tensor, mask: torch.Tensor, dim: Optional[int] = None
-) -> torch.Tensor:
-    """
-    Compute mean of tensor with masked values. Taken from https://github.com/huggingface/trl/blob/main/trl/core.py
-
-    Args:
-        x (torch.Tensor): The input tensor.
-        mask (torch.Tensor): The bool mask tensor, where True indicates the corresponding value in ``x``
-            should participate in the mean calculation.
-        dim (Optional[int]): The axis to calculate the mean over. Default None.
-
-    Returns:
-        torch.Tensor: The mean tensor.
-    """
-    return (x * mask).sum(dim=dim) / mask.sum(dim=dim)
-
-def get_batch_log_probs(
-    logits: torch.FloatTensor,
-    labels: torch.LongTensor,
-    label_pad_token_id: int = -100,
-    return_average_logprobs: bool = False,
-) -> torch.FloatTensor:
-    """
-    Calculate log probabilities based on provided logits and labels.
-
-    Args:
-        logits (torch.FloatTensor): direct logits output of the model of shape (b, s, v)
-        labels (torch.LongTensor): ground-truth labels to compute log probs with, shape (b, s).
-            Label tokens with a value of label_pad_token_id are ignored.
-    Returns:
-        Calculated log probs of shape (b, )
-    """
-    if logits.shape[:-1] != labels.shape:
-        raise ValueError(
-            "Logits (batch and sequence length dim) and labels must have the same shape."
-        )
-
-    labels = labels[:, 1:].clone()
-    logits = logits[:, :-1, :]
-    loss_mask = labels != label_pad_token_id
-
-    labels[labels == label_pad_token_id] = 0
-    # take log-likelihood of the labels given our model
-    per_token_log_probs = logits_to_logprobs(logits, labels, temperature=1.0)
-
-    if return_average_logprobs:
-        return masked_mean(per_token_log_probs, loss_mask, dim=-1)
-    else:
-        return (per_token_log_probs * loss_mask).sum(-1)
 
 tokenizer = spm.SentencePieceProcessor(model_file='unveyl.model')
 torch.autograd.set_detect_anomaly(True)
@@ -305,21 +183,42 @@ class Block(nn.Module):
         self.sa = CausalSelfAttention()
         self.ffwd = FeedFoward(n_embd)
         self.smoe = SparseMoE()
-        self.ln1 = nn.LayerNorm(n_embd)
-        self.ln2 = nn.LayerNorm(n_embd)
-    def forward(self, x):
-        x = x + self.sa(self.ln1(x))[0]
-        x = x + self.smoe(self.ln2(x))
-        return x
+        self.ln1 = nn.RMSNorm(n_embd)
+        self.ln2 = nn.RMSNorm(n_embd)
+        self.query_w = nn.Parameter(torch.randn(n_embd)) # The 'wl' from the paper
+        self.key_norm = nn.RMSNorm(n_embd) 
+    def forward(self, x, history_v, history_k):
+        # 1. Calculate weights alpha: phi(wl, ki) = exp(wl.T * RMSNorm(ki))
+        # We stack history_k to do a batch dot product with our query_w
+        keys = torch.stack(history_k) # [num_prev_layers, n_embd]
+        logits = torch.matmul(self.key_norm(keys), self.query_w) # [num_prev_layers]
+        alpha = F.softmax(logits, dim=0) # Normalize weights to sum to 1
+        
+        # 2. Selective Residual: hl = sum(alpha_i * vi)
+        values = torch.stack(history_v) # [num_prev_layers, batch, seq, n_embd]
+        # Reshape alpha to multiply correctly across batch/seq/dims
+        h_l = torch.sum(alpha.view(-1, 1, 1, 1) * values, dim=0)
+        
+        # 3. Apply your blocks using this "Smart Residual" h_l
+        # Note: Pre-norm style uses h_l as the base for the next calc
+        attn_out = self.sa(self.ln1(h_l))[0]
+        x_mid = h_l + attn_out 
+        
+        # Usually, the paper applies this logic to each sub-layer or per block
+        moe_out = self.smoe(self.ln2(x_mid))
+        x_final = x_mid + moe_out
+        
+        return x_final, x_final
 class Unveyl1(nn.Module):
     def __init__(self):
         super().__init__()
         self.tok_emb = nn.Embedding(vocab_size,n_embd,padding_idx=0)
         self.position_embed = nn.Embedding(context_window, n_embd)
         self.blocks = nn.Sequential(*[Block(n_embd, n_head=n_head) for _ in range(n_layer)])
-        self.ln_f = nn.LayerNorm(n_embd)  # final layer norm
+        self.ln_f = nn.RMSNorm(n_embd)  # final layer norm
         self.lm_head = nn.Linear(n_embd, vocab_size)
         self.tok_emb.weight = self.lm_head.weight
+        self.get_key = nn.Linear(n_embd, n_embd)
     @torch.autocast(device_type='cuda')
     def forward(self, idx, targets=None):
         B, T = idx.shape
