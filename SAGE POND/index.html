@@ -10,8 +10,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
 
 <link rel="stylesheet" href="style.css">
@@ -31,11 +30,6 @@
 </div>
 
 
-<button class="menu-toggle" onclick="toggleMenu()">
-    ☰
-</button>
-
-
 <ul class="nav-links" id="navLinks">
 
 <li><a href="#products">Product</a></li>
@@ -45,26 +39,6 @@
 <li><a href="#how-it-works">AI Models</a></li>
 
 </ul>
-
-
-<div class="buttons">
-
-<button
-    class="signup"
-    onclick="openSignup()"
-    aria-label="Create a SAGE POND account">
-    Sign Up
-</button>
-
-
-<button
-    class="login"
-    onclick="openLogin()"
-    aria-label="Log in to your SAGE POND account">
-    Login
-</button>
-
-</div>
 
 </nav>
 </header>
@@ -186,79 +160,56 @@ Making AI Accessible to Everyone
 
 <section class="features" id="products">
 
-    <h2>Our Products</h2>
 
-    <p class="section-subtitle">
-        Building AI products that empower people, businesses, and communities across Africa.
-    </p>
+<h2>Our Products</h2>
+
+<p class="section-subtitle">
+    Building AI products that empower people, businesses, and communities across Africa.
+</p>
+
+<div class="features-container">
 
     <div class="feature-card">
-
-    <div class="feature-icon">
-        🗣️
+        <div class="feature-icon">🗣️</div>
+        <h3>SAGE Language AI</h3>
+        <p>
+            AI technologies designed to improve understanding,
+            translation, and accessibility for African languages.
+        </p>
     </div>
 
-    <h3>SAGE Language AI</h3>
+    <div class="feature-card">
+        <div class="feature-icon">🧠</div>
+        <h3>SAGE AI Models</h3>
+        <p>
+            Advanced AI models developed through research and
+            designed for practical real-world applications.
+        </p>
+    </div>
 
-    <p>
-        AI technologies designed to improve understanding,
-        translation, and accessibility for African languages.
-    </p>
+    <div class="feature-card">
+        <div class="feature-icon">🔬</div>
+        <h3>SAGE Research Hub</h3>
+        <p>
+            A platform showcasing AI research, publications,
+            and innovation from SAGE POND.
+        </p>
+    </div>
+
+    <div class="feature-card">
+        <div class="feature-icon">☁️</div>
+        <h3>AI Infrastructure</h3>
+        <p>
+            Scalable AI systems and tools that support
+            organizations building intelligent solutions.
+        </p>
+    </div>
 
 </div>
 
-
-
-<div class="feature-card">
-
-    <div class="feature-icon">
-        🧠
-    </div>
-
-    <h3>SAGE AI Models</h3>
-
-    <p>
-        Advanced AI models developed through research and
-        designed for practical real-world applications.
-    </p>
-
-</div>
-
-
-
-<div class="feature-card">
-
-    <div class="feature-icon">
-        🔬
-    </div>
-
-    <h3>SAGE Research Hub</h3>
-
-    <p>
-        A platform showcasing AI research, publications,
-        and innovation from SAGE POND.
-    </p>
-
-</div>
-
-
-
-<div class="feature-card">
-
-    <div class="feature-icon">
-        ☁️
-    </div>
-
-    <h3>AI Infrastructure</h3>
-
-    <p>
-        Scalable AI systems and tools that support
-        organizations building intelligent solutions.
-    </p>
-
-</div>
 
 </section>
+
 
 <!-- ===================== RESEARCH ===================== -->
 
@@ -692,244 +643,7 @@ Making AI Accessible to Everyone
     </div>
 
 </footer>
-<!-- ================= LOGIN MODAL ================= -->
 
-<div 
-class="modal" 
-id="loginModal"
-role="dialog"
-aria-modal="true"
-aria-labelledby="loginTitle">
-
-    <div class="modal-content">
-
-        <button
-            class="close"
-            onclick="closeLogin()"
-            aria-label="Close login window">
-
-         &times;
-
-        </button>
-
-       <h2 id="loginTitle">
-        Login
-        </h2>
-
-        <label for="loginEmail">
-    Email Address
-</label>
-
-<input
-    type="email"
-    id="loginEmail"
-    placeholder="Email"
-    aria-label="Email address"
-    required>
-<div class="password-box">
-
-    <label for="loginPassword">
-    Password
-</label>
-
-    <input
-    type="password"
-    id="loginPassword"
-    placeholder="Password"
-    aria-label="Password"
-    required>
-
-    <button
-    type="button"
-    class="password-toggle"
-    onclick="togglePassword('loginPassword', this)"
-    aria-label="Show or hide password">
-    👁
-</button>
-
-</div>
-
-
-        <p class="forgot-password" onclick="openReset()">
-            Forgot Password?
-        </p>
-
-        <p id="loginMessage" class="form-message"></p>
-
-
-        <button class="modal-btn" onclick="validateLogin()">
-            Login
-        </button>
-
-
-        <p class="switch-text">
-
-            Don't have an account?
-
-            <span onclick="switchToSignup()">
-                Sign Up
-            </span>
-
-        </p>
-
-
-    </div>
-
-</div>
-</div>
-
-
-
-<!-- ================= SIGNUP MODAL ================= -->
-
-    <div 
-        class="modal"
-        id="signupModal"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="signupTitle">
-
-    <div class="modal-content">
-
-       <button
-class="close"
-onclick="closeSignup()"
-aria-label="Close signup window">
-
-&times;
-
-</button>
-
-
-        <h2 id="signupTitle">
-        Create Account
-        </h2>
-
-<label for="signupName">
-    Full Name
-</label>
-
-       <input
-    type="text"
-    id="signupName"
-    placeholder="Full Name"
-    aria-label="Full name"
-    required>
-
-<label for="signupEmail">
-    Email Address
-</label>
-<input
-    type="email"
-    id="signupEmail"
-    placeholder="Email"
-    aria-label="Email address"
-    required>
-
-<div class="password-box">
-
-    <label for="signupPassword">
-    Password
-</label>
-
-    <input
-    type="password"
-    id="signupPassword"
-    placeholder="Password"
-    aria-label="Password"
-    required>
-
-    <button
-    type="button"
-    class="password-toggle"
-    onclick="togglePassword('loginPassword', this)"
-    aria-label="Show or hide password">
-    👁
-</button>
-</div>
-<p id="signupMessage" class="form-message"></p>
-
-        <button class="modal-btn" onclick="validateSignup()">
-            Sign Up
-        </button>
-
-
-        <p class="switch-text">
-
-            Already have an account?
-
-            <span onclick="switchToLogin()">
-                Login
-            </span>
-
-        </p>
-
-
-    </div>
-
-</div>
-
-<!-- ================= RESET PASSWORD MODAL ================= -->
-
-    <div 
-        class="modal"
-        id="resetModal"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="resetTitle">
-
-    <div class="modal-content">
-
-
-        <button
-          class="close"
-          onclick="closeReset()"
-          aria-label="Close reset window">
-
-        &times;
-
-        </button>
-
-        <h2 id="resetTitle">
-            Reset Password
-        </h2>
-
-
-        <p>
-            Enter your email and we will help you reset your password.
-        </p>
-
-    <label for="resetEmail">
-    Email Address
-    </label>
-
-       <input type="email" id="resetEmail" placeholder="Email">
-
-       <p id="resetMessage" class="form-message"></p>
-
-
-       <button class="modal-btn" onclick="validateReset()">
-
-            Send Reset Link
-        </button>
-
-
-        <p class="switch-text">
-
-            Remember your password?
-
-            <span onclick="switchToLoginFromReset()">
-                Login
-            </span>
-
-        </p>
-
-
-    </div>
-
-</div>
-
-</div>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3/dist/gsap.min.js"></script>
 
 <script src="https://cdn.jsdelivr.net/npm/gsap@3/dist/ScrollTrigger.min.js"></script>
