@@ -1,0 +1,235 @@
+/* ===========================
+SAGE POND VERIFY EMAIL PAGE
+=========================== */
+
+
+:root{
+
+--primary-color:#A9C7F5;
+--secondary-color:#F9DDF4;
+--accent-color:#1F6F50;
+--text-color:#1F2937;
+--text-light:#555555;
+
+--font-family:'Poppins', sans-serif;
+
+--radius-large:20px;
+
+--card-shadow:0 15px 30px rgba(0,0,0,.12);
+
+}
+
+
+
+/* ===========================
+GLOBAL STYLES
+=========================== */
+
+
+*{
+
+margin:0;
+padding:0;
+box-sizing:border-box;
+
+}
+
+
+
+body{
+
+font-family:var(--font-family);
+
+background:#FFFFFF;
+
+color:var(--text-color);
+
+}
+
+
+
+/* ===========================
+VERIFY CONTAINER
+=========================== */
+
+
+.verify-container{
+
+min-height:100vh;
+
+display:flex;
+
+justify-content:center;
+
+align-items:center;
+
+padding:30px;
+
+}
+
+
+
+/* ===========================
+VERIFY CARD
+=========================== */
+
+
+.verify-card{
+
+width:100%;
+
+max-width:500px;
+
+background:var(--secondary-color);
+
+padding:50px 40px;
+
+border-radius:var(--radius-large);
+
+text-align:center;
+
+box-shadow:var(--card-shadow);
+
+}
+
+
+
+/* ===========================
+LOGO
+=========================== */
+
+
+.verify-logo{
+
+width:150px;
+
+margin:0 auto 30px;
+
+}
+
+
+
+/* ===========================
+TEXT
+=========================== */
+
+
+.verify-card h1{
+
+font-size:36px;
+
+margin-bottom:20px;
+
+}
+
+
+
+.verify-card p{
+
+font-size:16px;
+
+line-height:1.7;
+
+color:var(--text-light);
+
+margin-bottom:15px;
+
+}
+
+
+
+/* ===========================
+BUTTON
+=========================== */
+
+
+.verify-btn{
+
+display:inline-block;
+
+margin-top:25px;
+
+background:var(--accent-color);
+
+color:white;
+
+padding:12px 30px;
+
+border-radius:10px;
+
+font-weight:600;
+
+text-decoration:none;
+
+transition:.3s;
+
+}
+
+
+
+.verify-btn:hover{
+
+opacity:.85;
+
+transform:translateY(-3px);
+
+}
+
+
+
+/* ===========================
+BACK HOME
+=========================== */
+
+
+.back-home{
+
+margin-top:25px;
+
+}
+
+
+
+.back-home a{
+
+color:var(--accent-color);
+
+font-weight:600;
+
+text-decoration:none;
+
+}
+
+
+.back-home a:hover{
+
+text-decoration:underline;
+
+}
+
+
+
+/* ===========================
+RESPONSIVE DESIGN
+=========================== */
+
+
+@media(max-width:600px){
+
+
+.verify-card{
+
+padding:40px 25px;
+
+}
+
+
+.verify-card h1{
+
+font-size:30px;
+
+}
+
+
+}
+

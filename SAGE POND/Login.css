@@ -1,0 +1,175 @@
+/* ===========================
+SAGE POND LOGIN PAGE
+=========================== */
+
+:root{
+--primary-color:#A9C7F5;
+--secondary-color:#F9DDF4;
+--accent-color:#1F6F50;
+--text-color:#1F2937;
+--text-light:#555555;
+--background-color:#FFFFFF;
+
+
+--font-family:'Poppins', sans-serif;
+
+--radius-large:20px;
+--card-shadow:0 15px 30px rgba(0,0,0,.12);
+
+
+}
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+}
+
+body{
+font-family:var(--font-family);
+background:var(--background-color);
+color:var(--text-color);
+}
+
+.login-container{
+min-height:100vh;
+display:flex;
+}
+
+/* Left Branding Panel */
+
+.login-left{
+flex:1;
+background:var(--secondary-color);
+padding:60px;
+display:flex;
+flex-direction:column;
+justify-content:center;
+}
+
+.login-logo{
+width:160px;
+margin-bottom:40px;
+}
+
+.login-left h1{
+font-size:48px;
+margin-bottom:20px;
+}
+
+.login-left p{
+font-size:18px;
+line-height:1.8;
+color:var(--text-light);
+max-width:480px;
+}
+
+/* Right Form Panel */
+
+.login-right{
+flex:1;
+display:flex;
+justify-content:center;
+align-items:center;
+padding:40px;
+}
+
+.login-card{
+width:100%;
+max-width:420px;
+background:#ffffff;
+padding:40px;
+border-radius:var(--radius-large);
+box-shadow:var(--card-shadow);
+}
+
+.login-card h2{
+font-size:32px;
+margin-bottom:30px;
+text-align:center;
+}
+
+.login-card label{
+display:block;
+margin-bottom:8px;
+font-weight:600;
+}
+
+.login-card input{
+width:100%;
+padding:14px 16px;
+margin-bottom:20px;
+border:1px solid #d1d5db;
+border-radius:10px;
+font-size:16px;
+font-family:var(--font-family);
+}
+
+.login-card input:focus{
+outline:none;
+border-color:var(--accent-color);
+box-shadow:0 0 0 3px rgba(31,111,80,.15);
+}
+
+.login-btn{
+width:100%;
+background:var(--primary-color);
+color:var(--text-color);
+padding:14px;
+border:none;
+border-radius:10px;
+font-size:16px;
+font-weight:600;
+cursor:pointer;
+transition:.3s;
+}
+
+.login-btn:hover{
+background:#8CB5F0;
+transform:translateY(-2px);
+}
+
+.back-home{
+text-align:center;
+margin-top:20px;
+}
+
+.back-home a{
+color:var(--accent-color);
+font-weight:600;
+text-decoration:none;
+}
+
+.back-home a:hover{
+text-decoration:underline;
+}
+
+/* Responsive */
+
+@media(max-width:900px){
+
+
+.login-container{
+    flex-direction:column;
+}
+
+.login-left{
+    text-align:center;
+    align-items:center;
+    padding:50px 30px;
+}
+
+.login-left h1{
+    font-size:38px;
+}
+
+.login-right{
+    padding:30px 20px;
+}
+
+.login-card{
+    padding:30px;
+}
+
+
+}

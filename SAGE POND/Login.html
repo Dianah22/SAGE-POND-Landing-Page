@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>SAGE POND | Login</title>
+
+<!-- Google Font -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<!-- Login Page CSS -->
+<link rel="stylesheet" href="login.css">
+
+
+</head>
+
+<body>
+
+<div class="login-container">
+
+
+<!-- Left Side -->
+<div class="login-left">
+
+    <img src="images/logo.png" alt="SAGE POND Logo" class="login-logo">
+
+    <h1>Welcome Back</h1>
+
+    <p>
+        Sign in to continue exploring AI research, language technologies,
+        and innovative solutions built for Africa.
+    </p>
+
+</div>
+
+
+
+<!-- Right Side -->
+<div class="login-right">
+
+    <div class="login-card">
+
+        <h2>Sign In</h2>
+
+        <form id="loginForm">
+
+            <label for="email">
+                Email
+            </label>
+
+            <input
+                type="email"
+                id="email"
+                placeholder="Enter your email"
+                required
+            >
+
+
+            <label for="password">
+                Password
+            </label>
+
+            <input
+                type="password"
+                id="password"
+                placeholder="Enter your password"
+                required
+            >
+
+
+            <!-- Firebase messages -->
+            <p id="loginMessage"></p>
+
+
+            <button type="submit" class="login-btn">
+                Login
+            </button>
+
+        </form>
+
+
+        <p class="back-home">
+
+            Don't have an account?
+
+            <a href="signup.html">
+                Sign up here
+            </a>
+
+        </p>
+
+
+        <p class="back-home">
+
+            <a href="index.html">
+                ← Back to Home
+            </a>
+
+        </p>
+
+
+    </div>
+
+</div>
+
+
+</div>
+
+<script type="module" src="login.js"></script>
+
+</body>
+
+</html>

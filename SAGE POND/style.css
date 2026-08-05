@@ -110,6 +110,66 @@ border:none;
 .nav-links a:hover{
     color:var(--accent-color);
 }
+
+/* ===========================
+NAVBAR BUTTONS
+=========================== */
+
+
+.signup-nav-btn{
+
+background:var(--primary-color);
+
+padding:10px 22px;
+
+border-radius:10px;
+
+font-weight:600 !important;
+
+color:var(--text-color) !important;
+
+transition:.3s;
+
+}
+
+
+
+.signup-nav-btn:hover{
+
+background:#8CB5F0;
+
+transform:translateY(-2px);
+
+}
+
+
+
+
+.login-nav-btn{
+
+background:var(--accent-color);
+
+padding:10px 22px;
+
+border-radius:10px;
+
+font-weight:600 !important;
+
+color:white !important;
+
+transition:.3s;
+
+}
+
+
+
+.login-nav-btn:hover{
+
+opacity:0.85;
+
+transform:translateY(-2px);
+
+}
 /* ===========================
 HERO SECTION
 =========================== */

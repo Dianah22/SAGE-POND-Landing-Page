@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>SAGE POND | Sign Up</title>
+
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+
+    <!-- Signup CSS -->
+    <link rel="stylesheet" href="signup.css">
+
+</head>
+
+
+<body>
+
+
+<div class="signup-container">
+
+
+    <!-- Left Section -->
+    <div class="signup-left">
+
+
+        <img src="images/logo.png" alt="SAGE POND Logo" class="signup-logo">
+
+
+        <h1>Create Your Account</h1>
+
+
+        <p>
+            Join SAGE POND and become part of a community building AI solutions,
+            language technologies, and research-driven innovation for Africa.
+        </p>
+
+
+    </div>
+
+
+
+    <!-- Right Section -->
+    <div class="signup-right">
+
+
+        <div class="signup-card">
+
+
+            <h2>Sign Up</h2>
+
+
+
+            <form id="signupForm">
+
+
+                <label for="name">
+                    Full Name
+                </label>
+
+
+                <input
+                    type="text"
+                    id="name"
+                    placeholder="Enter your full name"
+                    required
+                >
+
+
+
+                <label for="email">
+                    Email
+                </label>
+
+
+                <input
+                    type="email"
+                    id="email"
+                    placeholder="Enter your email"
+                    required
+                >
+
+
+
+                <label for="password">
+                    Password
+                </label>
+
+
+                <input
+                    type="password"
+                    id="password"
+                    placeholder="Create a password"
+                    required
+                >
+
+
+                <small>
+                    Password must be at least 8 characters long.
+                </small>
+
+
+
+                <label for="confirmPassword">
+                    Confirm Password
+                </label>
+
+
+                <input
+                    type="password"
+                    id="confirmPassword"
+                    placeholder="Confirm your password"
+                    required
+                >
+
+
+
+                <!-- Firebase messages will appear here -->
+                <p id="signupMessage"></p>
+
+
+
+                <button type="submit" class="signup-btn">
+                    Create Account
+                </button>
+
+
+
+            </form>
+
+
+
+
+            <p class="back-home">
+
+                Already have an account?
+
+                <a href="login.html">
+                    Login here
+                </a>
+
+            </p>
+
+
+
+
+            <p class="back-home">
+
+                <a href="index.html">
+                    ← Back to Home
+                </a>
+
+            </p>
+
+
+
+        </div>
+
+
+    </div>
+
+
+</div>
+
+
+
+
+<script type="module" src="signup.js"></script>
+
+
+</body>
+
+</html>
+
