@@ -2,68 +2,118 @@
 // SAGE POND LOGIN JAVASCRIPT
 // ===========================
 
-import { auth } from "./firebase-config.js";
 
-import { signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js";
-
+// ===========================
 // Get form elements
-const loginForm = document.getElementById("loginForm");
-const loginMessage = document.getElementById("loginMessage");
+// ===========================
 
+const loginForm =
+    document.getElementById("loginForm");
+
+const loginMessage =
+    document.getElementById("loginMessage");
+
+
+// ===========================
 // Login
-loginForm.addEventListener("submit", async function(event){
+// ===========================
 
-event.preventDefault();
+loginForm.addEventListener(
+    "submit",
+    async function (event) {
 
-const email = document.getElementById("email").value.trim();
-const password = document.getElementById("password").value.trim();
-
-
-try{
-
-    // Sign in with Firebase
-    const userCredential = await signInWithEmailAndPassword(
-        auth,
-        email,
-        password
-    );
-
-    const user = userCredential.user;
+        event.preventDefault();
 
 
-    // Check if email is verified
-    if(user.emailVerified){
+        const email =
+            document.getElementById("email")
+                .value
+                .trim();
 
-        loginMessage.textContent = "Login successful! Redirecting...";
-        loginMessage.style.color = "green";
+        const password =
+            document.getElementById("password")
+                .value;
 
-        setTimeout(()=>{
 
-            // Future dashboard/home page
-            window.location.href = "index.html";
+        // ===========================
+        // Basic validation
+        // ===========================
 
-        },1500);
+        if (!email || !password) {
+
+            loginMessage.textContent =
+                "Please enter your email and password.";
+
+            loginMessage.style.color =
+                "red";
+
+            return;
+        }
+
+
+        try {
+
+            const response =
+                await fetch(
+                    "http://127.0.0.1:3000/login",
+                    {
+                        method: "POST",
+
+                        headers: {
+                            "Content-Type":
+                                "application/json"
+                        },
+
+                        body: JSON.stringify({
+                            email: email,
+                            password: password
+                        })
+                    }
+                );
+
+
+            const data =
+                await response.json();
+
+
+            if (!response.ok) {
+
+                throw new Error(
+                    data.message ||
+                    "Login failed."
+                );
+            }
+
+
+            loginMessage.textContent =
+                "Login successful! Redirecting...";
+
+            loginMessage.style.color =
+                "green";
+
+
+            setTimeout(() => {
+
+                window.location.href =
+                    "index.html";
+
+            }, 1500);
+
+
+        } catch (error) {
+
+            console.error(
+                "Login error:",
+                error
+            );
+
+            loginMessage.textContent =
+                error.message ||
+                "Unable to log in.";
+
+            loginMessage.style.color =
+                "red";
+        }
 
     }
-
-    else{
-
-    await auth.signOut();
-
-    loginMessage.textContent =
-    "Please verify your email before logging in.";
-
-    loginMessage.style.color = "red";
-
-}
-}
-
-catch(error){
-
-    loginMessage.textContent = error.message;
-    loginMessage.style.color = "red";
-
-}
-
-
-});
+);

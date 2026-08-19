@@ -3,131 +3,223 @@
 // ===========================
 
 
-import { auth } from "./firebase-config.js";
+// ===========================
+// Get page elements
+// ===========================
 
-import {
-    sendEmailVerification,
-    reload
-} from "https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js";
+const checkVerificationBtn =
+    document.getElementById("checkVerification");
 
+const resendEmailBtn =
+    document.getElementById("resendEmail");
 
+const message =
+    document.getElementById("verifyMessage");
 
-// Get buttons
 
-const checkVerificationBtn = document.getElementById("checkVerification");
+// ===========================
+// Get verification information
+// from the URL
+// ===========================
 
-const resendEmailBtn = document.getElementById("resendEmail");
+const urlParams =
+    new URLSearchParams(window.location.search);
 
-const message = document.getElementById("verifyMessage");
+const token =
+    urlParams.get("token");
 
+const verified =
+    urlParams.get("verified");
 
 
-// Check if user exists
+// ===========================
+// Show verified message
+// ===========================
 
-let currentUser = null;
+if (verified === "true") {
 
+    message.textContent =
+        "Email verified successfully! You can now create your account.";
 
-auth.onAuthStateChanged((user)=>{
+    message.style.color = "green";
+}
 
 
-    if(user){
+// ===========================
+// Verify email
+// ===========================
 
-        currentUser = user;
+async function verifyEmail() {
 
-        console.log("Current user:", user.email);
-
-    }
-
-    else{
-
-        window.location.href = "signup.html";
-
-    }
-
-
-});
-
-
-
-
-// Check verification status
-
-checkVerificationBtn.addEventListener("click", async ()=>{
-
-
-    if(currentUser){
-
-
-        await reload(currentUser);
-
-
-
-        if(currentUser.emailVerified){
-
-
-            message.textContent = 
-            "Email verified successfully! Redirecting...";
-
-
-            message.style.color = "green";
-
-
-
-            setTimeout(()=>{
-
-
-                window.location.href = "login.html";
-
-
-            },2000);
-
-
-
-        }
-
-
-        else{
-
-
-            message.textContent =
-            "Your email is not verified yet. Please check your inbox.";
-
-
-            message.style.color = "red";
-
-
-        }
-
-
-    }
-
-
-});
-
-
-
-
-
-// Resend verification email
-
-resendEmailBtn.addEventListener("click", async ()=>{
-
-
-    if(currentUser){
-
-
-        await sendEmailVerification(currentUser);
-
-
+    if (verified === "true") {
 
         message.textContent =
-        "Verification email sent again. Please check your inbox.";
-
+            "Email already verified. You can now create your account.";
 
         message.style.color = "green";
 
-
+        return;
     }
 
 
-});
+    if (!token) {
+
+        message.textContent =
+            "Verification token is missing.";
+
+        message.style.color = "red";
+
+        return;
+    }
+
+
+    try {
+
+        message.textContent =
+            "Verifying your email...";
+
+        message.style.color = "";
+
+
+        const response = await fetch(
+            `http://127.0.0.1:3000/verify-email?token=${encodeURIComponent(token)}`
+        );
+
+
+        const data =
+            await response.text();
+
+
+        if (!response.ok) {
+
+            throw new Error(data);
+
+        }
+
+
+        message.textContent =
+            data;
+
+        message.style.color =
+            "green";
+
+
+    } catch (error) {
+
+        console.error(
+            "Email verification error:",
+            error
+        );
+
+        message.textContent =
+            error.message ||
+            "Unable to verify your email.";
+
+        message.style.color =
+            "red";
+
+    }
+
+}
+
+
+// ===========================
+// Resend verification email
+// ===========================
+
+async function resendVerificationEmail() {
+
+    message.textContent =
+        "Resending verification email...";
+
+    message.style.color = "";
+
+
+    const email =
+        sessionStorage.getItem("signupEmail");
+
+
+    if (!email) {
+
+        message.textContent =
+            "Your signup email could not be found.";
+
+        message.style.color =
+            "red";
+
+        return;
+    }
+
+
+    try {
+
+        const response = await fetch(
+            "http://127.0.0.1:3000/send-verification-email",
+            {
+                method: "POST",
+
+                headers: {
+                    "Content-Type": "application/json"
+                },
+
+                body: JSON.stringify({
+                    email: email
+                })
+            }
+        );
+
+
+        const data =
+            await response.json();
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                data.message ||
+                "Failed to resend verification email."
+            );
+
+        }
+
+
+        message.textContent =
+            "Verification email sent again. Please check your inbox.";
+
+        message.style.color =
+            "green";
+
+
+    } catch (error) {
+
+        console.error(
+            "Resend verification error:",
+            error
+        );
+
+        message.textContent =
+            error.message ||
+            "Unable to resend verification email.";
+
+        message.style.color =
+            "red";
+
+    }
+
+}
+
+
+// ===========================
+// Button events
+// ===========================
+
+checkVerificationBtn.addEventListener(
+    "click",
+    verifyEmail
+);
+
+
+resendEmailBtn.addEventListener(
+    "click",
+    resendVerificationEmail
+);

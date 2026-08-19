@@ -2,19 +2,12 @@
 // SAGE POND SIGNUP JAVASCRIPT
 // ===========================
 
-import { auth } from "./firebase-config.js";
-
-import {
-    createUserWithEmailAndPassword,
-    sendEmailVerification
-} from "https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js";
-
 
 // ===========================
 // Send verification email request to backend
 // ===========================
 
-async function sendVerificationEmail(email) {
+async function sendVerificationEmail(name, email, password) {
 
     try {
 
@@ -28,7 +21,9 @@ async function sendVerificationEmail(email) {
                 },
 
                 body: JSON.stringify({
-                    email: email
+                    name: name,
+                    email: email,
+                    password: password
                 })
             }
         );
@@ -36,6 +31,13 @@ async function sendVerificationEmail(email) {
         const data = await response.json();
 
         console.log("Backend response:", data);
+
+        if (!response.ok) {
+            throw new Error(
+                data.message ||
+                "Failed to send verification email."
+            );
+        }
 
         return data;
 
@@ -49,8 +51,6 @@ async function sendVerificationEmail(email) {
         throw error;
     }
 }
-
-
 
 // ===========================
 // Get form elements
@@ -84,7 +84,9 @@ signupForm.addEventListener("submit", async function(event) {
 
     if (password !== confirmPassword) {
 
-        signupMessage.textContent = "Passwords do not match.";
+        signupMessage.textContent =
+            "Passwords do not match.";
+
         signupMessage.style.color = "red";
 
         return;
@@ -109,35 +111,25 @@ signupForm.addEventListener("submit", async function(event) {
     try {
 
         // ===========================
-        // Create Firebase account
+        // Send verification request
+        // to Node.js backend
         // ===========================
 
-        const userCredential =
-            await createUserWithEmailAndPassword(
-                auth,
-                email,
-                password
-            );
+        sessionStorage.setItem("signupEmail", email);
 
-        const user = userCredential.user;
+        await sendVerificationEmail(
+    name,
+    email,
+    password
+);
 
 
         // ===========================
-        // Send Firebase verification email
+        // Show success message
         // ===========================
-
-             await sendEmailVerification(user);
-
-
-   // ===========================
-  // Notify our backend
-// ===========================
-
-       await sendVerificationEmail(email);
-
 
         signupMessage.textContent =
-            "Verification email sent!";
+            "Verification email sent! Please check your email.";
 
         signupMessage.style.color = "green";
 
@@ -165,3 +157,4 @@ signupForm.addEventListener("submit", async function(event) {
     }
 
 });
+
