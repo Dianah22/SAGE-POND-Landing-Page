@@ -1,0 +1,10 @@
+{
+    "watch": [
+        "backend.js",
+        "services"
+    ],
+    "ignore": [
+        "data/auth-data.json",
+        "node_modules"
+    ]
+}

@@ -5,6 +5,7 @@ const cors = require("cors");
 const crypto = require("crypto");
 
 const { sendVerificationEmail } = require("./services/verificationEmail");
+const { readData, writeData } = require("./services/storage");
 
 const app = express();
 
@@ -13,19 +14,19 @@ const app = express();
 // CORS
 // ===========================
 
+// ===========================
+// CORS
+// ===========================
+
 app.use(
     cors({
-        origin: [
-            "http://127.0.0.1:5500",
-            "http://localhost:5500",
-            "http://127.0.0.1:3000",
-            "https://localhost:3000"
-        ],
-        methods: ["GET", "POST"],
+        origin: true,
+        methods: ["GET", "POST", "OPTIONS"],
         allowedHeaders: ["Content-Type"]
     })
 );
 
+app.options(/.*/, cors());
 
 // ===========================
 // JSON middleware
@@ -40,14 +41,7 @@ app.use(express.json());
 
 const PORT = 3000;
 
-
-// ===========================
-// Temporary storage
-// ===========================
-
-const verificationTokens = new Map();
-const users = new Map();
-
+const authData = readData();
 
 // ===========================
 // Test route
@@ -119,15 +113,21 @@ app.post("/send-verification-email", async (req, res) => {
         // Store pending signup
         // ===========================
 
-        verificationTokens.set(email, {
-            name: name,
-            email: email,
-            passwordHash: passwordHash,
-            salt: salt,
-            token: verificationToken,
-            expiresAt: expiresAt,
-            verified: false
-        });
+        authData.verificationTokens = authData.verificationTokens.filter(
+    (item) => item.email !== email
+);
+
+authData.verificationTokens.push({
+    name: name,
+    email: email,
+    passwordHash: passwordHash,
+    salt: salt,
+    token: verificationToken,
+    expiresAt: expiresAt,
+    verified: false
+});
+
+writeData(authData);
 
 
         console.log(
@@ -162,9 +162,12 @@ app.post("/send-verification-email", async (req, res) => {
             error
         );
 
-        // Remove pending signup if email failed
-        verificationTokens.delete(email);
+       authData.verificationTokens =
+    authData.verificationTokens.filter(
+        (item) => item.email !== email
+    );
 
+        writeData(authData);
         return res.status(500).json({
             success: false,
             message: "Failed to send verification email."
@@ -197,17 +200,15 @@ app.get("/verify-email", (req, res) => {
     // Find matching signup
     // ===========================
 
-    let verificationEmail = null;
-    let verificationData = null;
+    const verificationData =
+    authData.verificationTokens.find(
+        (item) => item.token === token
+    );
 
-    for (const [email, data] of verificationTokens.entries()) {
-
-        if (data.token === token) {
-            verificationEmail = email;
-            verificationData = data;
-            break;
-        }
-    }
+const verificationEmail =
+    verificationData
+        ? verificationData.email
+        : null;
 
 
     // ===========================
@@ -227,9 +228,12 @@ app.get("/verify-email", (req, res) => {
 
     if (Date.now() > verificationData.expiresAt) {
 
-        verificationTokens.delete(
-            verificationEmail
-        );
+        authData.verificationTokens =
+    authData.verificationTokens.filter(
+        (item) => item.email !== verificationEmail
+    );
+
+        writeData(authData);
 
         return res.status(400).send(
             "This verification link has expired."
@@ -241,14 +245,18 @@ app.get("/verify-email", (req, res) => {
     // Check existing account
     // ===========================
 
-    if (users.has(verificationEmail)) {
+   const existingUser =
+    authData.users.find(
+        (user) => user.email === verificationEmail
+    );
 
-        const loginPage =
-            "http://127.0.0.1:5500/SAGE%20POND/.html%20Files/Login.html";
+if (existingUser) {
 
-        return res.redirect(loginPage);
-    }
+    const loginPage =
+        "http://127.0.0.1:5500/SAGE%20POND/.html%20Files/Login.html";
 
+    return res.redirect(loginPage);
+}
 
     // ===========================
     // Mark email as verified
@@ -261,12 +269,14 @@ app.get("/verify-email", (req, res) => {
     // Create account
     // ===========================
 
-    users.set(verificationEmail, {
-        name: verificationData.name,
-        email: verificationData.email,
-        passwordHash: verificationData.passwordHash,
-        salt: verificationData.salt
-    });
+    authData.users.push({
+    name: verificationData.name,
+    email: verificationData.email,
+    passwordHash: verificationData.passwordHash,
+    salt: verificationData.salt
+});
+
+writeData(authData);
 
 
     console.log(
@@ -279,10 +289,12 @@ app.get("/verify-email", (req, res) => {
     // Remove pending signup
     // ===========================
 
-    verificationTokens.delete(
-        verificationEmail
+    authData.verificationTokens =
+    authData.verificationTokens.filter(
+        (item) => item.email !== verificationEmail
     );
 
+writeData(authData);
 
     // ===========================
     // Redirect to verification page
@@ -324,7 +336,9 @@ app.post("/login", (req, res) => {
     // Find user
     // ===========================
 
-    const user = users.get(email);
+   const user = authData.users.find(
+    (item) => item.email === email
+);
 
 
     if (!user) {

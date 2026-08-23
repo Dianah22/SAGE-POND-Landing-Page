@@ -6,6 +6,7 @@ const sendVerificationEmail = async (email, verificationToken) => {
 
    const verificationLink =
     `http://127.0.0.1:3000/verify-email?token=${verificationToken}`;
+    
     const { data, error } = await resend.emails.send({
 
         from: process.env.RESEND_FROM,
