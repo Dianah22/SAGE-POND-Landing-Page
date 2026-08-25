@@ -1,3 +1,10 @@
+import {
+    signInWithEmailAndPassword
+} from "https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js";
+
+import { auth } from "./firebase-config.js";
+
+
 // ===========================
 // SAGE POND LOGIN JAVASCRIPT
 // ===========================
@@ -53,37 +60,48 @@ loginForm.addEventListener(
 
         try {
 
-            const response =
-                await fetch(
-                    "http://127.0.0.1:3000/login",
-                    {
-                        method: "POST",
+            loginMessage.textContent =
+                "Logging in...";
 
-                        headers: {
-                            "Content-Type":
-                                "application/json"
-                        },
+            loginMessage.style.color =
+                "black";
 
-                        body: JSON.stringify({
-                            email: email,
-                            password: password
-                        })
-                    }
+
+            // ===========================
+            // Firebase Login
+            // ===========================
+
+            const userCredential =
+                await signInWithEmailAndPassword(
+                    auth,
+                    email,
+                    password
                 );
 
 
-            const data =
-                await response.json();
+            const user =
+                userCredential.user;
 
 
-            if (!response.ok) {
+            // ===========================
+            // Check Firebase verification
+            // ===========================
 
-                throw new Error(
-                    data.message ||
-                    "Login failed."
-                );
+            if (!user.emailVerified) {
+
+                loginMessage.textContent =
+                    "Please verify your email before logging in.";
+
+                loginMessage.style.color =
+                    "red";
+
+                return;
             }
 
+
+            // ===========================
+            // Login successful
+            // ===========================
 
             loginMessage.textContent =
                 "Login successful! Redirecting...";
@@ -107,9 +125,51 @@ loginForm.addEventListener(
                 error
             );
 
-            loginMessage.textContent =
-                error.message ||
-                "Unable to log in.";
+
+            // ===========================
+            // Firebase errors
+            // ===========================
+
+            if (
+                error.code ===
+                "auth/invalid-credential"
+            ) {
+
+                loginMessage.textContent =
+                    "Invalid email or password.";
+
+            } else if (
+                error.code ===
+                "auth/user-not-found"
+            ) {
+
+                loginMessage.textContent =
+                    "No account was found with this email.";
+
+            } else if (
+                error.code ===
+                "auth/wrong-password"
+            ) {
+
+                loginMessage.textContent =
+                    "Incorrect password.";
+
+            } else if (
+                error.code ===
+                "auth/invalid-email"
+            ) {
+
+                loginMessage.textContent =
+                    "Please enter a valid email address.";
+
+            } else {
+
+                loginMessage.textContent =
+                    error.message ||
+                    "Unable to log in.";
+
+            }
+
 
             loginMessage.style.color =
                 "red";
@@ -117,3 +177,4 @@ loginForm.addEventListener(
 
     }
 );
+

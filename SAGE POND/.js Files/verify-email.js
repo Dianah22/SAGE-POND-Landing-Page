@@ -1,3 +1,12 @@
+import {
+    onAuthStateChanged,
+    reload,
+    sendEmailVerification
+} from "https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js";
+
+import { auth } from "./firebase-config.js";
+
+
 // ===========================
 // SAGE POND VERIFY EMAIL JS
 // ===========================
@@ -25,124 +34,74 @@ const message =
 const urlParams =
     new URLSearchParams(window.location.search);
 
-const token =
-    urlParams.get("token");
-
 const verified =
     urlParams.get("verified");
 
 
 // ===========================
-// Show verified message
+// Check Firebase authentication
 // ===========================
 
-if (verified === "true") {
-
-    message.textContent =
-        "Email verified successfully! You can now create your account.";
-
-    message.style.color = "green";
-}
+let currentUser = null;
 
 
-// ===========================
-// Verify email
-// ===========================
+onAuthStateChanged(auth, (user) => {
 
-async function verifyEmail() {
+    currentUser = user;
 
-    if (verified === "true") {
+    if (!user) {
 
         message.textContent =
-            "Email already verified. You can now create your account.";
+            "Please log in to continue.";
 
-        message.style.color = "green";
+        message.style.color =
+            "red";
+
+        checkVerificationBtn.disabled =
+            true;
+
+        resendEmailBtn.disabled =
+            true;
 
         return;
     }
 
 
-    if (!token) {
+    // ===========================
+    // User is signed in
+    // ===========================
+
+    if (user.emailVerified) {
 
         message.textContent =
-            "Verification token is missing.";
-
-        message.style.color = "red";
-
-        return;
-    }
-
-
-    try {
-
-        message.textContent =
-            "Verifying your email...";
-
-        message.style.color = "";
-
-
-        const response = await fetch(
-            `http://127.0.0.1:3000/verify-email?token=${encodeURIComponent(token)}`
-        );
-
-
-        const data =
-            await response.text();
-
-
-        if (!response.ok) {
-
-            throw new Error(data);
-
-        }
-
-
-        message.textContent =
-            data;
+            "Email verified successfully! You can now log in.";
 
         message.style.color =
             "green";
 
-
-    } catch (error) {
-
-        console.error(
-            "Email verification error:",
-            error
-        );
+    } else {
 
         message.textContent =
-            error.message ||
-            "Unable to verify your email.";
+            "Please verify your email address before continuing.";
 
         message.style.color =
-            "red";
+            "";
 
     }
 
-}
+});
 
 
 // ===========================
-// Resend verification email
+// Check Verification Button
 // ===========================
 
-async function resendVerificationEmail() {
+async function verifyEmail() {
 
-    message.textContent =
-        "Resending verification email...";
-
-    message.style.color = "";
-
-
-    const email =
-        sessionStorage.getItem("signupEmail");
-
-
-    if (!email) {
+    if (!currentUser) {
 
         message.textContent =
-            "Your signup email could not be found.";
+            "Please log in to continue.";
 
         message.style.color =
             "red";
@@ -153,34 +112,90 @@ async function resendVerificationEmail() {
 
     try {
 
-        const response = await fetch(
-            "http://127.0.0.1:3000/send-verification-email",
-            {
-                method: "POST",
+        message.textContent =
+            "Checking your verification status...";
 
-                headers: {
-                    "Content-Type": "application/json"
-                },
-
-                body: JSON.stringify({
-                    email: email
-                })
-            }
-        );
+        message.style.color =
+            "";
 
 
-        const data =
-            await response.json();
+        // ===========================
+        // Refresh Firebase user data
+        // ===========================
+
+        await reload(currentUser);
 
 
-        if (!response.ok) {
+        // ===========================
+        // Check email verification
+        // ===========================
 
-            throw new Error(
-                data.message ||
-                "Failed to resend verification email."
-            );
+        if (currentUser.emailVerified) {
+
+            message.textContent =
+                "Email verified successfully! You can now log in.";
+
+            message.style.color =
+                "green";
+
+        } else {
+
+            message.textContent =
+                "Your email has not been verified yet. Please click the verification link in your email.";
+
+            message.style.color =
+                "red";
 
         }
+
+    } catch (error) {
+
+        console.error(
+            "Verification check error:",
+            error
+        );
+
+        message.textContent =
+            "Unable to check your verification status.";
+
+        message.style.color =
+            "red";
+
+    }
+
+}
+
+
+// ===========================
+// Resend Firebase verification email
+// ===========================
+
+async function resendVerificationEmail() {
+
+    if (!currentUser) {
+
+        message.textContent =
+            "Please log in to continue.";
+
+        message.style.color =
+            "red";
+
+        return;
+    }
+
+
+    try {
+
+        message.textContent =
+            "Resending verification email...";
+
+        message.style.color =
+            "";
+
+
+        await sendEmailVerification(
+            currentUser
+        );
 
 
         message.textContent =
@@ -188,7 +203,6 @@ async function resendVerificationEmail() {
 
         message.style.color =
             "green";
-
 
     } catch (error) {
 
