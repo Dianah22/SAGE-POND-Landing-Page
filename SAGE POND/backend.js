@@ -6,7 +6,6 @@ const jwt = require("jsonwebtoken");
 const path = require("path");
 const { JSDOM } = require("jsdom");
 const createDOMPurify = require("dompurify");
-const validation = require("validation");
 const mailchecker = require("mailchecker");
 const { adminAuth } = require("./firebase-admin");
 
@@ -27,6 +26,32 @@ const DOMPurify = createDOMPurify(window);
 // ===========================
 
 const app = express();
+
+
+// ===========================
+// SERVE STATIC FILES
+// ===========================
+
+app.use(
+    "/css",
+    express.static(
+        path.join(__dirname, ".css Files")
+    )
+);
+
+app.use(
+    "/js",
+    express.static(
+        path.join(__dirname, ".js Files")
+    )
+);
+
+app.use(
+    "/images",
+    express.static(
+        path.join(__dirname, "images")
+    )
+);
 
 
 // ===========================
@@ -70,49 +95,82 @@ app.get("/", (req, res) => {
 
 });
 
-// ===========================
-// HTML PAGE ROUTES
-// ===========================
 
 // ===========================
 // HTML PAGE ROUTES
 // ===========================
 
 app.get("/home", (req, res) => {
+
     res.sendFile(
         "index.html",
         {
-            root: path.join(__dirname, ".html Files")
+            root: path.join(
+                __dirname,
+                ".html Files"
+            )
         }
     );
+
 });
 
+
+// ===========================
+// REDIRECT index.html TO /home
+// ===========================
+
+app.get("/index.html", (req, res) => {
+
+    res.redirect("/home");
+
+});
+
+
 app.get("/login", (req, res) => {
+
     res.sendFile(
         "Login.html",
         {
-            root: path.join(__dirname, ".html Files")
+            root: path.join(
+                __dirname,
+                ".html Files"
+            )
         }
     );
+
 });
 
+
 app.get("/signup", (req, res) => {
+
     res.sendFile(
         "SignUp.html",
         {
-            root: path.join(__dirname, ".html Files")
+            root: path.join(
+                __dirname,
+                ".html Files"
+            )
         }
     );
+
 });
 
+
 app.get("/verify", (req, res) => {
+
     res.sendFile(
         "verify-email.html",
         {
-            root: path.join(__dirname, ".html Files")
+            root: path.join(
+                __dirname,
+                ".html Files"
+            )
         }
     );
+
 });
+
+
 // ===========================
 // SEND VERIFICATION EMAIL
 // ===========================
@@ -126,11 +184,15 @@ app.post(
 
 
         const name = DOMPurify
-            .sanitize(String(rawName || ""))
+            .sanitize(
+                String(rawName || "")
+            )
             .trim();
 
         const email = DOMPurify
-            .sanitize(String(rawEmail || ""))
+            .sanitize(
+                String(rawEmail || "")
+            )
             .trim()
             .toLowerCase();
 
@@ -139,11 +201,7 @@ app.post(
         // VALIDATE NAME AND EMAIL
         // ===========================
 
-        if (
-            !validation.isType(name, "string") ||
-            !validation.isType(email, "string") ||
-            !validation.exists(email)
-        ) {
+        if (!name || !email) {
 
             return res.status(400).json({
 
@@ -186,7 +244,9 @@ app.post(
             try {
 
                 userRecord =
-                    await adminAuth.getUserByEmail(email);
+                    await adminAuth.getUserByEmail(
+                        email
+                    );
 
             } catch (firebaseError) {
 
@@ -207,6 +267,7 @@ app.post(
                 }
 
                 throw firebaseError;
+
             }
 
 
@@ -395,12 +456,8 @@ app.get(
             // REDIRECT TO VERIFY PAGE
             // ===========================
 
-            const verificationPage =
-                "http://127.0.0.1:5500/SAGE%20POND/.html%20Files/verify-email.html?verified=true";
-
-
             return res.redirect(
-                verificationPage
+                "/verify?verified=true"
             );
 
         } catch (error) {
@@ -471,4 +528,3 @@ app.listen(
 
     }
 );
-

@@ -3,9 +3,13 @@
 // ===========================
 
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
+import {
+    initializeApp
+} from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
 
-import { getAuth } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js";
+import {
+    getAuth
+} from "https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js";
 
 
 
@@ -13,17 +17,21 @@ import { getAuth } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-aut
 
 const firebaseConfig = {
 
-    apiKey: "AIzaSyBLb9cAa01I9CfOSodx6B1tBLlDRsFXxOE",
+    apiKey: "AIzaSyBPTnFNPyl_GFQsFuJzq-BAHYwMDCG6HLk",
 
-    authDomain: "sage-pond-a2e7a.firebaseapp.com",
+    authDomain: "sage-pond-gen-ai.firebaseapp.com",
 
-    projectId: "sage-pond-a2e7a",
+    databaseURL: "https://sage-pond-gen-ai-default-rtdb.firebaseio.com",
 
-    storageBucket: "sage-pond-a2e7a.firebasestorage.app",
+    projectId: "sage-pond-gen-ai",
 
-    messagingSenderId: "515437232888",
+    storageBucket: "sage-pond-gen-ai.firebasestorage.app",
 
-    appId: "1:515437232888:web:465f7e7bd03fac0fef710d"
+    messagingSenderId: "369426724601",
+
+    appId: "1:369426724601:web:9639dfe5c601bfd80c5428",
+
+    measurementId: "G-ZQMGJJ3S5K"
 
 };
 
@@ -31,16 +39,20 @@ const firebaseConfig = {
 
 // Initialize Firebase
 
-const app = initializeApp(firebaseConfig);
+const app =
+    initializeApp(firebaseConfig);
 
 
 
 // Initialize Authentication
 
-const auth = getAuth(app);
+const auth =
+    getAuth(app);
 
 
 
 // Export auth so other files can use it
 
-export { auth };
+export {
+    auth
+};

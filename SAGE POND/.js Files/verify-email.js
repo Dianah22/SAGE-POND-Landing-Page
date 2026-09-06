@@ -1,30 +1,19 @@
-import {
-    onAuthStateChanged,
-    reload,
-    sendEmailVerification
-} from "https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js";
-
-import { auth } from "./firebase-config.js";
-
-
 // ===========================
 // SAGE POND VERIFY EMAIL JS
 // ===========================
-
 
 // ===========================
 // Get page elements
 // ===========================
 
 const checkVerificationBtn =
-    document.getElementById("checkVerification");
+document.getElementById("checkVerification");
 
 const resendEmailBtn =
-    document.getElementById("resendEmail");
+document.getElementById("resendEmail");
 
 const message =
-    document.getElementById("verifyMessage");
-
+document.getElementById("verifyMessage");
 
 // ===========================
 // Get verification information
@@ -32,46 +21,78 @@ const message =
 // ===========================
 
 const urlParams =
-    new URLSearchParams(window.location.search);
+new URLSearchParams(window.location.search);
 
 const verified =
-    urlParams.get("verified");
+urlParams.get("verified");
 
+const token =
+urlParams.get("token");
 
 // ===========================
-// Check Firebase authentication
+// Show verification result
 // ===========================
 
-let currentUser = null;
+if (verified === "true") {
 
 
-onAuthStateChanged(auth, (user) => {
+message.textContent =
+    "Email verified successfully! You can now log in.";
 
-    currentUser = user;
+message.style.color =
+    "green";
 
-    if (!user) {
+
+}
+
+// ===========================
+// Check Verification Button
+// ===========================
+
+async function verifyEmail() {
+
+
+try {
+
+    message.textContent =
+        "Checking your verification status...";
+
+    message.style.color =
+        "";
+
+
+    if (!token) {
 
         message.textContent =
-            "Please log in to continue.";
+            "Please use the verification link sent to your email.";
 
         message.style.color =
             "red";
-
-        checkVerificationBtn.disabled =
-            true;
-
-        resendEmailBtn.disabled =
-            true;
 
         return;
     }
 
 
-    // ===========================
-    // User is signed in
-    // ===========================
+    const response =
+        await fetch(
+            `/verify-email?token=${encodeURIComponent(token)}`
+        );
 
-    if (user.emailVerified) {
+
+    if (response.redirected) {
+
+        window.location.href =
+            response.url;
+
+        return;
+    }
+
+
+    const data =
+        await response.json();
+
+
+    if (response.ok && data.success) {
 
         message.textContent =
             "Email verified successfully! You can now log in.";
@@ -82,121 +103,90 @@ onAuthStateChanged(auth, (user) => {
     } else {
 
         message.textContent =
-            "Please verify your email address before continuing.";
-
-        message.style.color =
-            "";
-
-    }
-
-});
-
-
-// ===========================
-// Check Verification Button
-// ===========================
-
-async function verifyEmail() {
-
-    if (!currentUser) {
-
-        message.textContent =
-            "Please log in to continue.";
-
-        message.style.color =
-            "red";
-
-        return;
-    }
-
-
-    try {
-
-        message.textContent =
-            "Checking your verification status...";
-
-        message.style.color =
-            "";
-
-
-        // ===========================
-        // Refresh Firebase user data
-        // ===========================
-
-        await reload(currentUser);
-
-
-        // ===========================
-        // Check email verification
-        // ===========================
-
-        if (currentUser.emailVerified) {
-
-            message.textContent =
-                "Email verified successfully! You can now log in.";
-
-            message.style.color =
-                "green";
-
-        } else {
-
-            message.textContent =
-                "Your email has not been verified yet. Please click the verification link in your email.";
-
-            message.style.color =
-                "red";
-
-        }
-
-    } catch (error) {
-
-        console.error(
-            "Verification check error:",
-            error
-        );
-
-        message.textContent =
-            "Unable to check your verification status.";
+            data.message ||
+            "Unable to verify your email.";
 
         message.style.color =
             "red";
 
     }
+
+} catch (error) {
+
+    console.error(
+        "Verification check error:",
+        error
+    );
+
+    message.textContent =
+        "Unable to check your verification status.";
+
+    message.style.color =
+        "red";
 
 }
 
 
+}
+
 // ===========================
-// Resend Firebase verification email
+// Resend verification email
 // ===========================
 
 async function resendVerificationEmail() {
 
-    if (!currentUser) {
 
-        message.textContent =
-            "Please log in to continue.";
+const email =
+    sessionStorage.getItem("verificationEmail");
 
-        message.style.color =
-            "red";
-
-        return;
-    }
+const name =
+    sessionStorage.getItem("verificationName");
 
 
-    try {
+if (!email) {
 
-        message.textContent =
-            "Resending verification email...";
+    message.textContent =
+        "Unable to resend the verification email.";
 
-        message.style.color =
-            "";
+    message.style.color =
+        "red";
+
+    return;
+}
 
 
-        await sendEmailVerification(
-            currentUser
+try {
+
+    message.textContent =
+        "Resending verification email...";
+
+    message.style.color =
+        "";
+
+
+    const response =
+        await fetch(
+            "/send-verification-email",
+            {
+                method: "POST",
+
+                headers: {
+                    "Content-Type": "application/json"
+                },
+
+                body: JSON.stringify({
+                    name: name || "",
+                    email: email
+                })
+            }
         );
 
+
+    const data =
+        await response.json();
+
+
+    if (response.ok && data.success) {
 
         message.textContent =
             "Verification email sent again. Please check your inbox.";
@@ -204,15 +194,9 @@ async function resendVerificationEmail() {
         message.style.color =
             "green";
 
-    } catch (error) {
-
-        console.error(
-            "Resend verification error:",
-            error
-        );
+    } else {
 
         message.textContent =
-            error.message ||
             "Unable to resend verification email.";
 
         message.style.color =
@@ -220,20 +204,34 @@ async function resendVerificationEmail() {
 
     }
 
+} catch (error) {
+
+    console.error(
+        "Resend verification error:",
+        error
+    );
+
+    message.textContent =
+        "Unable to resend verification email.";
+
+    message.style.color =
+        "red";
+
 }
 
+
+}
 
 // ===========================
 // Button events
 // ===========================
 
 checkVerificationBtn.addEventListener(
-    "click",
-    verifyEmail
+"click",
+verifyEmail
 );
 
-
 resendEmailBtn.addEventListener(
-    "click",
-    resendVerificationEmail
+"click",
+resendVerificationEmail
 );

@@ -17,7 +17,7 @@ import { auth } from "./firebase-config.js";
 async function sendVerificationEmail(name, email) {
 
     const response = await fetch(
-        "http://127.0.0.1:3000/send-verification-email",
+        "/send-verification-email",
         {
             method: "POST",
 
@@ -39,7 +39,6 @@ async function sendVerificationEmail(name, email) {
     if (!response.ok) {
 
         throw new Error(
-            data.message ||
             "Failed to send verification email."
         );
 
@@ -184,60 +183,35 @@ signupForm.addEventListener(
             setTimeout(() => {
 
                 window.location.href =
-                    "verify-email.html";
+                    "/verify";
 
             }, 1500);
 
 
-        } catch (error) {
+       } catch (error) {
 
-            console.error(
-                "Signup error:",
-                error
-            );
+    console.error(
+        "Signup error code:",
+        error.code
+    );
 
+    console.error(
+        "Signup error message:",
+        error.message
+    );
 
-            // ===========================
-            // Firebase errors
-            // ===========================
-
-            if (
-                error.code ===
-                "auth/email-already-in-use"
-            ) {
-
-                signupMessage.textContent =
-                    "An account with this email already exists.";
-
-            } else if (
-                error.code ===
-                "auth/invalid-email"
-            ) {
-
-                signupMessage.textContent =
-                    "Please enter a valid email address.";
-
-            } else if (
-                error.code ===
-                "auth/weak-password"
-            ) {
-
-                signupMessage.textContent =
-                    "The password is too weak.";
-
-            } else {
-
-                signupMessage.textContent =
-                    error.message ||
-                    "Unable to create account.";
-
-            }
+    console.error(
+        "Full signup error:",
+        error
+    );
 
 
-            signupMessage.style.color =
-                "red";
+    signupMessage.textContent =
+        "Unable to create account. Please check your information and try again.";
 
-        }
+    signupMessage.style.color =
+        "red";
 
+}
     }
 );

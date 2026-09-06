@@ -1,235 +1,226 @@
 /* ===========================
-SAGE POND VERIFY EMAIL PAGE
+   SAGE POND VERIFY EMAIL PAGE
 =========================== */
 
 
-:root{
+:root {
 
---primary-color:#A9C7F5;
---secondary-color:#F9DDF4;
---accent-color:#1F6F50;
---text-color:#1F2937;
---text-light:#555555;
+    --primary-color: #A9C7F5;
+    --secondary-color: #F9DDF4;
+    --accent-color: #1F6F50;
+    --text-color: #1F2937;
+    --text-light: #555555;
 
---font-family:'Poppins', sans-serif;
+    --font-family: 'Poppins', sans-serif;
 
---radius-large:20px;
+    --radius-large: 20px;
 
---card-shadow:0 15px 30px rgba(0,0,0,.12);
+    --card-shadow: 0 15px 30px rgba(0, 0, 0, .12);
 
 }
-
 
 
 /* ===========================
-GLOBAL STYLES
+   GLOBAL STYLES
 =========================== */
 
+* {
 
-*{
-
-margin:0;
-padding:0;
-box-sizing:border-box;
-
-}
-
-
-
-body{
-
-font-family:var(--font-family);
-
-background:#FFFFFF;
-
-color:var(--text-color);
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 
 }
 
+
+body {
+
+    font-family: var(--font-family);
+
+    background: #FFFFFF;
+
+    color: var(--text-color);
+
+}
 
 
 /* ===========================
-VERIFY CONTAINER
+   VERIFY CONTAINER
 =========================== */
 
+.verify-container {
 
-.verify-container{
+    min-height: 100vh;
 
-min-height:100vh;
+    display: flex;
 
-display:flex;
+    justify-content: center;
 
-justify-content:center;
+    align-items: center;
 
-align-items:center;
-
-padding:30px;
+    padding: 30px;
 
 }
-
 
 
 /* ===========================
-VERIFY CARD
+   VERIFY CARD
 =========================== */
 
+.verify-card {
 
-.verify-card{
+    width: 100%;
 
-width:100%;
+    max-width: 500px;
 
-max-width:500px;
+    background: var(--secondary-color);
 
-background:var(--secondary-color);
+    padding: 50px 40px;
 
-padding:50px 40px;
+    border-radius: var(--radius-large);
 
-border-radius:var(--radius-large);
+    text-align: center;
 
-text-align:center;
-
-box-shadow:var(--card-shadow);
+    box-shadow: var(--card-shadow);
 
 }
-
 
 
 /* ===========================
-LOGO
+   LOGO
 =========================== */
 
+.verify-logo {
 
-.verify-logo{
+    width: 150px;
 
-width:150px;
-
-margin:0 auto 30px;
+    margin: 0 auto 30px;
 
 }
-
 
 
 /* ===========================
-TEXT
+   TEXT
 =========================== */
 
+.verify-card h1 {
 
-.verify-card h1{
+    font-size: 36px;
 
-font-size:36px;
-
-margin-bottom:20px;
-
-}
-
-
-
-.verify-card p{
-
-font-size:16px;
-
-line-height:1.7;
-
-color:var(--text-light);
-
-margin-bottom:15px;
+    margin-bottom: 20px;
 
 }
 
+
+.verify-card p {
+
+    font-size: 16px;
+
+    line-height: 1.7;
+
+    color: var(--text-light);
+
+    margin-bottom: 15px;
+
+}
 
 
 /* ===========================
-BUTTON
+   MAIN BUTTONS
 =========================== */
 
+.verify-btn {
 
-.verify-btn{
+    display: inline-block;
 
-display:inline-block;
+    margin-top: 25px;
 
-margin-top:25px;
+    background: var(--accent-color);
 
-background:var(--accent-color);
+    color: #FFFFFF;
 
-color:white;
+    padding: 12px 30px;
 
-padding:12px 30px;
+    border-radius: 10px;
 
-border-radius:10px;
+    font-weight: 600;
 
-font-weight:600;
+    text-decoration: none;
 
-text-decoration:none;
+    border: none;
 
-transition:.3s;
+    cursor: pointer;
 
-}
+    font-family: var(--font-family);
 
+    font-size: 16px;
 
-
-.verify-btn:hover{
-
-opacity:.85;
-
-transform:translateY(-3px);
+    transition: .3s;
 
 }
 
+
+.verify-btn:hover {
+
+    opacity: .85;
+
+    transform: translateY(-3px);
+
+}
 
 
 /* ===========================
-BACK HOME
+   BACK HOME / NAVIGATION LINKS
 =========================== */
 
+.back-home {
 
-.back-home{
-
-margin-top:25px;
-
-}
-
-
-
-.back-home a{
-
-color:var(--accent-color);
-
-font-weight:600;
-
-text-decoration:none;
+    margin-top: 25px;
 
 }
 
 
-.back-home a:hover{
+.back-home a {
 
-text-decoration:underline;
+    display: inline-block;
+
+    color: var(--accent-color);
+
+    font-weight: 600;
+
+    text-decoration: none;
+
+    transition: .3s;
 
 }
 
+
+.back-home a:hover {
+
+    text-decoration: underline;
+
+    transform: translateY(-2px);
+
+}
 
 
 /* ===========================
-RESPONSIVE DESIGN
+   RESPONSIVE DESIGN
 =========================== */
 
+@media (max-width: 600px) {
 
-@media(max-width:600px){
+    .verify-card {
 
+        padding: 40px 25px;
 
-.verify-card{
-
-padding:40px 25px;
-
-}
+    }
 
 
-.verify-card h1{
+    .verify-card h1 {
 
-font-size:30px;
+        font-size: 30px;
 
-}
-
+    }
 
 }
-

@@ -127,54 +127,16 @@ loginForm.addEventListener(
 
 
             // ===========================
-            // Firebase errors
+            // Generic Login Error
             // ===========================
 
-            if (
-                error.code ===
-                "auth/invalid-credential"
-            ) {
-
-                loginMessage.textContent =
-                    "Invalid email or password.";
-
-            } else if (
-                error.code ===
-                "auth/user-not-found"
-            ) {
-
-                loginMessage.textContent =
-                    "No account was found with this email.";
-
-            } else if (
-                error.code ===
-                "auth/wrong-password"
-            ) {
-
-                loginMessage.textContent =
-                    "Incorrect password.";
-
-            } else if (
-                error.code ===
-                "auth/invalid-email"
-            ) {
-
-                loginMessage.textContent =
-                    "Please enter a valid email address.";
-
-            } else {
-
-                loginMessage.textContent =
-                    error.message ||
-                    "Unable to log in.";
-
-            }
-
+            loginMessage.textContent =
+                "Email or password is incorrect.";
 
             loginMessage.style.color =
                 "red";
+
         }
 
     }
 );
-
