@@ -1,31 +1,47 @@
 <!DOCTYPE html>
-
 <html lang="en">
 
 <head>
 
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>SAGE POND | Login</title>
-
-
-<!-- Google Font -->
-
-<link rel="preconnect" href="https://fonts.googleapis.com">
-
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-
-<link
-    href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
-    rel="stylesheet"
->
+    <title>SAGE POND | Login</title>
 
 
-<!-- Login Page CSS -->
+    <!-- Google Font -->
 
-<link rel="stylesheet" href="/css/Login.css">
+    <link
+        rel="preconnect"
+        href="https://fonts.googleapis.com"
+    >
 
+    <link
+        rel="preconnect"
+        href="https://fonts.gstatic.com"
+        crossorigin
+    >
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet"
+    >
+
+
+    <!-- Font Awesome -->
+
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
+    >
+
+
+    <!-- Login Page CSS -->
+
+    <link
+        rel="stylesheet"
+        href="/css/login.css"
+    >
 
 </head>
 
@@ -33,118 +49,210 @@
 <body>
 
 
-<div class="login-container">
+    <!-- =========================
+         LOGIN PAGE
+    ========================== -->
+
+    <div class="login-container">
 
 
-<!-- Left Side -->
+        <!-- =========================
+             LEFT SIDE
+        ========================== -->
 
-<div class="login-left">
+        <div class="login-left">
 
-    <img
-        src="/images/logo.png"
-        alt="SAGE POND Logo"
-        class="login-logo"
-    >
+            <div class="login-left-content">
 
-    <h1>
-        Welcome Back
-    </h1>
+                <img
+                    src="/images/logo.png"
+                    alt="SAGE POND Logo"
+                    class="login-logo"
+                >
 
-    <p>
-        Sign in to continue exploring AI research, language technologies,
-        and innovative solutions built for Africa.
-    </p>
+                <h1>
+                    Welcome Back
+                </h1>
 
-</div>
+                <p>
+                    Sign in to continue exploring AI research,
+                    language technologies, and innovative
+                    solutions built for Africa.
+                </p>
 
+            </div>
 
-
-<!-- Right Side -->
-
-<div class="login-right">
-
-    <div class="login-card">
-
-        <h2>
-            Sign In
-        </h2>
+        </div>
 
 
-        <form id="loginForm">
+        <!-- =========================
+             RIGHT SIDE
+        ========================== -->
 
-            <label for="email">
-                Email
-            </label>
+        <div class="login-right">
 
-            <input
-                type="email"
-                id="email"
-                placeholder="Enter your email"
-                required
-            >
+            <div class="login-card">
 
 
-            <label for="password">
-                Password
-            </label>
+                <!-- =========================
+                     LOGIN HEADER
+                ========================== -->
 
-            <input
-                type="password"
-                id="password"
-                placeholder="Enter your password"
-                required
-            >
+                <div class="login-header">
 
+                    <h2>
+                        Sign In
+                    </h2>
 
-            <!-- Firebase messages -->
+                    <p>
+                        Welcome back to SAGE POND
+                    </p>
 
-            <p id="loginMessage"></p>
-
-
-            <button
-                type="submit"
-                class="login-btn"
-            >
-                Login
-            </button>
-
-        </form>
+                </div>
 
 
-        <p class="back-home">
+                <!-- =========================
+                     LOGIN FORM
+                ========================== -->
 
-            Don't have an account?
-
-            <a href="/signup">
-                Sign up here
-            </a>
-
-        </p>
+                <form id="loginForm">
 
 
-        <p class="back-home">
+                    <!-- Email -->
 
-            <a href="/home">
-                ← Back to Home
-            </a>
+                    <div class="form-group">
 
-        </p>
+                        <label for="email">
+                            Email
+                        </label>
+
+                        <div class="input-wrapper">
+
+                            <i
+                                class="fa-solid fa-envelope"
+                                aria-hidden="true"
+                            ></i>
+
+                            <input
+                                type="email"
+                                id="email"
+                                name="email"
+                                placeholder="Enter your email"
+                                autocomplete="email"
+                                required
+                            >
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- Password -->
+
+                    <div class="form-group">
+
+                        <label for="password">
+                            Password
+                        </label>
+
+                        <div class="input-wrapper">
+
+                            <i
+                                class="fa-solid fa-lock"
+                                aria-hidden="true"
+                            ></i>
+
+                            <input
+                                type="password"
+                                id="password"
+                                name="password"
+                                placeholder="Enter your password"
+                                autocomplete="current-password"
+                                required
+                            >
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- Login Message -->
+
+                    <p
+                        id="loginMessage"
+                        class="login-message"
+                        aria-live="polite"
+                    ></p>
+
+
+                    <!-- Login Button -->
+
+                    <button
+                        type="submit"
+                        class="login-btn"
+                    >
+
+                        <span>
+                            Login
+                        </span>
+
+                    </button>
+
+                </form>
+
+
+                <!-- =========================
+                     SIGN UP LINK
+                ========================== -->
+
+                <p class="account-link">
+
+                    Don't have an account?
+
+                    <a href="/signup">
+                        Sign up here
+                    </a>
+
+                </p>
+
+
+                <!-- =========================
+                     BACK HOME
+                ========================== -->
+
+                <p class="back-home">
+
+                    <a href="/home">
+
+                        <i
+                            class="fa-solid fa-arrow-left"
+                            aria-hidden="true"
+                        ></i>
+
+                        Back to Home
+
+                    </a>
+
+                </p>
+
+
+            </div>
+
+        </div>
 
 
     </div>
 
-</div>
 
+    <!-- =========================
+         LOGIN JAVASCRIPT
+    ========================== -->
 
-</div>
+    <script
+        type="module"
+        src="/js/Login.js"
+    ></script>
 
-
-<!-- Login JavaScript -->
-
-<script
-    type="module"
-    src="/js/Login.js"
-></script>
 
 </body>
 

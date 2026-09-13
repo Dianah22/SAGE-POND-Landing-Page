@@ -7,14 +7,16 @@ const path = require("path");
 const { JSDOM } = require("jsdom");
 const createDOMPurify = require("dompurify");
 const mailchecker = require("mailchecker");
+
 const { adminAuth } = require("./firebase-admin");
 
-const { sendVerificationEmail } =
-    require("./services/verificationEmail");
+const {
+    sendVerificationEmail
+} = require("./services/verificationEmail");
 
 
 // ===========================
-// DOMPURIFY
+// DOMPurify setup
 // ===========================
 
 const window = new JSDOM("").window;
@@ -22,34 +24,67 @@ const DOMPurify = createDOMPurify(window);
 
 
 // ===========================
-// EXPRESS APP
+// Express app
 // ===========================
 
 const app = express();
 
 
 // ===========================
-// SERVE STATIC FILES
+// Folder paths
+// ===========================
+
+const htmlFolder =
+    path.join(__dirname, ".html Files");
+
+const cssFolder =
+    path.join(__dirname, ".css Files");
+
+const jsFolder =
+    path.join(__dirname, ".js Files");
+
+const imagesFolder =
+    path.join(__dirname, "images");
+
+
+// ===========================
+// Static CSS files
 // ===========================
 
 app.use(
     "/css",
     express.static(
-        path.join(__dirname, ".css Files")
+        cssFolder,
+        {
+            dotfiles: "allow"
+        }
     )
 );
+
+
+// ===========================
+// Static JavaScript files
+// ===========================
 
 app.use(
     "/js",
     express.static(
-        path.join(__dirname, ".js Files")
+        jsFolder,
+        {
+            dotfiles: "allow"
+        }
     )
 );
+
+
+// ===========================
+// Static image files
+// ===========================
 
 app.use(
     "/images",
     express.static(
-        path.join(__dirname, "images")
+        imagesFolder
     )
 );
 
@@ -61,155 +96,299 @@ app.use(
 app.use(
     cors({
         origin: true,
-        methods: ["GET", "POST", "OPTIONS"],
-        allowedHeaders: ["Content-Type"]
+        methods: [
+            "GET",
+            "POST",
+            "OPTIONS"
+        ],
+        allowedHeaders: [
+            "Content-Type"
+        ]
     })
 );
 
-app.options(/.*/, cors());
+
+// ===========================
+// OPTIONS requests
+// ===========================
+
+app.options(
+    /.*/,
+    cors()
+);
 
 
 // ===========================
-// JSON MIDDLEWARE
+// Body parsers
 // ===========================
 
-app.use(express.json());
+app.use(
+    express.json()
+);
+
+app.use(
+    express.urlencoded({
+        extended: true
+    })
+);
 
 
 // ===========================
-// SERVER
+// Signup email middleware
+// ===========================
+
+function requireSignupEmail(
+    req,
+    res,
+    next
+) {
+
+    const email =
+        req.query?.email;
+
+    if (!email) {
+
+        return res.redirect(
+            "/signup"
+        );
+
+    }
+
+    next();
+}
+
+
+// ===========================
+// Port
 // ===========================
 
 const PORT = 3000;
 
 
 // ===========================
-// TEST ROUTE
+// Backend test
 // ===========================
 
-app.get("/", (req, res) => {
+app.get(
+    "/api/test",
+    (req, res) => {
 
-    res.send(
-        "SAGE POND backend connection is working!"
-    );
+        res.json({
+            success: true,
+            message:
+                "SAGE POND backend is working."
+        });
 
-});
+    }
+);
 
 
 // ===========================
-// HTML PAGE ROUTES
+// Root
 // ===========================
 
-app.get("/home", (req, res) => {
+app.get(
+    "/",
+    (req, res) => {
 
-    res.sendFile(
-        "index.html",
-        {
-            root: path.join(
+        res.redirect(
+            "/home"
+        );
+
+    }
+);
+
+
+// ===========================
+// Home page
+// ===========================
+
+app.get(
+    "/home",
+    (req, res) => {
+
+        res.sendFile(
+            path.join(
+                htmlFolder,
+                "index.html"
+            ),
+            {
+                dotfiles: "allow"
+            }
+        );
+
+    }
+);
+
+
+// ===========================
+// index.html
+// ===========================
+
+app.get(
+    "/index.html",
+    (req, res) => {
+
+        res.redirect(
+            "/home"
+        );
+
+    }
+);
+
+
+// ===========================
+// Login page
+// ===========================
+
+app.get(
+    "/login",
+    (req, res) => {
+
+        res.sendFile(
+            path.join(
+                htmlFolder,
+                "Login.html"
+            ),
+            {
+                dotfiles: "allow"
+            }
+        );
+
+    }
+);
+
+
+// ===========================
+// Signup page
+// ===========================
+
+app.get(
+    "/signup",
+    (req, res) => {
+
+        res.sendFile(
+            path.join(
+                htmlFolder,
+                "SignUp.html"
+            ),
+            {
+                dotfiles: "allow"
+            }
+        );
+
+    }
+);
+
+
+// ===========================
+// Verify page GET
+// ===========================
+
+app.get(
+    "/verify",
+    requireSignupEmail,
+    (req, res) => {
+
+        const verifyPage =
+            path.resolve(
                 __dirname,
-                ".html Files"
-            )
-        }
-    );
+                ".html Files",
+                "verify-email.html"
+            );
 
-});
+        console.log(
+            "Serving verification page for:",
+            req.query.email
+        );
 
+        res.sendFile(
+            verifyPage,
+            {
+                dotfiles: "allow"
+            },
+            (error) => {
 
-// ===========================
-// REDIRECT index.html TO /home
-// ===========================
+                if (error) {
 
-app.get("/index.html", (req, res) => {
+                    console.error(
+                        "Error serving verification page:",
+                        error
+                    );
 
-    res.redirect("/home");
+                    if (!res.headersSent) {
 
-});
+                        res.status(
+                            error.statusCode || 500
+                        ).send(
+                            "Unable to load verification page."
+                        );
 
+                    }
 
-app.get("/login", (req, res) => {
+                }
 
-    res.sendFile(
-        "Login.html",
-        {
-            root: path.join(
-                __dirname,
-                ".html Files"
-            )
-        }
-    );
+            }
+        );
 
-});
-
-
-app.get("/signup", (req, res) => {
-
-    res.sendFile(
-        "SignUp.html",
-        {
-            root: path.join(
-                __dirname,
-                ".html Files"
-            )
-        }
-    );
-
-});
-
-
-app.get("/verify", (req, res) => {
-
-    res.sendFile(
-        "verify-email.html",
-        {
-            root: path.join(
-                __dirname,
-                ".html Files"
-            )
-        }
-    );
-
-});
+    }
+);
 
 
 // ===========================
-// SEND VERIFICATION EMAIL
+// Send verification email
 // ===========================
 
 app.post(
     "/send-verification-email",
     async (req, res) => {
 
-        const rawName = req.body.name;
-        const rawEmail = req.body.email;
+        const rawName =
+            req.body?.name;
 
-
-        const name = DOMPurify
-            .sanitize(
-                String(rawName || "")
-            )
-            .trim();
-
-        const email = DOMPurify
-            .sanitize(
-                String(rawEmail || "")
-            )
-            .trim()
-            .toLowerCase();
+        const rawEmail =
+            req.body?.email;
 
 
         // ===========================
-        // VALIDATE NAME AND EMAIL
+        // Sanitize name
+        // ===========================
+
+        const name =
+            DOMPurify
+                .sanitize(
+                    String(
+                        rawName || ""
+                    )
+                )
+                .trim();
+
+
+        // ===========================
+        // Sanitize email
+        // ===========================
+
+        const email =
+            DOMPurify
+                .sanitize(
+                    String(
+                        rawEmail || ""
+                    )
+                )
+                .trim()
+                .toLowerCase();
+
+
+        // ===========================
+        // Validate input
         // ===========================
 
         if (!name || !email) {
 
             return res.status(400).json({
-
                 success: false,
-
                 message:
                     "A valid email address is required."
-
             });
 
         }
@@ -218,28 +397,30 @@ app.post(
         try {
 
             // ===========================
-            // CHECK TEMPORARY EMAIL
+            // Check temporary email
             // ===========================
 
-            if (!mailchecker.isValid(email)) {
+            if (
+                !mailchecker.isValid(
+                    email
+                )
+            ) {
 
                 return res.status(400).json({
-
                     success: false,
-
                     message:
                         "Temporary email addresses are not allowed."
-
                 });
 
             }
 
 
             // ===========================
-            // CHECK FIREBASE USER
+            // Find Firebase user
             // ===========================
 
             let userRecord;
+
 
             try {
 
@@ -256,15 +437,13 @@ app.post(
                 ) {
 
                     return res.status(404).json({
-
                         success: false,
-
                         message:
                             "No SAGE POND account was found with this email."
-
                     });
 
                 }
+
 
                 throw firebaseError;
 
@@ -272,39 +451,44 @@ app.post(
 
 
             // ===========================
-            // CHECK IF ALREADY VERIFIED
+            // Check email verification
             // ===========================
 
-            if (userRecord.emailVerified) {
+            if (
+                userRecord.emailVerified
+            ) {
 
                 return res.status(400).json({
-
                     success: false,
-
                     message:
                         "This email address is already verified."
-
                 });
 
             }
 
 
             // ===========================
-            // CREATE VERIFICATION JWT
+            // Generate JWT token
             // ===========================
 
             const verificationToken =
                 jwt.sign(
                     {
-                        uid: userRecord.uid,
-                        name: name,
-                        email: email
+                        uid:
+                            userRecord.uid,
+
+                        name:
+                            name,
+
+                        email:
+                            email
                     },
 
                     process.env.JWT_SECRET,
 
                     {
-                        expiresIn: "15m"
+                        expiresIn:
+                            "15m"
                     }
                 );
 
@@ -316,7 +500,7 @@ app.post(
 
 
             // ===========================
-            // SEND VERIFICATION EMAIL
+            // Send verification email
             // ===========================
 
             await sendVerificationEmail(
@@ -326,17 +510,15 @@ app.post(
 
 
             // ===========================
-            // RESPONSE
+            // Success response
             // ===========================
 
             return res.status(200).json({
-
                 success: true,
-
                 message:
                     "Verification email sent successfully."
-
             });
+
 
         } catch (error) {
 
@@ -347,12 +529,91 @@ app.post(
 
 
             return res.status(500).json({
-
                 success: false,
-
                 message:
                     "Failed to send verification email."
+            });
 
+        }
+
+    }
+);
+// ===========================
+// Check email verification status
+// ===========================
+
+app.get(
+    "/check-verification",
+    async (req, res) => {
+
+        const rawEmail =
+            req.query.email;
+
+
+        const email =
+            DOMPurify
+                .sanitize(
+                    String(
+                        rawEmail || ""
+                    )
+                )
+                .trim()
+                .toLowerCase();
+
+
+        // ===========================
+        // Check email
+        // ===========================
+
+        if (!email) {
+
+            return res.status(400).json({
+                success: false,
+                message:
+                    "Email address is required."
+            });
+
+        }
+
+
+        try {
+
+            // ===========================
+            // Find Firebase user
+            // ===========================
+
+            const userRecord =
+                await adminAuth.getUserByEmail(
+                    email
+                );
+
+
+            // ===========================
+            // Return verification status
+            // ===========================
+
+            return res.status(200).json({
+
+                success: true,
+
+                verified:
+                    userRecord.emailVerified
+
+            });
+
+
+        } catch (error) {
+
+            console.error(
+                "Error checking email verification:",
+                error
+            );
+
+
+            return res.status(500).json({
+                success: false,
+                message:
+                    "Unable to check email verification status."
             });
 
         }
@@ -360,9 +621,8 @@ app.post(
     }
 );
 
-
 // ===========================
-// VERIFY EMAIL
+// Verify email
 // ===========================
 
 app.get(
@@ -375,12 +635,14 @@ app.get(
 
         const token =
             DOMPurify.sanitize(
-                String(rawToken || "")
+                String(
+                    rawToken || ""
+                )
             );
 
 
         // ===========================
-        // CHECK TOKEN
+        // Check token
         // ===========================
 
         if (!token) {
@@ -395,7 +657,7 @@ app.get(
         try {
 
             // ===========================
-            // VERIFY JWT
+            // Verify token
             // ===========================
 
             const decoded =
@@ -412,19 +674,22 @@ app.get(
 
 
             // ===========================
-            // CHECK FIREBASE USER
+            // Get Firebase user
             // ===========================
 
             const userRecord =
-                await adminAuth.getUser(uid);
+                await adminAuth.getUser(
+                    uid
+                );
 
 
             // ===========================
-            // MAKE SURE EMAIL MATCHES
+            // Check email
             // ===========================
 
             if (
-                userRecord.email !== email
+                userRecord.email !==
+                email
             ) {
 
                 return res.status(400).send(
@@ -435,7 +700,7 @@ app.get(
 
 
             // ===========================
-            // MARK EMAIL AS VERIFIED
+            // Mark email verified
             // ===========================
 
             await adminAuth.updateUser(
@@ -453,12 +718,17 @@ app.get(
 
 
             // ===========================
-            // REDIRECT TO VERIFY PAGE
+            // Redirect
             // ===========================
 
             return res.redirect(
-                "/verify?verified=true"
+                "/verify?email=" +
+                encodeURIComponent(
+                    email
+                ) +
+                "&verified=true"
             );
+
 
         } catch (error) {
 
@@ -515,7 +785,7 @@ app.get(
 
 
 // ===========================
-// START SERVER
+// Start server
 // ===========================
 
 app.listen(

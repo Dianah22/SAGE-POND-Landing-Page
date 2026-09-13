@@ -10,7 +10,7 @@
     --text-light: #555555;
     --background-color: #FFFFFF;
 
-    --font-family: 'Poppins', sans-serif;
+    --font-family: 'Open Sans', sans-serif;
 
     --radius-large: 20px;
     --card-shadow: 0 15px 30px rgba(0, 0, 0, 0.12);
@@ -64,6 +64,10 @@ body {
     justify-content: center;
 }
 
+.signup-left-content {
+    max-width: 520px;
+}
+
 .signup-logo {
     width: 160px;
     margin-bottom: 40px;
@@ -71,6 +75,7 @@ body {
 
 .signup-left h1 {
     font-size: 48px;
+    line-height: 1.2;
     margin-bottom: 20px;
 }
 
@@ -115,17 +120,38 @@ body {
     box-shadow: var(--card-shadow);
 }
 
-.signup-card h2 {
-    font-size: 32px;
 
-    margin-bottom: 30px;
+/* ===========================
+   SIGNUP HEADER
+=========================== */
 
+.signup-header {
     text-align: center;
+    margin-bottom: 30px;
+}
+
+.signup-header h2 {
+    font-size: 32px;
+    margin-bottom: 8px;
+}
+
+.signup-header p {
+    color: var(--text-light);
+    font-size: 14px;
 }
 
 
 /* ===========================
-   FORM STYLING
+   FORM GROUP
+=========================== */
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+
+/* ===========================
+   LABEL
 =========================== */
 
 .signup-card label {
@@ -136,12 +162,45 @@ body {
     font-weight: 600;
 }
 
+
+/* ===========================
+   INPUT WRAPPER
+=========================== */
+
+.input-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+
+/* ===========================
+   INPUT ICON
+=========================== */
+
+.input-wrapper i {
+    position: absolute;
+
+    left: 16px;
+    top: 50%;
+
+    transform: translateY(-50%);
+
+    color: var(--text-light);
+
+    font-size: 15px;
+
+    pointer-events: none;
+}
+
+
+/* ===========================
+   INPUT
+=========================== */
+
 .signup-card input {
     width: 100%;
 
-    padding: 14px 16px;
-
-    margin-bottom: 20px;
+    padding: 14px 16px 14px 44px;
 
     border: 1px solid #d1d5db;
 
@@ -150,6 +209,12 @@ body {
     font-size: 16px;
 
     font-family: var(--font-family);
+
+    background: #ffffff;
+
+    color: var(--text-color);
+
+    transition: 0.3s;
 }
 
 .signup-card input:focus {
@@ -160,6 +225,10 @@ body {
     box-shadow: 0 0 0 3px rgba(31, 111, 80, 0.15);
 }
 
+.signup-card input::placeholder {
+    color: #9ca3af;
+}
+
 
 /* ===========================
    PASSWORD HINT
@@ -168,21 +237,21 @@ body {
 .signup-card small {
     display: block;
 
-    margin-top: -12px;
-
-    margin-bottom: 20px;
+    margin-top: 8px;
 
     color: var(--text-light);
 
     font-size: 13px;
+
+    line-height: 1.5;
 }
 
 
 /* ===========================
-   FIREBASE MESSAGE AREA
+   SIGNUP MESSAGE
 =========================== */
 
-#signupMessage {
+.signup-message {
     text-align: center;
 
     margin-bottom: 15px;
@@ -190,6 +259,10 @@ body {
     font-size: 14px;
 
     font-weight: 500;
+
+    line-height: 1.5;
+
+    min-height: 20px;
 }
 
 
@@ -225,9 +298,44 @@ body {
     transform: translateY(-2px);
 }
 
+.signup-btn:active {
+    transform: translateY(0);
+}
+
 
 /* ===========================
-   NAVIGATION LINKS
+   ACCOUNT LINK
+=========================== */
+
+.account-link {
+    margin-top: 20px;
+
+    text-align: center;
+
+    color: var(--text-light);
+
+    font-size: 14px;
+}
+
+.account-link a {
+    color: var(--accent-color);
+
+    font-weight: 700;
+
+    text-decoration: none;
+
+    transition: all 0.3s ease;
+}
+
+.account-link a:hover {
+    color: var(--text-color);
+
+    text-decoration: underline;
+}
+
+
+/* ===========================
+   BACK HOME
 =========================== */
 
 .back-home {
@@ -267,8 +375,21 @@ body {
         padding: 50px 30px;
     }
 
+    .signup-left-content {
+        max-width: 600px;
+    }
+
+    .signup-logo {
+        width: 140px;
+        margin-bottom: 25px;
+    }
+
     .signup-left h1 {
         font-size: 38px;
+    }
+
+    .signup-left p {
+        font-size: 16px;
     }
 
     .signup-right {
@@ -277,5 +398,39 @@ body {
 
     .signup-card {
         padding: 30px;
+    }
+}
+
+
+/* ===========================
+   SMALL MOBILE DEVICES
+=========================== */
+
+@media (max-width: 480px) {
+
+    .signup-left {
+        padding: 35px 20px;
+    }
+
+    .signup-left h1 {
+        font-size: 30px;
+    }
+
+    .signup-left p {
+        font-size: 15px;
+        line-height: 1.6;
+    }
+
+    .signup-right {
+        padding: 20px 15px;
+    }
+
+    .signup-card {
+        padding: 25px 20px;
+        border-radius: 15px;
+    }
+
+    .signup-header h2 {
+        font-size: 28px;
     }
 }

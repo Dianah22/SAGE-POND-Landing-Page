@@ -28,7 +28,7 @@ const sendVerificationEmail =
     async (email, verificationToken) => {
 
         const verificationLink =
-            `http://127.0.0.1:3000/verify-email?token=${encodeURIComponent(verificationToken)}`;
+            `http://172.20.10.3:3000/verify-email?token=${encodeURIComponent(verificationToken)}`;
 
         const info =
             await transporter.sendMail({

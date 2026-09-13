@@ -1,344 +1,148 @@
+document.addEventListener("DOMContentLoaded", function () {
 
-// GSAP HERO ANIMATION
-// ============================
+    const hamburger = document.getElementById("hamburger");
+    const navLinks = document.getElementById("navLinks");
 
-gsap.from(".hero-text h1", {
-    duration: 1.2,
-    y: 50,
-    opacity: 0,
-    ease: "power3.out"
-});
-
-gsap.from(".hero-text p", {
-    duration: 1,
-    y: 30,
-    opacity: 0,
-    delay: 0.4,
-    ease: "power3.out"
-});
-
-gsap.from(".hero-text button", {
-    duration: 0.8,
-    scale: 0.8,
-    opacity: 0,
-    delay: 0.8,
-    ease: "back.out(1.7)"
-});
-
-gsap.from(".hero-image", {
-    duration: 1.2,
-    x: 80,
-    opacity: 0,
-    delay: 0.5,
-    ease: "power3.out"
-});
-
-// Floating hero image
-gsap.to(".hero-image img", {
-    y: -15,
-    duration: 2,
-    repeat: -1,
-    yoyo: true,
-    ease: "sine.inOut"
-});
-
-// ============================
-// SCROLL ANIMATIONS
-// ============================
-
-
-gsap.from(".about h2, .about h3, .about p, .about-btn", {
-
-    scrollTrigger: {
-        trigger: ".about",
-        start: "top 80%",
-    },
-
-    y: 50,
-    opacity: 0,
-    duration: 1,
-    stagger: 0.2,
-    ease: "power3.out"
-
-});
-
-gsap.fromTo(".step-card",
-
-{
-    opacity:0,
-    y:60
-},
-
-{
-    opacity:1,
-    y:0,
-    duration:1,
-    stagger:0.2,
-
-    scrollTrigger:{
-        trigger:".how-it-works",
-        start:"top 80%",
-        
+    if (!hamburger || !navLinks) {
+        return;
     }
 
-}
+    hamburger.addEventListener("click", function () {
 
-);
+        const isOpen = navLinks.classList.toggle("active");
 
-gsap.fromTo(".feature-card",
+        hamburger.setAttribute(
+            "aria-expanded",
+            isOpen ? "true" : "false"
+        );
 
-{
-    opacity:0,
-    y:50
-},
+        hamburger.setAttribute(
+            "aria-label",
+            isOpen ? "Close navigation menu" : "Open navigation menu"
+        );
 
-{
-    opacity:1,
-    y:0,
-    duration:1,
-    stagger:0.2,
+    });
 
-    scrollTrigger:{
-        trigger:".features",
-        start:"top 80%",
-    
-    }
+    const navItems = navLinks.querySelectorAll("a");
 
-}
+    navItems.forEach(function (link) {
 
-);
+        link.addEventListener("click", function () {
 
-// ============================
-// RESEARCH SECTION ANIMATION
-// ============================
+            navLinks.classList.remove("active");
 
-gsap.fromTo(".research-card",
+            hamburger.setAttribute(
+                "aria-expanded",
+                "false"
+            );
 
-{
-    opacity:0,
-    y:70
-},
+            hamburger.setAttribute(
+                "aria-label",
+                "Open navigation menu"
+            );
 
-{
-    opacity:1,
-    y:0,
-    duration:1,
-    stagger:0.2,
-
-    scrollTrigger:{
-        trigger:".research",
-        start:"top 80%",
-        
-    }
-
-});
-
-// ============================
-// LATEST UPDATES ANIMATION
-// ============================
-
-gsap.fromTo(".update-card",
-
-{
-    opacity:0,
-    y:60
-},
-
-{
-    opacity:1,
-    y:0,
-    duration:1,
-    stagger:0.2,
-
-    scrollTrigger:{
-        trigger:".updates",
-        start:"top 80%",
-        
-    }
-
-});
-
-// ============================
-// CAREERS SECTION ANIMATION
-// ============================
-
-
-gsap.from(".careers-text", {
-
-    scrollTrigger:{
-        trigger:".careers",
-        start:"top 80%"
-    },
-
-    x:-80,
-    opacity:0,
-    duration:1,
-    ease:"power3.out"
-
-});
-
-
-gsap.from(".careers-image", {
-
-    scrollTrigger:{
-        trigger:".careers",
-        start:"top 80%"
-    },
-
-    x:80,
-    opacity:0,
-    duration:1,
-    delay:0.3,
-    ease:"power3.out"
-
-});
-
-// ============================
-// WHY CHOOSE SECTION ANIMATION
-// ============================
-
-gsap.fromTo(".why-card",
-
-{
-    opacity:0,
-    y:60
-},
-
-{
-    opacity:1,
-    y:0,
-    duration:1,
-    stagger:0.2,
-    ease:"power3.out",
-
-    scrollTrigger:{
-        trigger:".why-choose",
-        start:"top 80%",
-     
-    }
-
-});
-
-// ============================
-// FOOTER ANIMATION
-// ============================
-
-
-gsap.from(".footer-top", {
-
-    scrollTrigger:{
-        trigger:".footer",
-        start:"top 85%"
-    },
-
-    y:50,
-    opacity:0,
-    duration:1,
-    ease:"power3.out"
-
-});
-
-
-gsap.from(".footer-columns", {
-
-    scrollTrigger:{
-        trigger:".footer",
-        start:"top 75%"
-    },
-
-    y:40,
-    opacity:0,
-    duration:1,
-    delay:0.3,
-    ease:"power3.out"
-
-});
-
-
-gsap.from(".footer-bottom", {
-
-    scrollTrigger:{
-        trigger:".footer",
-        start:"top 70%"
-    },
-
-    y:30,
-    opacity:0,
-    duration:1,
-    delay:0.5,
-    ease:"power3.out"
-
-});
-
-// ============================
-// BUTTON HOVER EFFECTS
-// ============================
-
-
-const buttons = document.querySelectorAll("button");
-
-
-buttons.forEach(button => {
-
-
-    button.addEventListener("mouseenter",()=>{
-
-        gsap.to(button,{
-            scale:1.05,
-            duration:0.3,
-            ease:"power2.out"
         });
 
     });
 
+});
+// ===========================
+// GSAP PAGE ANIMATIONS
+// ===========================
 
-    button.addEventListener("mouseleave",()=>{
+document.addEventListener("DOMContentLoaded", function () {
 
-        gsap.to(button,{
-            scale:1,
-            duration:0.3,
-            ease:"power2.out"
+    if (typeof gsap === "undefined") {
+        return;
+    }
+
+    const heroTitle = document.querySelector(".hero-text h1");
+    const heroParagraph = document.querySelector(".hero-text p");
+    const heroButton = document.querySelector(".hero-text button");
+    const heroImage = document.querySelector(".hero-image");
+
+    if (heroTitle) {
+        gsap.from(heroTitle, {
+            opacity: 0,
+            y: 30,
+            duration: 0.8,
+            ease: "power2.out"
         });
+    }
 
-    });
+    if (heroParagraph) {
+        gsap.from(heroParagraph, {
+            opacity: 0,
+            y: 25,
+            duration: 0.8,
+            delay: 0.2,
+            ease: "power2.out"
+        });
+    }
 
+    if (heroButton) {
+        gsap.from(heroButton, {
+            opacity: 0,
+            y: 20,
+            duration: 0.8,
+            delay: 0.4,
+            ease: "power2.out"
+        });
+    }
+
+    if (heroImage) {
+        gsap.from(heroImage, {
+            opacity: 0,
+            x: 30,
+            duration: 0.9,
+            delay: 0.2,
+            ease: "power2.out"
+        });
+    }
 
 });
+// ===========================
+// GSAP CARD SCROLL ANIMATIONS
+// ===========================
 
-// ============================
-// CARD HOVER EFFECTS
-// ============================
+document.addEventListener("DOMContentLoaded", function () {
 
+    if (typeof gsap === "undefined" || typeof ScrollTrigger === "undefined") {
+        return;
+    }
 
-const cards = document.querySelectorAll(
-".feature-card, .step-card, .research-card, .update-card, .why-card"
-);
+    gsap.registerPlugin(ScrollTrigger);
 
+    const cardGroups = [
+        ".step-card",
+        ".feature-card",
+        ".why-card",
+        ".research-card",
+        ".update-card"
+    ];
 
-cards.forEach(card=>{
+    cardGroups.forEach(function (selector) {
 
+        const cards = document.querySelectorAll(selector);
 
-    card.addEventListener("mouseenter",()=>{
+        if (cards.length === 0) {
+            return;
+        }
 
-        gsap.to(card,{
-            y:-10,
-            duration:0.3,
-            ease:"power2.out"
+        gsap.from(cards, {
+            opacity: 0,
+            y: 40,
+            duration: 0.7,
+            stagger: 0.12,
+            ease: "power2.out",
+
+            scrollTrigger: {
+                trigger: cards[0],
+                start: "top 85%",
+                toggleActions: "play none none none"
+            }
         });
 
     });
-
-
-    card.addEventListener("mouseleave",()=>{
-
-        gsap.to(card,{
-            y:0,
-            duration:0.3,
-            ease:"power2.out"
-        });
-
-    });
-
 
 });
-

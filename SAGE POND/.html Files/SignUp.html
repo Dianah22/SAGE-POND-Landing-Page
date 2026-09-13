@@ -9,23 +9,38 @@
     <title>SAGE POND | Sign Up</title>
 
 
-    <!-- Google Fonts -->
-
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- Google Font -->
 
     <link
-        href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="preconnect"
+        href="https://fonts.googleapis.com"
+    >
+
+    <link
+        rel="preconnect"
+        href="https://fonts.gstatic.com"
+        crossorigin
+    >
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet"
     >
 
 
-    <!-- Signup CSS -->
+    <!-- Font Awesome -->
 
     <link
         rel="stylesheet"
-        href="/css/SignUp.css"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
+    >
+
+
+    <!-- Signup Page CSS -->
+
+    <link
+        rel="stylesheet"
+        href="/css/signup.css"
     >
 
 </head>
@@ -34,152 +49,239 @@
 <body>
 
 
-<div class="signup-container">
+    <!-- =========================
+         SIGNUP PAGE
+    ========================== -->
+
+    <div class="signup-container">
 
 
-    <!-- Left Section -->
+        <!-- =========================
+             LEFT SIDE
+        ========================== -->
 
-    <div class="signup-left">
+        <div class="signup-left">
 
-        <img
-            src="/images/logo.png"
-            alt="SAGE POND Logo"
-            class="signup-logo"
-        >
+            <div class="signup-left-content">
 
-        <h1>
-            Create Your Account
-        </h1>
-
-
-        <p>
-            Join SAGE POND and become part of a community building AI solutions,
-            language technologies, and research-driven innovation for Africa.
-        </p>
-
-    </div>
-
-
-
-    <!-- Right Section -->
-
-    <div class="signup-right">
-
-
-        <div class="signup-card">
-
-
-            <h2>
-                Sign Up
-            </h2>
-
-
-
-            <form id="signupForm">
-
-
-                <label for="name">
-                    Full Name
-                </label>
-
-
-                <input
-                    type="text"
-                    id="name"
-                    placeholder="Enter your full name"
-                    required
+                <img
+                    src="/images/logo.png"
+                    alt="SAGE POND Logo"
+                    class="signup-logo"
                 >
 
+                <h1>
+                    Create Your Account
+                </h1>
+
+                <p>
+                    Join SAGE POND and become part of a community
+                    building AI solutions, language technologies,
+                    and research-driven innovation for Africa.
+                </p>
+
+            </div>
+
+        </div>
 
 
-                <label for="email">
-                    Email
-                </label>
+        <!-- =========================
+             RIGHT SIDE
+        ========================== -->
+
+        <div class="signup-right">
+
+            <div class="signup-card">
 
 
-                <input
-                    type="email"
-                    id="email"
-                    placeholder="Enter your email"
-                    required
-                >
+                <!-- Heading -->
+
+                <div class="signup-header">
+
+                    <h2>
+                        Sign Up
+                    </h2>
+
+                    <p>
+                        Create your SAGE POND account
+                    </p>
+
+                </div>
 
 
+                <!-- Signup Form -->
 
-                <label for="password">
-                    Password
-                </label>
-
-
-                <input
-                    type="password"
-                    id="password"
-                    placeholder="Create a password"
-                    required
-                >
+                <form id="signupForm">
 
 
-                <small>
-                    Password must be at least 8 characters long.
-                </small>
+                    <!-- Full Name -->
+
+                    <div class="form-group">
+
+                        <label for="name">
+                            Full Name
+                        </label>
+
+                        <div class="input-wrapper">
+
+                            <i class="fa-solid fa-user"></i>
+
+                            <input
+                                type="text"
+                                id="name"
+                                name="name"
+                                placeholder="Enter your full name"
+                                autocomplete="name"
+                                required
+                            >
+
+                        </div>
+
+                    </div>
 
 
+                    <!-- Email -->
 
-                <label for="confirmPassword">
-                    Confirm Password
-                </label>
+                    <div class="form-group">
 
+                        <label for="email">
+                            Email
+                        </label>
 
-                <input
-                    type="password"
-                    id="confirmPassword"
-                    placeholder="Confirm your password"
-                    required
-                >
+                        <div class="input-wrapper">
 
+                            <i class="fa-solid fa-envelope"></i>
 
-                <!-- Signup messages will appear here -->
+                            <input
+                                type="email"
+                                id="email"
+                                name="email"
+                                placeholder="Enter your email"
+                                autocomplete="email"
+                                required
+                            >
 
-                <p id="signupMessage"></p>
+                        </div>
 
-
-
-                <button
-                    type="submit"
-                    class="signup-btn"
-                >
-                    Create Account
-                </button>
+                    </div>
 
 
+                    <!-- Password -->
 
-            </form>
+                    <div class="form-group">
+
+                        <label for="password">
+                            Password
+                        </label>
+
+                        <div class="input-wrapper">
+
+                            <i class="fa-solid fa-lock"></i>
+
+                            <input
+                                type="password"
+                                id="password"
+                                name="password"
+                                placeholder="Create a password"
+                                autocomplete="new-password"
+                                minlength="8"
+                                required
+                            >
+
+                        </div>
+
+                        <small>
+                            Password must be at least 8 characters long.
+                        </small>
+
+                    </div>
 
 
+                    <!-- Confirm Password -->
+
+                    <div class="form-group">
+
+                        <label for="confirmPassword">
+                            Confirm Password
+                        </label>
+
+                        <div class="input-wrapper">
+
+                            <i class="fa-solid fa-lock"></i>
+
+                            <input
+                                type="password"
+                                id="confirmPassword"
+                                name="confirmPassword"
+                                placeholder="Confirm your password"
+                                autocomplete="new-password"
+                                minlength="8"
+                                required
+                            >
+
+                        </div>
+
+                    </div>
 
 
-            <p class="back-home">
+                    <!-- Signup Message -->
 
-                Already have an account?
-
-                <a href="/login">
-                    Login here
-                </a>
-
-            </p>
+                    <p
+                        id="signupMessage"
+                        class="signup-message"
+                        aria-live="polite"
+                    ></p>
 
 
+                    <!-- Create Account Button -->
+
+                    <button
+                        type="submit"
+                        class="signup-btn"
+                    >
+
+                        <span>
+                            Create Account
+                        </span>
+
+                    </button>
 
 
-            <p class="back-home">
-
-                <a href="/home">
-                    ← Back to Home
-                </a>
-
-            </p>
+                </form>
 
 
+                <!-- Login Link -->
+
+                <p class="account-link">
+
+                    Already have an account?
+
+                    <a href="/login">
+                        Login here
+                    </a>
+
+                </p>
+
+
+                <!-- Back Home -->
+
+                <p class="back-home">
+
+                    <a href="/home">
+
+                        <i
+                            class="fa-solid fa-arrow-left"
+                            aria-hidden="true"
+                        ></i>
+
+                        Back to Home
+
+                    </a>
+
+                </p>
+
+
+            </div>
 
         </div>
 
@@ -187,16 +289,14 @@
     </div>
 
 
-</div>
+    <!-- =========================
+         SIGNUP JAVASCRIPT
+    ========================== -->
 
-
-
-<!-- Signup JavaScript -->
-
-<script
-    type="module"
-    src="/js/SignUp.js"
-></script>
+    <script
+        type="module"
+        src="/js/SignUp.js"
+    ></script>
 
 
 </body>
