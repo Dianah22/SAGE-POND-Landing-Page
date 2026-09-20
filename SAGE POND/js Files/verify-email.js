@@ -42,6 +42,11 @@ const emailFromUrl =
         "email"
     );
 
+    const token =
+    urlParams.get(
+        "token"
+    );
+
 
 // ===========================
 // Get signup email
@@ -78,6 +83,73 @@ function showVerifiedMessage() {
 
 }
 
+// ===========================
+// Verify email using POST
+// ===========================
+
+async function verifyEmail() {
+
+    if (!token) {
+        return;
+    }
+
+    try {
+
+        message.textContent =
+            "Verifying your email...";
+
+        message.style.color =
+            "";
+
+        const response =
+            await fetch(
+                "/verify-email",
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body: JSON.stringify({
+                        token: token
+                    })
+                }
+            );
+
+        if (response.redirected) {
+
+            window.location.href =
+                response.url;
+
+            return;
+        }
+
+        const data =
+            await response.json();
+
+        message.textContent =
+            data.message ||
+            "Unable to verify email.";
+
+        message.style.color =
+            "red";
+
+    } catch (error) {
+
+        console.error(
+            "Email verification error:",
+            error
+        );
+
+        message.textContent =
+            "Unable to verify email.";
+
+        message.style.color =
+            "red";
+    }
+}
 
 // ===========================
 // Check verification status
@@ -288,14 +360,10 @@ resendEmailBtn.addEventListener(
 // Check status when page loads
 // ===========================
 
-if (
-    verified === "true"
-) {
-
+if (verified === "true") {
     showVerifiedMessage();
-
+} else if (token) {
+    verifyEmail();
 } else {
-
-    checkVerificationStatus();
-
+    window.location.href = "/signup";
 }

@@ -34,47 +34,24 @@ const app = express();
 // Folder paths
 // ===========================
 
-const htmlFolder =
-    path.join(__dirname, ".html Files");
-
-const cssFolder =
-    path.join(__dirname, ".css Files");
-
-const jsFolder =
-    path.join(__dirname, ".js Files");
-
-const imagesFolder =
-    path.join(__dirname, "images");
+const htmlFolder = path.join(__dirname, "html Files");
+const cssFolder = path.join(__dirname, "css Files");
+const jsFolder = path.join(__dirname, "js Files");
+const imagesFolder = path.join(__dirname, "images");
 
 
 // ===========================
 // Static CSS files
 // ===========================
 
-app.use(
-    "/css",
-    express.static(
-        cssFolder,
-        {
-            dotfiles: "allow"
-        }
-    )
-);
+app.use("/css", express.static(cssFolder));
 
 
 // ===========================
 // Static JavaScript files
 // ===========================
 
-app.use(
-    "/js",
-    express.static(
-        jsFolder,
-        {
-            dotfiles: "allow"
-        }
-    )
-);
+app.use("/js", express.static(jsFolder));
 
 
 // ===========================
@@ -143,8 +120,18 @@ function requireSignupEmail(
     next
 ) {
 
-    const email =
+    const rawEmail =
         req.query?.email;
+
+    const email =
+        DOMPurify
+            .sanitize(
+                String(
+                    rawEmail || ""
+                )
+            )
+            .trim()
+            .toLowerCase();
 
     if (!email) {
 
@@ -154,9 +141,10 @@ function requireSignupEmail(
 
     }
 
+    req.query.email = email;
+
     next();
 }
-
 
 // ===========================
 // Port
@@ -187,99 +175,49 @@ app.get(
 // Root
 // ===========================
 
-app.get(
-    "/",
-    (req, res) => {
-
-        res.redirect(
-            "/home"
-        );
-
-    }
-);
-
-
-// ===========================
-// Home page
-// ===========================
-
-app.get(
-    "/home",
-    (req, res) => {
-
-        res.sendFile(
-            path.join(
-                htmlFolder,
-                "index.html"
-            ),
-            {
-                dotfiles: "allow"
-            }
-        );
-
-    }
-);
-
+app.get("/", (req, res) => {
+    res.redirect("/index.html");
+});
 
 // ===========================
 // index.html
 // ===========================
 
-app.get(
-    "/index.html",
-    (req, res) => {
-
-        res.redirect(
-            "/home"
-        );
-
-    }
-);
-
+app.get("/index.html", (req, res) => {
+    res.sendFile(path.join(htmlFolder, "index.html"));
+});
 
 // ===========================
-// Login page
+// Login page GET
 // ===========================
 
-app.get(
-    "/login",
-    (req, res) => {
+app.get("/login", (req, res) => {
 
-        res.sendFile(
-            path.join(
-                htmlFolder,
-                "Login.html"
-            ),
-            {
-                dotfiles: "allow"
-            }
+    const loginPage =
+        path.join(
+            htmlFolder,
+            "Login.html"
         );
 
-    }
-);
+    res.sendFile(loginPage);
 
+});
 
 // ===========================
 // Signup page
 // ===========================
 
-app.get(
-    "/signup",
-    (req, res) => {
+app.get("/signup", (req, res) => {
 
-        res.sendFile(
-            path.join(
-                htmlFolder,
-                "SignUp.html"
-            ),
-            {
-                dotfiles: "allow"
-            }
+    const signupPage =
+        path.join(
+            htmlFolder,
+            "SignUp.html"
         );
 
-    }
-);
+    res.sendFile(signupPage);
 
+});
 
 // ===========================
 // Verify page GET
@@ -288,12 +226,12 @@ app.get(
 app.get(
     "/verify",
     requireSignupEmail,
-    (req, res) => {
+    (req, res, next) => {
 
         const verifyPage =
             path.resolve(
                 __dirname,
-                ".html Files",
+                "html Files",
                 "verify-email.html"
             );
 
@@ -304,9 +242,6 @@ app.get(
 
         res.sendFile(
             verifyPage,
-            {
-                dotfiles: "allow"
-            },
             (error) => {
 
                 if (error) {
@@ -316,15 +251,15 @@ app.get(
                         error
                     );
 
-                    if (!res.headersSent) {
-
-                        res.status(
-                            error.statusCode || 500
-                        ).send(
-                            "Unable to load verification page."
-                        );
-
+                    if (res.headersSent) {
+                        return next(error);
                     }
+
+                    return res.status(
+                        error.statusCode || 500
+                    ).send(
+                        "Unable to load verification page."
+                    );
 
                 }
 
@@ -333,8 +268,6 @@ app.get(
 
     }
 );
-
-
 // ===========================
 // Send verification email
 // ===========================
@@ -436,12 +369,10 @@ app.post(
                     "auth/user-not-found"
                 ) {
 
-                    return res.status(404).json({
-                        success: false,
-                        message:
-                            "No SAGE POND account was found with this email."
+                   return res.status(404).json({
+                    success: false,
+                    message: "Unable to process verification request."
                     });
-
                 }
 
 
@@ -459,11 +390,9 @@ app.post(
             ) {
 
                 return res.status(400).json({
-                    success: false,
-                    message:
-                        "This email address is already verified."
+                success: false,
+                message: "Unable to process verification request."
                 });
-
             }
 
 
@@ -625,12 +554,10 @@ app.get(
 // Verify email
 // ===========================
 
-app.get(
-    "/verify-email",
-    async (req, res) => {
+app.post("/verify-email", async (req, res) => {
 
-        const rawToken =
-            req.query.token;
+       const rawToken =
+    req.body?.token;
 
 
         const token =
@@ -648,7 +575,7 @@ app.get(
         if (!token) {
 
             return res.status(400).send(
-                "Verification token is missing."
+                "Unable to verify your email."
             );
 
         }
@@ -693,7 +620,7 @@ app.get(
             ) {
 
                 return res.status(400).send(
-                    "Verification information does not match the account."
+                   "Unable to verify your email."
                 );
 
             }
@@ -744,7 +671,7 @@ app.get(
             ) {
 
                 return res.status(400).send(
-                    "This verification link has expired. Please request a new verification email."
+                    "Unable to verify your email."
                 );
 
             }
@@ -768,7 +695,7 @@ app.get(
             ) {
 
                 return res.status(404).send(
-                    "The SAGE POND account could not be found."
+                    "Unable to verify your email."
                 );
 
             }
