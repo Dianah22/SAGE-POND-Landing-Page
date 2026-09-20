@@ -26,10 +26,8 @@ const transporter = nodemailer.createTransport({
 
 const sendVerificationEmail =
     async (email, verificationToken) => {
-
-        const verificationLink =
-            `http://172.20.10.3:3000/verify-email?token=${encodeURIComponent(verificationToken)}`;
-
+const verificationLink =
+    `http://10.149.206.62:3000/verify?email=${encodeURIComponent(email)}&token=${encodeURIComponent(verificationToken)}`;
         const info =
             await transporter.sendMail({
 
